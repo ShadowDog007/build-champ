@@ -1,0 +1,5 @@
+root = true
+
+[*.{json,md,ts}]
+indent_style = space
+indent_size = 2
