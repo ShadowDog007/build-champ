@@ -15,21 +15,21 @@ Projects can be defined by creating a file named `.project.yaml` in a folder wit
 
 _See below the schema for this file:_
 
-| Field              | Type                                                            | Description                                                                             | Default                   |
-| ------------------ | --------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------- |
-| name               | `string`                                                        | Name of the project                                                                     | Name of project directory |
-| dependencies       | `string[]`                                                      | List of files/directories this project depends on                                       | []                        |
-| tags               | `string[]`                                                      | List of tags for this project                                                           | []                        |
-| commands           | `{ [commandName: string]: ProjectCommand \| ProjectCommand[] }` | Collection of commands relevant to this project                                         | {}                        |
-| -                  | -                                                               | -                                                                                       | -                         |
-| `ProjectCommand`   |                                                                 |                                                                                         |                           |
-| name               | `string`                                                        | Display name of this command                                                            | Command + Arguments       |
-| command            | `string`                                                        | Command to run (File executable or shell command) (Supports templating)                 | n/a                       |
-| shell              | `boolean \| string`                                             | Shell to use (default: true (uses os default shell)) e.g. 'Powershell.exe', '/bin/bash' | true                      |
-| arguments          | `string[]`                                                      | Arguments to provide to command (Supports templating)                                   | []                        |
-| condition          | `string`                                                        | Condition expression evaluated before command runs                                      | undefined                 |
-| conditionBehaviour | `'skip' \| 'fail'`                                              | How the command behaves if the condition evaluates to false                             | `'skip'`                  |
-| failBehaviour      | `'fail' \| 'skip'`                                              | How the command behaves if the command process fails                                    | `'fail'`                  |
+| Field              | Type                                                 | Description                                                                             | Default                   |
+| ------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------- |
+| name               | `string`                                             | Name of the project                                                                     | Name of project directory |
+| dependencies       | `string[]`                                           | List of files/directories this project depends on                                       | []                        |
+| tags               | `string[]`                                           | List of tags for this project                                                           | []                        |
+| commands           | `Record<string, ProjectCommand \| ProjectCommand[]>` | Collection of commands relevant to this project keyed by command name                   | {}                        |
+| -                  | -                                                    | -                                                                                       | -                         |
+| `ProjectCommand`   |                                                      |                                                                                         |                           |
+| name               | `string`                                             | Display name of this command                                                            | Command + Arguments       |
+| command            | `string`                                             | Command to run (File executable or shell command) (Supports templating)                 | n/a                       |
+| shell              | `boolean \| string`                                  | Shell to use (default: true (uses os default shell)) e.g. 'Powershell.exe', '/bin/bash' | true                      |
+| arguments          | `string[]`                                           | Arguments to provide to command (Supports templating)                                   | []                        |
+| condition          | `string`                                             | Condition expression evaluated before command runs                                      | undefined                 |
+| conditionBehaviour | `'skip' \| 'fail'`                                   | How the command behaves if the condition evaluates to false                             | `'skip'`                  |
+| failBehaviour      | `'fail' \| 'skip'`                                   | How the command behaves if the command process fails                                    | `'fail'`                  |
 
 ### Project Commands
 
