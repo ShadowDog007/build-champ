@@ -13,7 +13,7 @@ export default {
   coverageDirectory: "coverage",
   coveragePathIgnorePatterns: [
     "\\\\node_modules\\\\",
-    "\\test\\"
+    "\\\\test\\\\"
   ],
 
   // Indicates which provider should be used to instrument code for coverage
