@@ -178,7 +178,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
     let reason = 'evaluated to false';
 
     try {
-      result = !!this.evalService.safeEval(projectCommand.condition);
+      result = !!this.evalService.safeEval(projectCommand.condition, project);
     } catch (err) {
       result = false;
       reason = `failed to evaluate '${err}'`;
@@ -209,7 +209,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
 
       this.updateProjectStatus(project, ProjectCommandStatus.running, commandName);
 
-      const command = this.evalService.safeEvalTemplate(projectCommand.command);
+      const command = this.evalService.safeEvalTemplate(projectCommand.command, project);
       const commandArguments = projectCommand.arguments?.map(arg => this.evalService.safeEvalTemplate(arg));
 
       const commandProcess = this.spawnService.spawn(command, commandArguments ?? [], {

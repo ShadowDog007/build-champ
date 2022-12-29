@@ -67,7 +67,7 @@ commands:
       command: "npm run build -- ${{env.PRODUCTION ? '--prod' : ''}}" # Contents of `${{}}` is evaluated as a javascript expression
   test:
     command: npm run test
-    condition: env.RUN_TESTS === 'true' # Javascript expression
+    condition: env.RUN_TESTS_FOR.split(',').includes(name) # Javascript expression
 ```
 
 ## Expressions & Templating
@@ -113,6 +113,14 @@ e.g.
 - `env.SOME_ENV_VAR`
 - `projects.MyProject.version.hash`
 - `projects['My.Project'].version.hash`
+
+Project scoped expressions (Used in `list` & `run` commands) also have access to project properties.
+
+e.g.
+
+- `name`
+- `dir`
+- `version.hash`
 
 ```typescript
 {

@@ -12,51 +12,58 @@ export const projectExamples = {
       'project-type:dotnet'
     ],
     commands: {
-      test: [{
+      test: {
         command: 'echo running',
-      }],
-      project1: [{
+      },
+      project1: {
         command: 'echo running',
-      }],
-      contextCommand: [{
+      },
+      contextCommand: {
         command: 'echo ${{context.echo}}'
-      }],
-      contextCommandArg: [{
+      },
+      contextCommandArg: {
         command: 'echo',
         arguments: [
           '${{context.echo}}'
         ]
-      }],
-      fail: [{
+      },
+      contextCommandProjectScoped: {
+        command: 'echo ${{name}}',
+      },
+      fail: {
         command: 'exit 1'
-      }],
-      failSkip: [{
+      },
+      failSkip: {
         command: 'exit 42',
         failureBehavior: 'skip'
-      }],
-      failParallel: [{
+      },
+      failParallel: {
         command: 'exit 1'
-      }],
-      logError: [{
+      },
+      logError: {
         command: 'echo error>&2'
-      }],
-      skipCondition: [{
+      },
+      skipCondition: {
         command: 'exit 1',
         condition: '1 === 2',
-      }],
-      failCondition: [{
+      },
+      failCondition: {
         command: 'exit 1',
         condition: '1 === 2',
         conditionBehaviour: 'fail',
-      }],
-      contextCondition: [{
+      },
+      contextCondition: {
         command: 'echo running',
         condition: '1 == context.val',
-      }],
-      malformedCondition: [{
+      },
+      contextProjectScopedCondition: {
+        command: 'echo running',
+        condition: 'name.startsWith("Project")',
+      },
+      malformedCondition: {
         command: 'exit 42',
         condition: '1 = 2'
-      }]
+      }
     },
     version: {
       hash: 'a-long',
