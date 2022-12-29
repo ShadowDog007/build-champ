@@ -24,6 +24,7 @@ export interface EvalService {
   /**
    * Evaluates all code blocks in the provided template
    * @param template
+   * @param context Additional context values to include
    * @returns The processed template
    */
   safeEvalTemplate(template: string, context?: object): string;
@@ -31,8 +32,9 @@ export interface EvalService {
   /**
    * Evaluates the provided code using a generated context
    * @param code The code to evaluate
+   * @param context Additional context values to include
    */
-  safeEval(code: string): unknown;
+  safeEval(code: string, context?: object): unknown;
 }
 
 export interface EvalContextFixed {
@@ -95,7 +97,10 @@ export class EvalServiceImpl implements EvalService {
   }
 
   safeEval(code: string, context?: object): unknown {
-    return safeEval(code, context ?? this.context);
+    return safeEval(code, {
+      ...this.context,
+      ...context,
+    });
   }
 
   async buildContext(): Promise<EvalContext> {

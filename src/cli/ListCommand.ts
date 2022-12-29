@@ -28,7 +28,7 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
       .name('list')
       .description('Lists all projects within the current git repository')
       .option('--long-version', 'Show full version string')
-      .option('-t --template <template>', 'Template string to customise how each project is printed using project variables', defaultTemplate)
+      .option('--template <template>', 'Template string to customise how each project is printed using project variables', defaultTemplate)
       .option('-j --join <join>', 'String to join project templates by', EOL);
   }
 
@@ -43,6 +43,7 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
       this.error('No matching projects');
     }
 
+    await this.evalService.prepareContext();
     const templated = projects.map(project => this.evalService.safeEvalTemplate(options.template, {
       longVersion: options.longVersion,
       ...project,

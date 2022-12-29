@@ -86,23 +86,31 @@ describe('RunCommand', () => {
         '[Project1] success: Command `echo error>&2` completed'
       ]));
 
-    test('when running command with template expression should execute replacement',
-      () => testHelper.testParse(['contextCommand', '-c', 'echo=This is from the context'], [
-        '[Project1] running: `echo ${{context.echo}}`',
-        '[Project1] This is from the context',
-        '[Project1] success: Command `echo ${{context.echo}}` completed',
-      ])
-    );
+    describe('when running command with template expression', () => {
+      test('when running command with template expression should execute replacement',
+        () => testHelper.testParse(['contextCommand', '-c', 'echo=This is from the context'], [
+          '[Project1] running: `echo ${{context.echo}}`',
+          '[Project1] This is from the context',
+          '[Project1] success: Command `echo ${{context.echo}}` completed',
+        ])
+      );
 
+      test('when running command with template expression should execute replacement',
+        () => testHelper.testParse(['contextCommandArg', '-c', 'echo=This is from the context'], [
+          '[Project1] running: `echo "${{context.echo}}"`',
+          '[Project1] This is from the context',
+          '[Project1] success: Command `echo "${{context.echo}}"` completed',
+        ])
+      );
 
-
-    test('when running command with template expression should execute replacement',
-      () => testHelper.testParse(['contextCommandArg', '-c', 'echo=This is from the context'], [
-        '[Project1] running: `echo "${{context.echo}}"`',
-        '[Project1] This is from the context',
-        '[Project1] success: Command `echo "${{context.echo}}"` completed',
-      ])
-    );
+      test('which is project scoped should execute replacement',
+        () => testHelper.testParse(['contextCommandProjectScoped'], [
+          '[Project1] running: `echo ${{name}}`',
+          '[Project1] Project1',
+          '[Project1] success: Command `echo ${{name}}` completed',
+        ])
+      );
+    });
 
     describe('when running failing command', () => {
       test('should exit with code 22',
@@ -129,28 +137,40 @@ describe('RunCommand', () => {
       test('that fails should skip command',
         () => testHelper.testParse(['skipCondition'], [
           '[Project1] skipped: Condition `1 === 2` evaluated to false',
-        ]));
+        ])
+      );
 
       test('that fails and fail behaviour ignoring failures should fail project command without error',
         () => testHelper.testParse(['failCondition', '--continue-on-failure'], [
           '[Project1] failed: Condition `1 === 2` evaluated to false',
-        ]));
+        ])
+      );
 
       test('using context parameter to pass should run command',
         () => testHelper.testParse(['contextCondition', '--context', 'val=1'], [
           '[Project1] running: `echo running`',
           '[Project1] running',
           '[Project1] success: Command `echo running` completed',
-        ]));
+        ])
+      );
       test('using context parameter to skip should skip command',
         () => testHelper.testParse(['contextCondition', '--context', 'val=2'], [
           '[Project1] skipped: Condition `1 == context.val` evaluated to false',
-        ]));
+        ])
+      );
+      test('using project scoped expression to pass should run command',
+        () => testHelper.testParse(['contextProjectScopedCondition'], [
+          '[Project1] running: `echo running`',
+          '[Project1] running',
+          '[Project1] success: Command `echo running` completed',
+        ])
+      );
 
       test('is malformed, should skip command',
         () => testHelper.testParse(['malformedCondition'], [
           '[Project1] skipped: Condition `1 = 2` failed to evaluate \'SyntaxError: Invalid left-hand side in assignment\'',
-        ]));
+        ])
+      );
     });
 
     test('when unknown command provided should exit with code 21',
