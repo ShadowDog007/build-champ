@@ -1,6 +1,7 @@
 import { Command } from 'commander';
 import { ContainerModule } from 'inversify';
 import 'reflect-metadata';
+import { version } from '../package.json';
 import { BaseProjectCommand } from './cli/BaseProjectCommand';
 import { InitCommand } from './cli/InitCommand';
 import { ListCommand } from './cli/ListCommand';
@@ -28,6 +29,7 @@ export const containerModule = new ContainerModule((bind, _, isBound) => {
 
   bind(TYPES.Program).toDynamicValue(c => {
     const program = new Command();
+    program.version(version);
     c.container.getAll<BaseProjectCommand<unknown[]>>(TYPES.Command).forEach(c => program.addCommand(c.command));
     return program;
   });
