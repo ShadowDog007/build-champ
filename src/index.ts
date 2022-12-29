@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { Command } from 'commander';
 import { Container } from 'inversify';
 import 'reflect-metadata';
