@@ -8,6 +8,8 @@ Flexible tool for managing a group of projects within a single mono-repo.
 - Differential builds/deployments
 - Dependency management
 - File templating
+- Language Dependency Detection
+  - dotnet
 
 ## Project Definition
 
@@ -33,6 +35,8 @@ _See below the schema for this file:_
 
 ### Project Commands
 
+---
+
 Project commands are defined in a collection keyed by command name, which can be referenced when running `npx build-champ run`.
 
 Project commands can provide a single command as an object, or a list of commands which are run in sequence.
@@ -50,6 +54,8 @@ During exeuction, your command is provided with additional environment variables
 | `CONTEXT_${key}`        | Every context parameter passed via CLI arguments, prefixed with `CONTEXT_` |
 
 ### Example
+
+---
 
 ```yaml
 name: MyProject
@@ -70,6 +76,26 @@ commands:
     condition: env.RUN_TESTS_FOR.split(',').includes(name) # Javascript expression
 ```
 
+## Language Support
+
+---
+
+For supported project types, the project definition defaults can be replaced with values which make sense for the project.
+
+Currently supported languages/project types:
+
+- .NET / .NET Framework
+
+### .NET Support
+
+---
+
+Used when a `.csproj` file exists in the project directory.
+
+- Defaults project `name` to the dotnet project name.
+- Adds to `dependencies` all project directories which are referenced in `.csproj` via a `<ProjectReference>` element
+- Adds to `dependencies` any `Directory.*.props` files which could impact the current project
+
 ## Expressions & Templating
 
 Expressions can be used to customise your projects command behaviour or process dynamic replacements for configuration files.
@@ -77,6 +103,8 @@ Expressions can be used to customise your projects command behaviour or process 
 Expressions are evaluated as javascript, so any valid javascript syntaxt is allowed. You are provided context variables which can be referenced for conditions or replacements.
 
 ### Templating
+
+---
 
 Templates can be used in `list`, and `template` CLI commands. And also in project commands for `command` and `arguments` properties.
 
@@ -104,6 +132,8 @@ export const projectVersions: {
 ```
 
 ### Expressions context variable schema
+
+---
 
 Context properties can be accessed in an expression by name.
 For properties with special characters, you can use index notation.
@@ -181,6 +211,8 @@ CLI can be invoked via npm using `npx build-champ`
 
 ### Project filtering options:
 
+---
+
 These options are common between `list`, and `run` commands
 
 | Option                             | Description                                                                               |
@@ -193,6 +225,8 @@ These options are common between `list`, and `run` commands
 
 ### `list [options]`
 
+---
+
 Lists all projects within the current git repository
 
 | Option                      | Description                                                                      |
@@ -202,6 +236,8 @@ Lists all projects within the current git repository
 | -j, --join \<join\>         | String to join project templates by (default: "\n")                              |
 
 ### `run [options] <command>`
+
+---
 
 Runs the specified command on all matching projects.
 
@@ -218,6 +254,8 @@ Runs the specified command on all matching projects.
 
 ### `template [options]`
 
+---
+
 Parses a file and prints it after processing template replacements
 
 | Option                           | Description                                                                                                        |
@@ -228,6 +266,8 @@ Parses a file and prints it after processing template replacements
 | -e, --encoding \<encoding\>      | Encoding to use when parsing the file (default: "utf8")                                                            |
 
 ### `init [options] [projectDir]`
+
+---
 
 Initializes a directory with a default .project.yaml file
 
