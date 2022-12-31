@@ -10,8 +10,10 @@ import { TemplateCommand } from './cli/TemplateCommand';
 import { ProjectMetadataLoader } from './projects/metadata';
 import { DotnetMetadataHandler } from './projects/metadata/DotnetMetadataHandler';
 import { ProjectProcessor } from './projects/processors';
+import { FinalizeDefinition } from './projects/processors/FinalizeDefinition';
 import { FlattenDependencies } from './projects/processors/FlattenDependencies';
 import { LoadProjectMetadata } from './projects/processors/LoadProjectMetadata';
+import { ProjectExtension } from './projects/processors/ProjectExtension';
 import { ResolveDependencies } from './projects/processors/ResolveDependencies';
 import { ProjectService, ProjectServiceImpl } from './projects/ProjectService';
 import { TYPES } from './TYPES';
@@ -47,9 +49,11 @@ export const containerModule = new ContainerModule((bind, _, isBound) => {
   bind<SpawnService>(TYPES.SpawnService).to(SpawnServiceImpl).inSingletonScope();
 
   // Project processors in the order they need to be processed
+  bind<ProjectProcessor>(TYPES.ProjectProcessor).to(ProjectExtension).inSingletonScope();
   bind<ProjectProcessor>(TYPES.ProjectProcessor).to(ResolveDependencies).inSingletonScope();
   bind<ProjectProcessor>(TYPES.ProjectProcessor).to(LoadProjectMetadata).inSingletonScope();
   bind<ProjectProcessor>(TYPES.ProjectProcessor).to(FlattenDependencies).inSingletonScope();
+  bind<ProjectProcessor>(TYPES.ProjectProcessor).to(FinalizeDefinition).inSingletonScope();
 
   bind<ProjectMetadataLoader>(TYPES.ProjectMetadataHandler).to(DotnetMetadataHandler).inSingletonScope();
 });

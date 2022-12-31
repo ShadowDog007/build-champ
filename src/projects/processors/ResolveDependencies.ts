@@ -2,7 +2,6 @@ import { inject, injectable } from 'inversify';
 import { relative, resolve } from 'path';
 import { ProjectProcessor } from '.';
 import { TYPES } from '../../TYPES';
-import { BaseDirProvider } from '../../util/BaseDirProvider';
 import { Project } from '../Project';
 
 /**
@@ -12,7 +11,7 @@ import { Project } from '../Project';
 export class ResolveDependencies implements ProjectProcessor {
 
   constructor(
-    @inject(TYPES.BaseDirProvider) private readonly baseDirProvider: BaseDirProvider
+    @inject(TYPES.BaseDir) private readonly baseDir: string
   ) { }
 
   async * processProjects(projects: AsyncGenerator<Project>): AsyncGenerator<Project> {
@@ -20,15 +19,14 @@ export class ResolveDependencies implements ProjectProcessor {
       yield {
         ...project,
         dependencies: project.dependencies
-          ?.map(d => this.resolveDirRelativeToBase(project, d).replaceAll('\\', '/'))
-          ?? [],
+          .map(d => this.resolveDirRelativeToBase(project, d).replaceAll('\\', '/')),
       };
     }
   }
 
   resolveDirRelativeToBase(project: Project, relativeDir: string) {
-    const absoluteDir = resolve(this.baseDirProvider.baseDir, project.dir, relativeDir);
-    return relative(this.baseDirProvider.baseDir, absoluteDir);
+    const absoluteDir = resolve(this.baseDir, project.dir, relativeDir);
+    return relative(this.baseDir, absoluteDir);
   }
 
 }

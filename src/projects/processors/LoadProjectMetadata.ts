@@ -27,8 +27,9 @@ export class LoadProjectMetadata implements ProjectProcessor {
         for (const metadataFile of extensionFiles) {
           const metadata = await loader.loadMetadata(resolve(this.baseDirProvider.baseDir, project.dir, metadataFile));
           project = {
-            ...metadata,
-            ...project,
+            extends: project.extends,
+            name: project.name || metadata.name || '',
+            dir: project.dir,
             dependencies: uniq(concat(project.dependencies, metadata.dependencies || [])),
             commands: {
               ...metadata.commands,

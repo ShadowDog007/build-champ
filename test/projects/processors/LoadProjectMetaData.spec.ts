@@ -10,6 +10,7 @@ import { Project } from '../../../src/projects/Project';
 import { TYPES } from '../../../src/TYPES';
 import { createContainer, MockBaseDirProvider, resetFs } from '../../mocks';
 import { projectExamples } from '../../project-examples';
+import { testProcessor } from './testProcessor';
 
 @injectable()
 export class MockProjectMetadataLoader implements ProjectMetadataLoader {
@@ -38,14 +39,9 @@ describe('ResolveDependencies', () => {
   });
 
   test('should return all projects', async () => {
-    // Given
-    const generator = createGenerator(projectExamples.project1, projectExamples.project2);
-
     // When
-    const projectNames: string[] = [];
-    for await (const project of processor.processProjects(generator)) {
-      projectNames.push(project.name);
-    }
+    const projectNames = (await testProcessor(processor, projectExamples.project1, projectExamples.project2))
+      .map(p => p.name);
 
     // Verify
     expect(projectNames).toMatchObject([projectExamples.project1.name, projectExamples.project2.name]);
@@ -60,21 +56,18 @@ describe('ResolveDependencies', () => {
       dependencies: ['project4'],
     });
 
-    const generator = createGenerator({
-      ...projectExamples.project1,
-      dir: 'project1',
-      dependencies: [],
-    }, {
+    // When
+    const projectDependencies = (await testProcessor(processor,
+      {
+        ...projectExamples.project1,
+        dir: 'project1',
+        dependencies: [],
+      }, {
       ...projectExamples.project2,
       dir: 'project2',
       dependencies: ['project3'],
-    });
-
-    // When
-    const projectDependencies: string[][] = [];
-    for await (const project of processor.processProjects(generator)) {
-      projectDependencies.push(project.dependencies);
-    }
+    }))
+      .map(p => p.dependencies);
 
     // Verify
     expect(projectDependencies)
@@ -90,7 +83,8 @@ describe('ResolveDependencies', () => {
       tags: ['project-type:node']
     });
 
-    const generator = createGenerator({
+    // When
+    const projectTags = (await testProcessor(processor, {
       ...projectExamples.project1,
       dir: 'project1',
       tags: [],
@@ -98,20 +92,11 @@ describe('ResolveDependencies', () => {
       ...projectExamples.project2,
       dir: 'project2',
       tags: ['test']
-    });
-
-    // When
-    const projectTags: string[][] = [];
-    for await (const project of processor.processProjects(generator)) {
-      projectTags.push(project.tags);
-    }
+    }))
+      .map(p => p.tags);
 
     // Verify
     expect(projectTags)
       .toMatchObject([['project-type:dotnet'], ['project-type:node', 'test']]);
   });
 });
-
-async function* createGenerator(...projects: Project[]) {
-  yield* projects;
-}
