@@ -68,7 +68,14 @@ describe('ProjectService', () => {
 
     test('when project exists, should load and return project', async () => {
       // Given
-      await defineProject('project1', project);
+      await defineProject('/src/project1', {
+        ...project,
+        extends: '../../.project.base.yaml'
+      });
+      const extension = {
+        dependencies: ['./src/shared-dependency']
+      } satisfies Partial<Project>;
+      await writeFile('/.project.base.yaml', stringify(extension));
 
       // When
       const projects = await projectService.getProjects();
@@ -77,7 +84,8 @@ describe('ProjectService', () => {
       expect(projects).toMatchObject([{
         ...project,
         dependencies: [
-          'dependency2',
+          'src/dependency2',
+          'src/shared-dependency'
         ]
       }]);
     });

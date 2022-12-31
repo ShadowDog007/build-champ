@@ -19,6 +19,7 @@ _See below the schema for this file:_
 
 | Field              | Type                                                 | Description                                                                             | Default                   |
 | ------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------- |
+| extends            | string                                               | Path to a project definition extension relative to this file                            | n/a                       |
 | name               | `string`                                             | Name of the project                                                                     | Name of project directory |
 | dependencies       | `string[]`                                           | List of files/directories this project depends on                                       | []                        |
 | tags               | `string[]`                                           | List of tags for this project                                                           | []                        |
@@ -32,6 +33,16 @@ _See below the schema for this file:_
 | condition          | `string`                                             | Condition expression evaluated before command runs                                      | undefined                 |
 | conditionBehaviour | `'skip' \| 'fail'`                                   | How the command behaves if the condition evaluates to false                             | `'skip'`                  |
 | failBehaviour      | `'fail' \| 'skip'`                                   | How the command behaves if the command process fails                                    | `'fail'`                  |
+
+### Project Extensions
+
+You can create reusable project definitions and reference them using the `extends` property.
+
+Extension files:
+
+- Use the same format as normal project definition files
+- Should NOT be named `.project.yaml` or it will be assumed to be a project
+- Can reference other extension files
 
 ### Project Commands
 
