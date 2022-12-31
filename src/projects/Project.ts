@@ -6,7 +6,7 @@ import { ProjectVersion } from './ProjectVersion';
  */
 export interface Project {
   /**
-   * Path to project definition extension
+   * Path to a project definition extension relative to this file
    */
   readonly extends?: string;
 

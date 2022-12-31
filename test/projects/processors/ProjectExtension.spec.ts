@@ -62,6 +62,39 @@ describe(ProjectExtension, () => {
     });
   });
 
+  test('when extension file references extension file should merge both', async () => {
+    // Given
+    const base = {
+      name: 'Base',
+      dependencies: ['./test'],
+    } satisfies Partial<Project>;
+    const base2 = {
+      extends: '.project.base.yaml',
+      dependencies: ['./base2-dependency'],
+    } satisfies Partial<Project>;
+
+    await writeFile('/.project.base.yaml', stringify(base));
+    await writeFile('/.project.base2.yaml', stringify(base2));
+
+    const project = {
+      ...createDefaultProject('/src/project1'),
+      extends: '../../.project.base2.yaml',
+      dependencies: ['../project-dependency']
+    };
+
+    // When
+    const result = await testProcessor(processor, project);
+
+    // Verify
+    expect(result.length).toBe(1);
+    expect(result[0].name).toBe('Base');
+    expect(result[0].dependencies).toMatchObject([
+      `..${sep}..${sep}test`,
+      `..${sep}..${sep}base2-dependency`,
+      '../project-dependency',
+    ]);
+  });
+
   test('when project with name extends base should keep project name', async () => {
     // Given
     const base = {
