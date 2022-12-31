@@ -1,5 +1,6 @@
 import { Container } from 'inversify';
 import 'reflect-metadata';
+import { ProjectExtension } from '../../../src/projects/processors/ProjectExtension';
 import { ResolveDependencies } from '../../../src/projects/processors/ResolveDependencies';
 import { Project } from '../../../src/projects/Project';
 import { TYPES } from '../../../src/TYPES';
@@ -17,6 +18,13 @@ describe('ResolveDependencies', () => {
     container.rebind<BaseDirProvider>(TYPES.BaseDirProvider).to(MockBaseDirProvider);
 
     processor = container.resolve(ResolveDependencies);
+  });
+
+  test('should resolve after ProjectExtension from container', () => {
+    const processors = container.getAll(TYPES.ProjectProcessor);
+
+    expect(processors.at(0)).toBeInstanceOf(ProjectExtension);
+    expect(processors.at(1)).toBeInstanceOf(ResolveDependencies);
   });
 
   test('should return all projects', async () => {

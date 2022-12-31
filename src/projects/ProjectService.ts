@@ -56,8 +56,7 @@ export class ProjectServiceImpl implements ProjectService {
   async loadProjects(): Promise<Project[]> {
     const projects: Project[] = [];
 
-    // Processors are in reverse order
-    const projectsIterator = this.projectProcessors.reduceRight(
+    const projectsIterator = this.projectProcessors.reduce(
       (iterator, processor) => processor.processProjects(iterator),
       this.loadProjectsBase()
     );
