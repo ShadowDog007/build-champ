@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
-import { ContextService } from '../projects/ContextService';
+import { ContextService } from '../util/ContextService';
 import { TYPES } from '../TYPES';
 import { EvalService } from '../util/EvalService';
 import { BaseProjectCommand } from './BaseProjectCommand';

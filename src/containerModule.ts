@@ -7,7 +7,7 @@ import { InitCommand } from './cli/InitCommand';
 import { ListCommand } from './cli/ListCommand';
 import { RunCommand } from './cli/RunCommand';
 import { TemplateCommand } from './cli/TemplateCommand';
-import { ContextService, ContextServiceImpl } from './projects/ContextService';
+import { ContextService, ContextServiceImpl } from './util/ContextService';
 import { ProjectMetadataLoader } from './projects/metadata';
 import { DotnetMetadataHandler } from './projects/metadata/DotnetMetadataHandler';
 import { ProjectProcessor } from './projects/processors';

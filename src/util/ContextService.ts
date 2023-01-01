@@ -1,13 +1,15 @@
 import { parse } from 'dotenv';
+import { expand } from 'dotenv-expand';
 import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
 import minimatch from 'minimatch';
 import { resolve } from 'path';
+import 'reflect-metadata';
 import { TYPES } from '../TYPES';
-import { globAsync } from '../util/globAsync';
-import { Project, ProjectWithVersion } from './Project';
-import { ProjectCommandStatus } from './ProjectCommandStatus';
-import { ProjectService } from './ProjectService';
+import { globAsync } from './globAsync';
+import { Project, ProjectWithVersion } from '../projects/Project';
+import { ProjectCommandStatus } from '../projects/ProjectCommandStatus';
+import { ProjectService } from '../projects/ProjectService';
 
 export interface ContextFixed {
   readonly env: NodeJS.ProcessEnv,
@@ -81,14 +83,7 @@ export class ContextServiceImpl implements ContextService {
 
   async getProjectContext(project: ProjectWithVersion, command?: string): Promise<ProjectContext> {
     const context = await this.getContext();
-
-    const envFiles = await this.getEnvFilesForProject(project, command);
-
-    // Combine environment variables, prioritizing lower hierarchies
-    const environment = await envFiles.reduce(
-      (p, f) => p.then(async env => ({ ...env, ...await this.getEnvVarsFromFile(f) })),
-      Promise.resolve({} as Record<string, string>)
-    );
+    const environment = await this.getEnvVarsForDir(project.dir, command);
 
     return {
       ...context,
@@ -118,32 +113,49 @@ export class ContextServiceImpl implements ContextService {
   async getEnvFiles(): Promise<string[]> {
     if (!this.envFiles) {
       this.envFiles = await globAsync('**/.{*.env,env}', { cwd: this.baseDir, nocase: true });
-      // Sort by hierarchy count
-      this.envFiles.sort((a, b) => Array.from(a.matchAll(/[/\\]/g)).length - Array.from(b.matchAll(/[/\\]/g)).length);
+      const fileDepth = (f: string) => Array.from(f.matchAll(/[/\\]/g)).length;
+      // Sort by hierarchy count, then target
+      this.envFiles.sort((a, b) => {
+        const depth = fileDepth(a) - fileDepth(b);
+        return depth === 0 ? a.length - b.length : depth;
+      });
     }
 
     return this.envFiles;
   }
 
-  async getEnvFilesForProject(project: Project, command?: string): Promise<string[]> {
+  async getEnvFileForDir(dir: string, command?: string) {
     const envPattern = command
       ? `{.env,.${command}.env}`
       : '.env';
 
-    const checkDirs = Array.from(project.dir.matchAll(/[/\\]/g))
-      .map(m => project.dir.slice(0, m.index))
-      .concat(project.dir);
+    const checkDirs = Array.from(dir.matchAll(/[/\\]/g))
+      .map(m => dir.slice(0, m.index))
+      .concat(dir);
 
     const dirPattern = checkDirs.length > 1
       ? `{${checkDirs.join(',')}}`
-      : project.dir;
+      : dir;
 
     const pattern = `${dirPattern}/${envPattern}`;
     return (await this.getEnvFiles())
       .filter(f => minimatch(f, pattern, { nocase: true }));
   }
 
-  async getEnvVarsFromFile(envFile: string) {
+  async getEnvVarsForDir(dir: string, command?: string) {
+    const files = await this.getEnvFileForDir(dir, command);
+    const fileEnvVars = await Promise.all(files.map(f => this.getUnexpandedEnvVarsFromFile(f)));
+
+    const envVars = fileEnvVars.reduce((result, vars) => ({ ...result, ...vars }), {});
+
+    const expandResult = expand({ parsed: envVars, ignoreProcessEnv: true });
+    if (!expandResult.parsed) {
+      throw (expandResult.error || new Error(`Unknown error when parsing env vars for ${dir}`));
+    }
+    return expandResult.parsed;
+  }
+
+  async getUnexpandedEnvVarsFromFile(envFile: string) {
     if (this.envVars[envFile]) {
       return this.envVars[envFile];
     }
@@ -164,7 +176,7 @@ export class ContextServiceImpl implements ContextService {
     const rootEnvFile = envFiles.find(e => e.localeCompare('.env', undefined, { sensitivity: 'base' }));
 
     const envVars: Record<string, string | undefined> = rootEnvFile
-      ? { ...process.env, ...await this.getEnvVarsFromFile(rootEnvFile) }
+      ? { ...process.env, ...await this.getUnexpandedEnvVarsFromFile(rootEnvFile) }
       : process.env;
 
     return {

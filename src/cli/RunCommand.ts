@@ -2,7 +2,7 @@ import chalk, { Chalk } from 'chalk';
 import { inject, injectable } from 'inversify';
 import PQueue from 'p-queue';
 import { resolve as resolvePath } from 'path';
-import { ContextService, ProjectContext } from '../projects/ContextService';
+import { ContextService, ProjectContext } from '../util/ContextService';
 import { Project, ProjectWithVersion } from '../projects/Project';
 import { ProjectCommand } from '../projects/ProjectCommand';
 import { ProjectCommandStatus } from '../projects/ProjectCommandStatus';

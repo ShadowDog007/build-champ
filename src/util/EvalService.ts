@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 import safeEval from 'safe-eval';
-import { Context } from '../projects/ContextService';
+import { Context } from './ContextService';
 
 export interface EvalService {
   /**

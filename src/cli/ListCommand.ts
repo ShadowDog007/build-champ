@@ -1,6 +1,6 @@
 import { inject, injectable } from 'inversify';
 import { EOL } from 'os';
-import { ContextService } from '../projects/ContextService';
+import { ContextService } from '../util/ContextService';
 import { ProjectService } from '../projects/ProjectService';
 import { TYPES } from '../TYPES';
 import { EvalService } from '../util/EvalService';

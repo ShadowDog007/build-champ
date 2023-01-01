@@ -2,7 +2,7 @@ jest.mock('fs');
 jest.mock('fs/promises');
 
 import { Container } from 'inversify';
-import { Context, ContextService } from '../../src/projects/ContextService';
+import { Context, ContextService } from '../../src/util/ContextService';
 import { ProjectCommandStatus } from '../../src/projects/ProjectCommandStatus';
 import { TYPES } from '../../src/TYPES';
 import { EvalServiceImpl } from '../../src/util/EvalService';
