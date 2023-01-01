@@ -33,7 +33,6 @@ export class ProjectExtension implements ProjectProcessor {
       let extensionFile: string | undefined = project.extends;
 
       do {
-        console.log(extensionFile);
         const resolvedExtensionFile = resolve(this.baseDir, project.dir, extensionFile);
         const extension: ProjectExtensionFile = await this.getExtension(resolvedExtensionFile);
 
