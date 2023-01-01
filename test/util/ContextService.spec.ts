@@ -25,7 +25,7 @@ describe(ContextServiceImpl, () => {
 
     projectServce.addProjects(...Object.values(projectExamples));
 
-    await mkdir(projectExamples.project1.dir);
+    await mkdir(join('/', projectExamples.project1.dir), { recursive: true });
   });
 
   describe('.env support', () => {
@@ -33,7 +33,7 @@ describe(ContextServiceImpl, () => {
 
     test('when .env file exists should load environment variables', async () => {
       // Given
-      await writeFile(join(project.dir, '.env'), 'DOTENV_VAR=from-dot-env');
+      await writeFile(join('/', project.dir, '.env'), 'DOTENV_VAR=from-dot-env');
 
       // When
       const context = await contextService.getProjectContext(project);
@@ -44,7 +44,7 @@ describe(ContextServiceImpl, () => {
 
     test('when .env file exists in parent directory should load environment variables', async () => {
       // Given
-      await writeFile(join(project.dir, '..', '.env'), 'DOTENV_VAR=from-dot-env');
+      await writeFile(join('/', project.dir, '..', '.env'), 'DOTENV_VAR=from-dot-env');
 
       // When
       const context = await contextService.getProjectContext(project);
@@ -55,8 +55,8 @@ describe(ContextServiceImpl, () => {
 
     test('when multiple .env files exist in parent directories should load environment variables', async () => {
       // Given
-      await writeFile(join(project.dir, '..', '..', '.env'), 'DOTENV_VAR=from-base-dot-env\nDOTENV_BASE=from-base-dot-env');
-      await writeFile(join(project.dir, '..', '.env'), 'DOTENV_VAR=from-dot-env');
+      await writeFile(join('/', project.dir, '..', '..', '.env'), 'DOTENV_VAR=from-base-dot-env\nDOTENV_BASE=from-base-dot-env');
+      await writeFile(join('/', project.dir, '..', '.env'), 'DOTENV_VAR=from-dot-env');
 
       // When
       const context = await contextService.getProjectContext(project);
@@ -68,9 +68,9 @@ describe(ContextServiceImpl, () => {
 
     test('when multiple .env files for different scopes exist in the same directory should load environment variables', async () => {
       // Given
-      await writeFile(join(project.dir, '.env'), 'DOTENV_VAR=from-global-scope\nDOTENV_GLOBAL=from-global-scope');
-      await writeFile(join(project.dir, '.build.env'), 'DOTENV_VAR=from-build-scope\nDOTENV_BUILD=from-build-scope');
-      await writeFile(join(project.dir, '.deploy.env'), 'DOTENV_VAR=from-deploy-scope');
+      await writeFile(join('/', project.dir, '.env'), 'DOTENV_VAR=from-global-scope\nDOTENV_GLOBAL=from-global-scope');
+      await writeFile(join('/', project.dir, '.build.env'), 'DOTENV_VAR=from-build-scope\nDOTENV_BUILD=from-build-scope');
+      await writeFile(join('/', project.dir, '.deploy.env'), 'DOTENV_VAR=from-deploy-scope');
 
       // When
       const context = await contextService.getProjectContext(project, 'build');
@@ -83,8 +83,8 @@ describe(ContextServiceImpl, () => {
 
     test('when expansion from parent .env file should expand correctly', async () => {
       // Given
-      await writeFile(join(project.dir, '.env'), 'DOTENV_VAR=from-global-scope\nDOTENV_GLOBAL=from-global-env-var\nDOTENV_GLOBAL2=load-child-${DOTENV_BUILD}');
-      await writeFile(join(project.dir, '.build.env'), 'DOTENV_VAR=${DOTENV_GLOBAL}\nDOTENV_BUILD=from-build-scope}');
+      await writeFile(join('/', project.dir, '.env'), 'DOTENV_VAR=from-global-scope\nDOTENV_GLOBAL=from-global-env-var\nDOTENV_GLOBAL2=load-child-${DOTENV_BUILD}');
+      await writeFile(join('/', project.dir, '.build.env'), 'DOTENV_VAR=${DOTENV_GLOBAL}\nDOTENV_BUILD=from-build-scope}');
 
       // When
       const context = await contextService.getProjectContext(project, 'build');
