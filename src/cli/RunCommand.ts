@@ -2,7 +2,7 @@ import chalk, { Chalk } from 'chalk';
 import { inject, injectable } from 'inversify';
 import PQueue from 'p-queue';
 import { resolve as resolvePath } from 'path';
-import { env } from 'process';
+import { ContextService, ProjectContext } from '../projects/ContextService';
 import { Project, ProjectWithVersion } from '../projects/Project';
 import { ProjectCommand } from '../projects/ProjectCommand';
 import { ProjectCommandStatus } from '../projects/ProjectCommandStatus';
@@ -52,12 +52,11 @@ export const projectStatusColors: Readonly<Record<ProjectCommandStatus, Chalk>> 
 
 @injectable()
 export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOptions]> {
-  private projectStatuses: Record<string, ProjectCommandStatus> = {};
-
   constructor(
     @inject(TYPES.ProjectService) projectService: ProjectService,
     @inject(TYPES.RepositoryService) repositoryService: RepositoryService,
     @inject(TYPES.BaseDir) public baseDir: string,
+    @inject(TYPES.ContextService) private readonly contextService: ContextService,
     @inject(TYPES.EvalService) private readonly evalService: EvalService,
     @inject(TYPES.SpawnService) private readonly spawnService: SpawnService,
   ) {
@@ -85,13 +84,13 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
       this.error(`No matching projects define command \`${command}\``, { exitCode: 21 });
     }
 
-    this.projectStatuses = Object.fromEntries(projects
-      .map(p => [p.name, projectsToRun.includes(p) ? ProjectCommandStatus.pending : ProjectCommandStatus.skipped])
-    );
-
-    await this.prepareEvalContext(this.evalService, options.context, {
-      status: this.projectStatuses,
-    });
+    this.contextService.parseContextParameters(options.context);
+    for (const project of projects) {
+      this.contextService.setProjectStatus(
+        project,
+        projectsToRun.includes(project) ? ProjectCommandStatus.pending : ProjectCommandStatus.skipped
+      );
+    }
 
     const queue = new PQueue({ concurrency: parseInt(options.concurrency) });
 
@@ -108,13 +107,9 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
       }
 
       queue.add(async () => {
-        this.projectStatuses[nextProject.name] = ProjectCommandStatus.running;
+        this.contextService.setProjectStatus(nextProject, ProjectCommandStatus.running);
         return this.executeProjectCommandPipeline(nextProject, command, options.continueOnFailure ? undefined : abortController)
-          .catch((err) => this.projectError(nextProject, `${err}`))
-          .finally(() => {
-            // Update context statuses
-            this.evalService.amendContext({ status: this.projectStatuses });
-          });
+          .catch((err) => this.projectError(nextProject, `${err}`));
       }, { signal: abortController.signal });
     }
 
@@ -127,7 +122,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
 
   isProjectSettled(project: Project) {
     const incompleteStatuses = [ProjectCommandStatus.pending, ProjectCommandStatus.running];
-    return !incompleteStatuses.includes(this.projectStatuses[project.name]);
+    return !incompleteStatuses.includes(this.contextService.getProjectStatus(project));
   }
 
   shiftNextReadyToRunProject(projects: ProjectWithVersion[], projectsToRun: ProjectWithVersion[]): ProjectWithVersion | undefined {
@@ -140,20 +135,20 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
   }
 
   updateProjectStatus(project: Project, status: ProjectCommandStatus, reason: string) {
-    this.projectStatuses[project.name] = status;
+    this.contextService.setProjectStatus(project, status);
 
     const statusColor = projectStatusColors[status];
     this.projectLog(project, `${statusColor(status)}: ${reason}`);
   }
 
   projectLog(project: Project, message: string): void {
-    const statusColor = projectStatusColors[this.projectStatuses[project.name]];
+    const statusColor = projectStatusColors[this.contextService.getProjectStatus(project)];
 
     this.log(`[${statusColor(project.name)}] ${message}`);
   }
 
   projectError(project: Project, message: string) {
-    const statusColor = projectStatusColors[this.projectStatuses[project.name]];
+    const statusColor = projectStatusColors[this.contextService.getProjectStatus(project)];
 
     this.error(`[${statusColor(project.name)}] ${message}`);
   }
@@ -161,15 +156,17 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
   async executeProjectCommandPipeline(project: ProjectWithVersion, command: string, abortController?: AbortController) {
     const pipeline = [project.commands[command]].flat();
 
+    const evalContext = await this.contextService.getProjectContext(project, command);
+
     for (const next of pipeline) {
-      if (!this.checkCommandCondition(project, next, abortController)
-        || !await this.executeProjectCommand(project, next, abortController)) {
+      if (!this.checkCommandCondition(project, next, evalContext, abortController)
+        || !await this.executeProjectCommand(project, next, evalContext, abortController)) {
         return;
       }
     }
   }
 
-  checkCommandCondition(project: Project, projectCommand: ProjectCommand, abortController?: AbortController) {
+  checkCommandCondition(project: Project, projectCommand: ProjectCommand, context: ProjectContext, abortController?: AbortController) {
     if (!projectCommand.condition) {
       return true;
     }
@@ -178,7 +175,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
     let reason = 'evaluated to false';
 
     try {
-      result = !!this.evalService.safeEval(projectCommand.condition, project);
+      result = !!this.evalService.safeEval(projectCommand.condition, context);
     } catch (err) {
       result = false;
       reason = `failed to evaluate '${err}'`;
@@ -198,7 +195,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
     return false;
   }
 
-  async executeProjectCommand(project: ProjectWithVersion, projectCommand: ProjectCommand, abortController?: AbortController): Promise<boolean> {
+  async executeProjectCommand(project: ProjectWithVersion, projectCommand: ProjectCommand, context: ProjectContext, abortController?: AbortController): Promise<boolean> {
     if (abortController?.signal.aborted) {
       return false;
     }
@@ -209,8 +206,8 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
 
       this.updateProjectStatus(project, ProjectCommandStatus.running, commandName);
 
-      const command = this.evalService.safeEvalTemplate(projectCommand.command, project);
-      const commandArguments = projectCommand.arguments?.map(arg => this.evalService.safeEvalTemplate(arg));
+      const command = this.evalService.safeEvalTemplate(projectCommand.command, context);
+      const commandArguments = projectCommand.arguments?.map(arg => this.evalService.safeEvalTemplate(arg, context));
 
       const commandProcess = this.spawnService.spawn(command, commandArguments ?? [], {
         cwd: resolvePath(this.baseDir, project.dir),
@@ -218,13 +215,13 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
         stdio: 'pipe',
         shell: projectCommand.shell ?? true,
         env: {
-          ...env,
+          ...context.env,
           REPOSITORY_DIR: this.baseDir,
           PROJECT_NAME: project.name,
           PROJECT_VERSION: project.version.hash,
           PROJECT_VERSION_SHORT: project.version.hashShort,
           ...Object.fromEntries(
-            Object.entries(this.evalService.context.context)
+            Object.entries(context.context)
               .map(([key, value]) => [`CONTEXT_${key.toUpperCase()}`, value])
           ),
         }
@@ -246,26 +243,23 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
       configureOutput(commandProcess.stderr, true);
 
       commandProcess.on('error', err => {
-        const message = abortController?.signal.aborted
-          ? `Command ${commandName} cancelled`
-          : err.toString();
-        this.updateProjectStatus(project, ProjectCommandStatus.failed, message);
+        this.updateProjectStatus(project, ProjectCommandStatus.failed, `${commandName} ${err}`);
         abortController?.abort();
         resolve(false);
       });
 
       commandProcess.on('close', code => {
         if (abortController?.signal.aborted) {
-          this.updateProjectStatus(project, ProjectCommandStatus.skipped, `Command ${commandName} cancelled`);
+          this.updateProjectStatus(project, ProjectCommandStatus.skipped, commandName);
         }
         if (!code) {
-          this.updateProjectStatus(project, ProjectCommandStatus.success, `Command ${commandName} completed`);
+          this.updateProjectStatus(project, ProjectCommandStatus.success, commandName);
           resolve(true);
         } else {
           const skip = projectCommand.failureBehavior === 'skip';
           const status = skip ? ProjectCommandStatus.skipped : ProjectCommandStatus.failed;
 
-          this.updateProjectStatus(project, status, `Command ${commandName} failed with code ${code}`);
+          this.updateProjectStatus(project, status, `${commandName} failed with code ${code}`);
           if (!skip) {
             abortController?.abort();
           }

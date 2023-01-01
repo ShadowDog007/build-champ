@@ -1,7 +1,6 @@
 import { Command, ErrorOptions } from 'commander';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-import { EvalContextDynamic, EvalService } from '../util/EvalService';
 
 @injectable()
 export abstract class BaseProjectCommand<TArgs extends unknown[]> {
@@ -51,17 +50,6 @@ export abstract class BaseProjectCommand<TArgs extends unknown[]> {
     } else {
       this.command.configureOutput().writeErr?.(message);
       this.command.configureOutput().writeErr?.('\n');
-    }
-  }
-
-  async prepareEvalContext(evalService: EvalService, contextValues?: `${string}=${string}`[], dynamicContext?: Partial<Omit<EvalContextDynamic, 'context'>>) {
-    await evalService.prepareContext();
-
-    if (contextValues && contextValues.length > 0) {
-      evalService.amendContext({
-        ...dynamicContext,
-        context: Object.fromEntries(contextValues.map(v => v.split('=') as [string, string])),
-      });
     }
   }
 }
