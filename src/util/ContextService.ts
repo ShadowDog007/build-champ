@@ -129,15 +129,16 @@ export class ContextServiceImpl implements ContextService {
       ? `{.env,.${command}.env}`
       : '.env';
 
-    const checkDirs = Array.from(dir.matchAll(/[/\\]/g))
-      .map(m => dir.slice(0, m.index))
-      .concat(dir);
+    const checkDirs = [
+      '',
+      ...Array.from(dir.matchAll(/[/\\]/g))
+        .map(m => dir.slice(0, m.index) + '/'),
+      `${dir}/`,
+    ];
 
-    const dirPattern = checkDirs.length > 1
-      ? `{${checkDirs.join(',')}}`
-      : dir;
+    const dirPattern = `{${checkDirs.join(',')}}`;
 
-    const pattern = `${dirPattern}/${envPattern}`;
+    const pattern = `${dirPattern}${envPattern}`;
     return (await this.getEnvFiles())
       .filter(f => minimatch(f, pattern, { nocase: true }));
   }

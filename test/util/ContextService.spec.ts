@@ -84,7 +84,7 @@ describe(ContextServiceImpl, () => {
     test('when expansion from parent .env file should expand correctly', async () => {
       // Given
       await writeFile(join('/', project.dir, '.env'), 'DOTENV_VAR=from-global-scope\nDOTENV_GLOBAL=from-global-env-var\nDOTENV_GLOBAL2=load-child-${DOTENV_BUILD}');
-      await writeFile(join('/', project.dir, '.build.env'), 'DOTENV_VAR=${DOTENV_GLOBAL}\nDOTENV_BUILD=from-build-scope}');
+      await writeFile(join('/', project.dir, '.build.env'), 'DOTENV_VAR=${DOTENV_GLOBAL}\nDOTENV_BUILD=from-build-scope');
 
       // When
       const context = await contextService.getProjectContext(project, 'build');
