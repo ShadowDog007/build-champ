@@ -1,5 +1,6 @@
 import { injectable } from 'inversify';
 import { uniq } from 'lodash';
+import 'reflect-metadata';
 import { ProjectProcessor } from '.';
 import { Project } from '../models/Project';
 

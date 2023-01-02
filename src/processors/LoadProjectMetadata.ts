@@ -1,6 +1,7 @@
 import { inject, injectable, multiInject } from 'inversify';
 import { concat, uniq } from 'lodash';
 import { basename, resolve } from 'path';
+import 'reflect-metadata';
 import { ProjectProcessor } from '.';
 import { TYPES } from '../TYPES';
 import { BaseDirProvider } from '../providers/BaseDirProvider';
