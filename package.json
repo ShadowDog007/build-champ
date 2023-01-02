@@ -2,23 +2,23 @@
   "name": "build-champ",
   "version": "1.0.0-beta.2",
   "description": "CLI tool to help manage builds of various projects in a single repository",
-  "types": "dist/src/index.d.ts",
-  "main": "dist/src/index.js",
+  "types": "src/index.d.ts",
+  "main": "src/index.js",
   "bin": {
-    "build-champ": "dist/src/index.js"
+    "build-champ": "src/index.js"
   },
   "scripts": {
     "exec": "tsx src/index.ts",
-    "build": "tsc --outDir dist --sourceMap true -p tsconfig.ci.json",
+    "build": "tsc --noEmit",
     "test": "jest",
     "lint": "eslint src/**/*.ts test/**/*.ts",
-    "prepack": "npm run build"
+    "prepack": "npm run build -- --noEmit false"
   },
   "repository": "https://github.com/ShadowDog007/build-champ",
   "author": "Michael McKnight (https://github.com/ShadowDog007/build-champ)",
   "license": "MIT",
   "files": [
-    "dist/**/*",
+    "src/**/*",
     "LICENSE.txt",
     "README.md"
   ],
