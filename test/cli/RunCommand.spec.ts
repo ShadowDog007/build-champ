@@ -189,8 +189,6 @@ describe('RunCommand', () => {
       ]);
     });
 
-
-
     test('when multiple .env file exists, should use value from closest scope', async () => {
       // Given
       const projectDir = join('/', projectExamples.project1.dir);

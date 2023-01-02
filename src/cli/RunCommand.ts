@@ -214,17 +214,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
         signal: abortController?.signal,
         stdio: 'pipe',
         shell: projectCommand.shell ?? true,
-        env: {
-          ...context.env,
-          REPOSITORY_DIR: this.baseDir,
-          PROJECT_NAME: project.name,
-          PROJECT_VERSION: project.version.hash,
-          PROJECT_VERSION_SHORT: project.version.hashShort,
-          ...Object.fromEntries(
-            Object.entries(context.context)
-              .map(([key, value]) => [`CONTEXT_${key.toUpperCase()}`, value])
-          ),
-        }
+        env: context.env,
       });
 
       const configureOutput = (stream: typeof commandProcess.stdout, isErr: boolean) => {

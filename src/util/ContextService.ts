@@ -10,6 +10,7 @@ import { globAsync } from './globAsync';
 import { Project, ProjectWithVersion } from '../projects/Project';
 import { ProjectCommandStatus } from '../projects/ProjectCommandStatus';
 import { ProjectService } from '../projects/ProjectService';
+import { env } from 'process';
 
 export interface ContextFixed {
   readonly env: NodeJS.ProcessEnv,
@@ -83,13 +84,13 @@ export class ContextServiceImpl implements ContextService {
 
   async getProjectContext(project: ProjectWithVersion, command?: string): Promise<ProjectContext> {
     const context = await this.getContext();
-    const environment = await this.getEnvVarsForDir(project.dir, command);
+    const environment = await this.getEnvVarsForProject(project, command);
 
     return {
       ...context,
       env: this.getCaseInsensitiveProxy({
-        ...process.env,
-        ...environment
+        ...env,
+        ...environment,
       }),
       ...project,
     };
@@ -143,17 +144,32 @@ export class ContextServiceImpl implements ContextService {
       .filter(f => minimatch(f, pattern, { nocase: true }));
   }
 
-  async getEnvVarsForDir(dir: string, command?: string) {
+  async getEnvVarsForDir(dir: string, command?: string, baseEnv: Record<string, string> = {}) {
     const files = await this.getEnvFileForDir(dir, command);
     const fileEnvVars = await Promise.all(files.map(f => this.getUnexpandedEnvVarsFromFile(f)));
 
-    const envVars = fileEnvVars.reduce((result, vars) => ({ ...result, ...vars }), {});
+    const envVars = fileEnvVars.reduce((result, vars) => ({ ...result, ...vars }), {
+      ...baseEnv,
+      ...Object.fromEntries(
+        Object.entries(this.contextParameters)
+          .map(([key, value]) => [`CONTEXT_${key.toUpperCase()}`, value])
+      )
+    });
 
     const expandResult = expand({ parsed: envVars, ignoreProcessEnv: true });
     if (!expandResult.parsed) {
       throw (expandResult.error || new Error(`Unknown error when parsing env vars for ${dir}`));
     }
     return expandResult.parsed;
+  }
+
+  async getEnvVarsForProject(project: ProjectWithVersion, command?: string) {
+    return this.getEnvVarsForDir(project.dir, command, {
+      REPOSITORY_DIR: this.baseDir,
+      PROJECT_NAME: project.name,
+      PROJECT_VERSION: project.version.hash,
+      PROJECT_VERSION_SHORT: project.version.hashShort,
+    });
   }
 
   async getUnexpandedEnvVarsFromFile(envFile: string) {
@@ -177,8 +193,8 @@ export class ContextServiceImpl implements ContextService {
     const rootEnvFile = envFiles.find(e => e.localeCompare('.env', undefined, { sensitivity: 'base' }));
 
     const envVars: Record<string, string | undefined> = rootEnvFile
-      ? { ...process.env, ...await this.getUnexpandedEnvVarsFromFile(rootEnvFile) }
-      : process.env;
+      ? { ...env, ...await this.getUnexpandedEnvVarsFromFile(rootEnvFile) }
+      : env;
 
     return {
       env: this.getCaseInsensitiveProxy(envVars),
