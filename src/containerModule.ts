@@ -7,6 +7,7 @@ import { InitCommand } from './cli/InitCommand';
 import { ListCommand } from './cli/ListCommand';
 import { RunCommand } from './cli/RunCommand';
 import { TemplateCommand } from './cli/TemplateCommand';
+import { ContextService, ContextServiceImpl } from './util/ContextService';
 import { ProjectMetadataLoader } from './projects/metadata';
 import { DotnetMetadataHandler } from './projects/metadata/DotnetMetadataHandler';
 import { ProjectProcessor } from './projects/processors';
@@ -42,6 +43,7 @@ export const containerModule = new ContainerModule((bind, _, isBound) => {
       .toDynamicValue(c => c.container.get<BaseDirProvider>(TYPES.BaseDirProvider).baseDir);
   }
 
+  bind<ContextService>(TYPES.ContextService).to(ContextServiceImpl).inSingletonScope();
   bind<EvalService>(TYPES.EvalService).to(EvalServiceImpl).inSingletonScope();
   bind<GitProvider>(TYPES.GitProvider).to(GitProvider).inSingletonScope();
   bind<ProjectService>(TYPES.ProjectService).to(ProjectServiceImpl).inSingletonScope();

@@ -56,13 +56,22 @@ By default, your command run's in your OS's default shell. If your command requi
 
 During exeuction, your command is provided with additional environment variables which can be used by your command or the process it executes.
 
-| Environment Variable    | Description                                                                |
-| ----------------------- | -------------------------------------------------------------------------- |
-| `REPOSITORY_DIR`        | The base directory of the running project                                  |
-| `PROJECT_NAME`          | The name of the project                                                    |
-| `PROJECT_VERSION`       | The hash of the last commit to change this project or it's dependencies    |
-| `PROJECT_VERSION_SHORT` | Same has PROJECT_VERSION, but only the first 8 characters                  |
-| `CONTEXT_${key}`        | Every context parameter passed via CLI arguments, prefixed with `CONTEXT_` |
+| Environment Variable       | Description                                                                |
+| -------------------------- | -------------------------------------------------------------------------- |
+| `REPOSITORY_DIR`           | The base directory of the running project                                  |
+| `PROJECT_NAME`             | The name of the project                                                    |
+| `PROJECT_VERSION`          | The hash of the last commit to change this project or it's dependencies    |
+| `PROJECT_VERSION_SHORT`    | Same has PROJECT_VERSION, but only the first 8 characters                  |
+| `CONTEXT_${key.toUpper()}` | Every context parameter passed via CLI arguments, prefixed with `CONTEXT_` |
+
+You can also create `.env` and `.[commandName].env` files to specify additional environment variables to provide to your commands.
+
+`.env` files are loaded from parent directories. More specific `.env` files can override the values of less specific files.
+i.e. `.[commandName].env` files override `.env` files in the same directory, and files your project directory override any files in parent directories.
+
+`.env` and `.[commandName].env` files also support variable expansion via `dotenv-expand`.
+Variable expansion can reference any environment variable, including variables in the above table, or any variables defined in your `.env` files.
+See examples of expansion [here](https://github.com/motdotla/dotenv-expand/blob/master/tests/.env).
 
 ### Example
 

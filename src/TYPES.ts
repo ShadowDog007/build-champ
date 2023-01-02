@@ -1,6 +1,7 @@
 export const singleInjectTypes = {
   BaseDir: Symbol.for('BaseDir'),
   BaseDirProvider: Symbol.for('BaseDirProvider'),
+  ContextService: Symbol.for('ContextService'),
   EvalService: Symbol.for('EvalService'),
   GitProvider: Symbol.for('GitProvider'),
   Program: Symbol.for('Program'),

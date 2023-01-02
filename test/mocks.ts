@@ -3,7 +3,6 @@ jest.mock('fs/promises');
 
 import 'reflect-metadata';
 
-import { Command } from 'commander';
 import { ChildProcessWithoutNullStreams, spawn, SpawnOptionsWithoutStdio } from 'child_process';
 import { Container, injectable } from 'inversify';
 import { cloneDeep, uniq } from 'lodash';

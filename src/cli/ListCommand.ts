@@ -1,5 +1,6 @@
 import { inject, injectable } from 'inversify';
 import { EOL } from 'os';
+import { ContextService } from '../util/ContextService';
 import { ProjectService } from '../projects/ProjectService';
 import { TYPES } from '../TYPES';
 import { EvalService } from '../util/EvalService';
@@ -20,6 +21,7 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
     @inject(TYPES.BaseDir) public baseDir: string,
     @inject(TYPES.ProjectService) projectService: ProjectService,
     @inject(TYPES.RepositoryService) repositoryService: RepositoryService,
+    @inject(TYPES.ContextService) private readonly contextService: ContextService,
     @inject(TYPES.EvalService) private readonly evalService: EvalService,
   ) {
     super(projectService, repositoryService);
@@ -43,11 +45,17 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
       this.error('No matching projects');
     }
 
-    await this.evalService.prepareContext();
-    const templated = projects.map(project => this.evalService.safeEvalTemplate(options.template, {
-      longVersion: options.longVersion,
-      ...project,
-    }));
+    const templated: string[] = [];
+
+    for (const project of projects) {
+      const context = await this.contextService.getProjectContext(project);
+      templated.push(
+        this.evalService.safeEvalTemplate(options.template, {
+          ...context,
+          longVersion: options.longVersion,
+        })
+      );
+    }
 
     this.log(templated.join(options.join));
   }

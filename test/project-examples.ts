@@ -1,3 +1,4 @@
+import { platform } from 'os';
 import { ProjectWithVersion } from '../src/projects/Project';
 
 export const projectExamples = {
@@ -63,6 +64,13 @@ export const projectExamples = {
       malformedCondition: {
         command: 'exit 42',
         condition: '1 = 2'
+      },
+      dotEnvCommand: {
+        name: 'echo $DOTENV_VAR',
+        command: platform() === 'win32'
+          ? 'echo %DOTENV_VAR%'
+          : 'echo $DOTENV_VAR',
+        shell: platform() === 'win32' ? 'cmd.exe' : true,
       }
     },
     version: {

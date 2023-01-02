@@ -2,18 +2,21 @@ jest.mock('fs');
 jest.mock('fs/promises');
 
 import { Container } from 'inversify';
+import { ContextService } from '../../src/util/ContextService';
 import { ProjectCommandStatus } from '../../src/projects/ProjectCommandStatus';
 import { TYPES } from '../../src/TYPES';
 import { EvalServiceImpl } from '../../src/util/EvalService';
-import { createContainer, MockProjectService } from '../mocks';
+import { createContainer, MockProjectService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 
 describe('EvalService', () => {
   let container: Container;
   let evalService: EvalServiceImpl;
   let projectService: MockProjectService;
+  let contextService: ContextService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await resetFs();
     container = createContainer();
 
     container.rebind(TYPES.EvalService).to(EvalServiceImpl).inSingletonScope();
@@ -21,6 +24,7 @@ describe('EvalService', () => {
 
     evalService = container.get(TYPES.EvalService);
     projectService = container.get(TYPES.ProjectService);
+    contextService = container.get(TYPES.ContextService);
   });
 
   test('should be resolvable and singleton', () => {
@@ -37,96 +41,76 @@ describe('EvalService', () => {
   });
 
   describe('.safeEval()', () => {
-    test('when prepareContext not called should throw error', () => {
-      expect(
-        () => evalService.safeEval('1+1')
-      ).toThrowError('Must call .prepareContext() first');
-    });
-
     test('should be able to eval simple arithmetic', async () => {
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEval('1 + 1')).toBe(2);
+      expect(evalService.safeEval('1 + 1', context)).toBe(2);
     });
 
     test('should be able to eval context os property', async () => {
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEval('os')).toBe(process.platform);
+      expect(evalService.safeEval('os', context)).toBe(process.platform);
     });
 
     test('should be able to eval context projects property', async () => {
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEval('projects')).toEqual(evalService.context.projects);
+      expect(evalService.safeEval('projects', context)).toEqual(context.projects);
     });
 
     test('should be able to eval context projects nested property', async () => {
       projectService.addProject(projectExamples.project1);
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEval('projects.Project1.dir')).toEqual(projectExamples.project1.dir);
+      expect(evalService.safeEval('projects.Project1.dir', context)).toEqual(projectExamples.project1.dir);
     });
 
     test('should be able to eval project command status', async () => {
-      await evalService.prepareContext();
-      evalService.amendContext({
-        status: {
-          'Project1': ProjectCommandStatus.failed,
-        }
-      });
+      contextService.setProjectStatus(projectExamples.project1, ProjectCommandStatus.failed);
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEval('status.Project1')).toBe(ProjectCommandStatus.failed);
+      expect(evalService.safeEval('status.Project1', context)).toBe(ProjectCommandStatus.failed);
     });
   });
 
   describe('.safeEvalTemplate()', () => {
-    test('when prepareContext not called should throw error', () => {
-      expect(
-        () => evalService.safeEvalTemplate('${{1+1}}')
-      ).toThrowError('Must call .prepareContext() first');
-    });
-
     test('should be able to eval simple arithmetic', async () => {
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{1 + 1}}')).toBe('2');
+      expect(evalService.safeEvalTemplate('${{1 + 1}}', context)).toBe('2');
     });
 
     test('should be able to eval context os property', async () => {
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{os}}')).toBe(process.platform);
+      expect(evalService.safeEvalTemplate('${{os}}', context)).toBe(process.platform);
     });
 
     test('should be able to eval context projects property', async () => {
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{Object.keys(projects)}}')).toEqual(`${Object.keys(evalService.context.projects)}`);
+      expect(evalService.safeEvalTemplate('${{Object.keys(projects)}}', context)).toEqual(`${Object.keys(context.projects)}`);
     });
 
     test('should be able to eval context projects nested property', async () => {
       projectService.addProject(projectExamples.project1);
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{projects.Project1.dir}}')).toEqual(projectExamples.project1.dir);
+      expect(evalService.safeEvalTemplate('${{projects.Project1.dir}}', context)).toEqual(projectExamples.project1.dir);
     });
 
     test('should be able to eval project command status', async () => {
-      await evalService.prepareContext();
-      evalService.amendContext({
-        status: {
-          'Project1': ProjectCommandStatus.failed,
-        }
-      });
+      contextService.setProjectStatus(projectExamples.project1, ProjectCommandStatus.failed);
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{status.Project1}}')).toBe(ProjectCommandStatus.failed);
+      expect(evalService.safeEvalTemplate('${{status.Project1}}', context)).toBe(ProjectCommandStatus.failed);
     });
 
     test('should be able to eval multiple replacements', async () => {
-      await evalService.prepareContext();
+      const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('`${{1}} + ${{2}} = ${{1+2}}`')).toBe('`1 + 2 = 3`');
+      expect(evalService.safeEvalTemplate('`${{1}} + ${{2}} = ${{1+2}}`', context)).toBe('`1 + 2 = 3`');
     });
   });
 });
