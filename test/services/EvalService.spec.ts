@@ -1,11 +1,11 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
-import { ProjectCommandStatus } from '@/models/ProjectCommandStatus';
-import { ContextService } from '@/services/ContextService';
-import { EvalServiceImpl } from '@/services/EvalService';
-import { TYPES } from '@/TYPES';
 import { Container } from 'inversify';
+import { ProjectCommandStatus } from '../../src/models/ProjectCommandStatus';
+import { ContextService } from '../../src/services/ContextService';
+import { EvalServiceImpl } from '../../src/services/EvalService';
+import { TYPES } from '../../src/TYPES';
 import { createContainer, MockProjectService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 

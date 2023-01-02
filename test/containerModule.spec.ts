@@ -1,6 +1,6 @@
-import { containerModule } from '@/containerModule';
-import { multiInjectTypes, singleInjectTypes } from '@/TYPES';
 import { Container } from 'inversify';
+import { containerModule } from '../src/containerModule';
+import { multiInjectTypes, singleInjectTypes } from '../src/TYPES';
 
 describe('containerModule', () => {
   let container: Container;

@@ -1,9 +1,9 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
-import { TemplateCommand } from '@/cli/TemplateCommand';
-import { TYPES } from '@/TYPES';
 import { writeFile } from 'fs/promises';
+import { TemplateCommand } from '../../src/cli/TemplateCommand';
+import { TYPES } from '../../src/TYPES';
 import { createContainer, MockProjectService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';

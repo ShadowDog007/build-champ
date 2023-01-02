@@ -1,13 +1,13 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
-import { ProjectMetadataLoader } from '@/metadata';
-import { Project } from '@/models/Project';
-import { LoadProjectMetadata } from '@/processors/LoadProjectMetadata';
-import { TYPES } from '@/TYPES';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { Container, injectable } from 'inversify';
 import 'reflect-metadata';
+import { ProjectMetadataLoader } from '../../src/metadata';
+import { Project } from '../../src/models/Project';
+import { LoadProjectMetadata } from '../../src/processors/LoadProjectMetadata';
+import { TYPES } from '../../src/TYPES';
 import { createContainer, MockBaseDirProvider, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { testProcessor } from './testProcessor';

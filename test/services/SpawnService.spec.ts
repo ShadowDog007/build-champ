@@ -1,10 +1,10 @@
 jest.mock('child_process');
 
-import { SpawnServiceImpl } from '@/services/SpawnService';
-import { TYPES } from '@/TYPES';
 import { ChildProcess, spawn } from 'child_process';
 import { Container } from 'inversify';
 import 'reflect-metadata';
+import { SpawnServiceImpl } from '../../src/services/SpawnService';
+import { TYPES } from '../../src/TYPES';
 import { createContainer } from '../mocks';
 
 describe(SpawnServiceImpl, () => {
