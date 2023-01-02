@@ -52,7 +52,7 @@ export class RepositoryServiceImpl implements RepositoryService {
     }
 
     const log = await this.git.log({
-      file: `${path}*`,
+      file: `${path.startsWith('/') ? path.slice(1) : path}*`,
       maxCount: 1,
     });
 
@@ -75,6 +75,6 @@ export class RepositoryServiceImpl implements RepositoryService {
     const args = objectishTo === undefined ? [objectishFrom] : [objectishFrom, objectishTo];
     const diff = await this.git.diffSummary(args);
 
-    return diff.files.map(f => f.file);
+    return diff.files.map(f => `/${f.file}`);
   }
 }

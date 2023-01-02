@@ -1,7 +1,7 @@
 import chalk, { Chalk } from 'chalk';
 import { inject, injectable } from 'inversify';
 import PQueue from 'p-queue';
-import { resolve as resolvePath } from 'path';
+import { join } from 'path';
 import { Project, ProjectWithVersion } from '../models/Project';
 import { ProjectCommand } from '../models/ProjectCommand';
 import { ProjectCommandStatus } from '../models/ProjectCommandStatus';
@@ -210,7 +210,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
       const commandArguments = projectCommand.arguments?.map(arg => this.evalService.safeEvalTemplate(arg, context));
 
       const commandProcess = this.spawnService.spawn(command, commandArguments ?? [], {
-        cwd: resolvePath(this.baseDir, project.dir),
+        cwd: join(this.baseDir, project.dir),
         signal: abortController?.signal,
         stdio: 'pipe',
         shell: projectCommand.shell ?? true,

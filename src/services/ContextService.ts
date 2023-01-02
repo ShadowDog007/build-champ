@@ -3,14 +3,14 @@ import { expand } from 'dotenv-expand';
 import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
 import minimatch from 'minimatch';
-import { resolve } from 'path';
+import { join } from 'path';
 import 'reflect-metadata';
 import { TYPES } from '../TYPES';
-import { globAsync } from '../util/globAsync';
 import { Project, ProjectWithVersion } from '../models/Project';
 import { ProjectCommandStatus } from '../models/ProjectCommandStatus';
 import { ProjectService } from './ProjectService';
 import { env } from 'process';
+import { GlobService } from './GlobService';
 
 export interface ContextFixed {
   readonly env: NodeJS.ProcessEnv,
@@ -82,6 +82,7 @@ export class ContextServiceImpl implements ContextService {
 
   constructor(
     @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.GlobService) private readonly globService: GlobService,
     @inject(TYPES.ProjectService) private readonly projectService: ProjectService,
   ) { }
 
@@ -131,7 +132,7 @@ export class ContextServiceImpl implements ContextService {
    */
   async getEnvFiles(): Promise<string[]> {
     if (!this.envFiles) {
-      this.envFiles = await globAsync('**/.{*.env,env}', { cwd: this.baseDir, nocase: true });
+      this.envFiles = await this.globService.glob('**/.{*.env,env}', { nocase: true });
       const fileDepth = (f: string) => Array.from(f.matchAll(/[/\\]/g)).length;
       // Sort by hierarchy count, then target
       this.envFiles.sort((a, b) => {
@@ -154,12 +155,8 @@ export class ContextServiceImpl implements ContextService {
       ? `{.env,.${command}.env}`
       : '.env';
 
-    const checkDirs = [
-      '',
-      ...Array.from(dir.matchAll(/[/\\]/g))
-        .map(m => dir.slice(0, m.index) + '/'),
-      `${dir}/`,
-    ];
+    const checkDirs = Array.from(`${dir}/`.matchAll(/[/\\]/g))
+      .map(m => dir.slice(0, m.index) + '/');
 
     const dirPattern = `{${checkDirs.join(',')}}`;
 
@@ -219,7 +216,7 @@ export class ContextServiceImpl implements ContextService {
     if (this.envVars[envFile]) {
       return this.envVars[envFile];
     }
-    const content = await readFile(resolve(this.baseDir, envFile));
+    const content = await readFile(join(this.baseDir, envFile));
     const envVars = parse(content);
     this.envVars[envFile] = envVars;
     return envVars;

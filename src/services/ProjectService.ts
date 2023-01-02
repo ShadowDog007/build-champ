@@ -1,14 +1,13 @@
 import { readFile } from 'fs/promises';
 import { inject, injectable, multiInject } from 'inversify';
-import { dirname, resolve } from 'path';
+import { dirname, join } from 'path';
 import 'reflect-metadata';
 import { parse } from 'yaml';
 import { Project, ProjectWithVersion } from '../models/Project';
 import { ProjectVersion } from '../models/ProjectVersion';
 import { ProjectProcessor } from '../processors';
-import { BaseDirProvider } from '../providers/BaseDirProvider';
 import { TYPES } from '../TYPES';
-import { globAsync } from '../util/globAsync';
+import { GlobService } from './GlobService';
 import { RepositoryService } from './RepositoryService';
 
 export interface ProjectService {
@@ -19,16 +18,14 @@ export interface ProjectService {
 
 @injectable()
 export class ProjectServiceImpl implements ProjectService {
-  private readonly baseDir: string;
   private projects?: Promise<Project[]>;
 
   constructor(
-    @inject(TYPES.BaseDirProvider) baseDirProvider: BaseDirProvider,
+    @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.GlobService) private readonly globService: GlobService,
     @inject(TYPES.RepositoryService) private readonly repositoryService: RepositoryService,
     @multiInject(TYPES.ProjectProcessor) private readonly projectProcessors: ProjectProcessor[],
-  ) {
-    this.baseDir = baseDirProvider.baseDir;
-  }
+  ) { }
 
   async getProjects() {
     if (!this.projects) {
@@ -71,8 +68,8 @@ export class ProjectServiceImpl implements ProjectService {
   static readonly projectFileGlob = '**/.{project,module}.{yaml,yml}';
 
   async * loadProjectsBase(): AsyncGenerator<Project> {
-    for (const projectFile of await globAsync(ProjectServiceImpl.projectFileGlob, { cwd: this.baseDir, nocase: true })) {
-      const yamlContent = await readFile(resolve(this.baseDir, projectFile), { encoding: 'utf8' });
+    for (const projectFile of await this.globService.glob(ProjectServiceImpl.projectFileGlob, { nocase: true })) {
+      const yamlContent = await readFile(join(this.baseDir, projectFile), { encoding: 'utf8' });
       try {
         const parsedYaml = parse(yamlContent) as Partial<Omit<Project, 'dir'>>;
 

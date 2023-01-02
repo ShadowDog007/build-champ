@@ -19,6 +19,7 @@ import { BaseDirProvider, BaseDirProviderImpl } from './providers/BaseDirProvide
 import { GitProvider } from './providers/GitProvider';
 import { ContextService, ContextServiceImpl } from './services/ContextService';
 import { EvalService, EvalServiceImpl } from './services/EvalService';
+import { GlobService, GlobServiceImpl } from './services/GlobService';
 import { ProjectService, ProjectServiceImpl } from './services/ProjectService';
 import { RepositoryService, RepositoryServiceImpl } from './services/RepositoryService';
 import { SpawnService, SpawnServiceImpl } from './services/SpawnService';
@@ -46,6 +47,7 @@ export const containerModule = new ContainerModule((bind, _, isBound) => {
   bind<ContextService>(TYPES.ContextService).to(ContextServiceImpl).inSingletonScope();
   bind<EvalService>(TYPES.EvalService).to(EvalServiceImpl).inSingletonScope();
   bind<GitProvider>(TYPES.GitProvider).to(GitProvider).inSingletonScope();
+  bind<GlobService>(TYPES.GlobService).to(GlobServiceImpl).inSingletonScope();
   bind<ProjectService>(TYPES.ProjectService).to(ProjectServiceImpl).inSingletonScope();
   bind<RepositoryService>(TYPES.RepositoryService).to(RepositoryServiceImpl).inSingletonScope();
   bind<SpawnService>(TYPES.SpawnService).to(SpawnServiceImpl).inSingletonScope();

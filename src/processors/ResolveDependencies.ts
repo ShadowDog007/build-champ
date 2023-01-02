@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import { relative, resolve } from 'path';
+import { isAbsolute, join, relative } from 'path';
 import { ProjectProcessor } from '.';
 import { Project } from '../models/Project';
 import { TYPES } from '../TYPES';
@@ -25,8 +25,11 @@ export class ResolveDependencies implements ProjectProcessor {
   }
 
   resolveDirRelativeToBase(project: Project, relativeDir: string) {
-    const absoluteDir = resolve(this.baseDir, project.dir, relativeDir);
-    return relative(this.baseDir, absoluteDir);
+    if (isAbsolute(relativeDir)) {
+      return relativeDir;
+    }
+    const absoluteDir = join(project.dir, relativeDir);
+    return `/${relative(this.baseDir, absoluteDir)}`;
   }
 
 }

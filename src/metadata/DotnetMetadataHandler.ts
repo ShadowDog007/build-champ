@@ -1,13 +1,12 @@
 import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
-import { basename, dirname, relative, resolve } from 'path';
+import { basename, dirname, join, relative, resolve } from 'path';
 import 'reflect-metadata';
 import { ElementCompact, xml2js } from 'xml-js';
 import { ProjectMetadataLoader } from '.';
 import { ProjectMetadata } from '../models/ProjectMetadata';
-import { BaseDirProvider } from '../providers/BaseDirProvider';
+import { GlobService } from '../services/GlobService';
 import { TYPES } from '../TYPES';
-import { globAsync } from '../util/globAsync';
 
 export interface DotnetSdkProjectFile extends ElementCompact {
   Project: ElementCompact & {
@@ -29,23 +28,21 @@ export interface DotnetSdkReference {
 export class DotnetMetadataHandler implements ProjectMetadataLoader {
   readonly extensionPattern = '*.csproj';
 
-  private readonly baseDir: string;
   private directoryPropsFiles?: Promise<string[]>;
 
   private readonly csprojProjectReferences: Record<string, Promise<string[]> | undefined> = {};
 
   constructor(
-    @inject(TYPES.BaseDirProvider) baseDirProvider: BaseDirProvider
-  ) {
-    this.baseDir = baseDirProvider.baseDir;
-  }
+    @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.GlobService) private readonly globService: GlobService,
+  ) { }
 
   async getDirectoryPropsFiles() {
     if (this.directoryPropsFiles) {
       return this.directoryPropsFiles;
     }
 
-    this.directoryPropsFiles = globAsync('Directory.*.props', { cwd: this.baseDir, nocase: true });
+    this.directoryPropsFiles = this.globService.glob('Directory.*.props', { nocase: true });
     return this.directoryPropsFiles;
   }
 
@@ -57,7 +54,7 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
       dependencies: [
         ...projectDependencies,
         // Collect any Directory.*.props files which could impact any of the dependening projects 
-        ...directoryPropsFiles.filter(propFile => projectDependencies.some(dir => resolve(this.baseDir, dir).startsWith(resolve(this.baseDir, dirname(propFile)))))
+        ...directoryPropsFiles.filter(propFile => projectDependencies.some(dir => join(this.baseDir, dir).startsWith(join(this.baseDir, dirname(propFile)))))
       ],
       tags: [
         'project-type:dotnet',
@@ -96,14 +93,14 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
       .filter((g): g is ItemGroup => !!g && !!g.ProjectReference)
       .flatMap(itemGroup => itemGroup.ProjectReference)
       // Map project references to project dir relative to base dir
-      .map(ref => relative(this.baseDir, resolve(dirname(filePath), ref._attributes.Include)))
+      .map(ref => ref._attributes.Include)
       || [];
 
     /** Project dir dependencies (parent folders of csproj refs) */
     const dirDependencies = [
       ...directCsprojDependencies.map(dirname),
       ...(await Promise.all(
-        directCsprojDependencies.map(dep => this.loadCachedProjectReferences(resolve(this.baseDir, dep)))
+        directCsprojDependencies.map(dep => this.loadCachedProjectReferences(join(this.baseDir, dirname(filePath), dep)))
       )).flat()
     ];
     return dirDependencies;

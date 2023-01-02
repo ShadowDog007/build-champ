@@ -45,11 +45,11 @@ describe('ResolveDependencies', () => {
     // Given
     const generator = createGenerator({
       ...projectExamples.project1,
-      dir: 'project1',
+      dir: '/project1',
       dependencies: ['../project2'],
     }, {
       ...projectExamples.project2,
-      dir: 'project2',
+      dir: '/project2',
       dependencies: ['../project3'],
     });
 
@@ -61,7 +61,7 @@ describe('ResolveDependencies', () => {
 
     // Verify
     expect(projectDependencies)
-      .toMatchObject([['project2'], ['project3']]);
+      .toMatchObject([['/project2'], ['/project3']]);
   });
 });
 

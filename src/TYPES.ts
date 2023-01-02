@@ -4,6 +4,7 @@ export const singleInjectTypes = {
   ContextService: Symbol.for('ContextService'),
   EvalService: Symbol.for('EvalService'),
   GitProvider: Symbol.for('GitProvider'),
+  GlobService: Symbol.for('GlobService'),
   Program: Symbol.for('Program'),
   ProjectService: Symbol.for('ProjectService'),
   SpawnService: Symbol.for('SpawnService'),
