@@ -1,10 +1,10 @@
-import { Project } from '@/models/Project';
-import { ProjectExtension } from '@/processors/ProjectExtension';
-import { ResolveDependencies } from '@/processors/ResolveDependencies';
-import { BaseDirProvider } from '@/providers/BaseDirProvider';
-import { TYPES } from '@/TYPES';
 import { Container } from 'inversify';
 import 'reflect-metadata';
+import { Project } from '../../src/models/Project';
+import { ProjectExtension } from '../../src/processors/ProjectExtension';
+import { ResolveDependencies } from '../../src/processors/ResolveDependencies';
+import { BaseDirProvider } from '../../src/providers/BaseDirProvider';
+import { TYPES } from '../../src/TYPES';
 import { createContainer, MockBaseDirProvider } from '../mocks';
 import { projectExamples } from '../project-examples';
 

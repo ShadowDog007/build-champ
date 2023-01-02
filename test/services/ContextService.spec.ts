@@ -1,11 +1,11 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
-import { ContextServiceImpl } from '@/services/ContextService';
-import { TYPES } from '@/TYPES';
 import { mkdir, writeFile } from 'fs/promises';
 import { Container } from 'inversify';
 import { join } from 'path';
+import { ContextServiceImpl } from '../../src/services/ContextService';
+import { TYPES } from '../../src/TYPES';
 import { createContainer, MockProjectService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 

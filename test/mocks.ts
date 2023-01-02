@@ -1,22 +1,21 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
-import 'reflect-metadata';
-
-import { containerModule } from '@/containerModule';
-import { Project, ProjectWithVersion } from '@/models/Project';
-import { ProjectVersion } from '@/models/ProjectVersion';
-import { BaseDirProvider } from '@/providers/BaseDirProvider';
-import { ProjectService } from '@/services/ProjectService';
-import { RepositoryService } from '@/services/RepositoryService';
-import { SpawnService } from '@/services/SpawnService';
-import { TYPES } from '@/TYPES';
-import { globAsync } from '@/util/globAsync';
 import { ChildProcessWithoutNullStreams, spawn, SpawnOptionsWithoutStdio } from 'child_process';
 import { Container, injectable } from 'inversify';
 import { cloneDeep, uniq } from 'lodash';
 import { fs } from 'memfs';
 import { resolve } from 'path';
+import 'reflect-metadata';
+import { containerModule } from '../src/containerModule';
+import { Project, ProjectWithVersion } from '../src/models/Project';
+import { ProjectVersion } from '../src/models/ProjectVersion';
+import { BaseDirProvider } from '../src/providers/BaseDirProvider';
+import { ProjectService } from '../src/services/ProjectService';
+import { RepositoryService } from '../src/services/RepositoryService';
+import { SpawnService } from '../src/services/SpawnService';
+import { TYPES } from '../src/TYPES';
+import { globAsync } from '../src/util/globAsync';
 
 export function createContainer() {
   const container = new Container();
