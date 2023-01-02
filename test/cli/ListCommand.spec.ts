@@ -1,11 +1,11 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
-import { ListCommand } from '../../src/cli/ListCommand';
-import { ProjectWithVersion } from '../../src/projects/Project';
-import { ProjectService } from '../../src/projects/ProjectService';
-import { TYPES } from '../../src/TYPES';
-import { RepositoryService } from '../../src/util/RepositoryService';
+import { ListCommand } from '@/cli/ListCommand';
+import { ProjectWithVersion } from '@/models/Project';
+import { ProjectService } from '@/services/ProjectService';
+import { RepositoryService } from '@/services/RepositoryService';
+import { TYPES } from '@/TYPES';
 import { createContainer, MockCommit, MockProjectService, MockRepositoryService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';

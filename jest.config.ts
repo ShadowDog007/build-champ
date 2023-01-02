@@ -16,6 +16,10 @@ export default {
     "\\\\test\\\\"
   ],
 
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
+
   // Indicates which provider should be used to instrument code for coverage
   // coverageProvider: "babel",
 

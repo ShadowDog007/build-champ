@@ -3,7 +3,7 @@ import { inject, injectable } from 'inversify';
 import { basename, join } from 'path';
 import { cwd } from 'process';
 import { stringify } from 'yaml';
-import { Project } from '../projects/Project';
+import { Project } from '../models/Project';
 import { TYPES } from '../TYPES';
 import { BaseProjectCommand } from './BaseProjectCommand';
 
