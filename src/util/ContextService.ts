@@ -34,6 +34,9 @@ export interface ContextDynamic {
 export interface Context extends ContextFixed, ContextDynamic { }
 export type ProjectContext = Context & ProjectWithVersion;
 
+/**
+ * Stores context variables used in expressions
+ */
 export interface ContextService {
   /**
    * Gets the base context
@@ -73,7 +76,6 @@ export class ContextServiceImpl implements ContextService {
 
   private readonly projectStatuses: Record<string, ProjectCommandStatus> = this.getCaseInsensitiveProxy({});
   private readonly contextParameters: Record<string, string> = this.getCaseInsensitiveProxy({});
-
 
   private envFiles?: string[];
   private readonly envVars: Record<string, Record<string, string>> = {};
@@ -124,6 +126,9 @@ export class ContextServiceImpl implements ContextService {
     }
   }
 
+  /**
+   * @returns Array of all environment variable files in the repository
+   */
   async getEnvFiles(): Promise<string[]> {
     if (!this.envFiles) {
       this.envFiles = await globAsync('**/.{*.env,env}', { cwd: this.baseDir, nocase: true });
@@ -138,6 +143,12 @@ export class ContextServiceImpl implements ContextService {
     return this.envFiles;
   }
 
+  /**
+   * Loads all the env files are relevant for this directory and command scope
+   * @param dir Directory to start search from
+   * @param command Command scope
+   * @returns Array of matching env files
+   */
   async getEnvFileForDir(dir: string, command?: string) {
     const envPattern = command
       ? `{.env,.${command}.env}`
@@ -157,6 +168,13 @@ export class ContextServiceImpl implements ContextService {
       .filter(f => minimatch(f, pattern, { nocase: true }));
   }
 
+  /**
+   * Loads and expands the environment variables from env files
+   * @param dir Directory to start search from
+   * @param command Command scope
+   * @param baseEnv Additional environment variables to include
+   * @returns Expanded environment variables
+   */
   async getEnvVarsForDir(dir: string, command?: string, baseEnv: Record<string, string> = {}) {
     const files = await this.getEnvFileForDir(dir, command);
     const fileEnvVars = await Promise.all(files.map(f => this.getUnexpandedEnvVarsFromFile(f)));
@@ -177,6 +195,12 @@ export class ContextServiceImpl implements ContextService {
     return expandResult.parsed;
   }
 
+  /**
+   * Same as `getEnvVarsForDir` but includes additional project environment variables as a base
+   * @param project 
+   * @param command 
+   * @returns 
+   */
   async getEnvVarsForProject(project: ProjectWithVersion, command?: string) {
     return this.getEnvVarsForDir(project.dir, command, {
       REPOSITORY_DIR: this.baseDir,
@@ -186,6 +210,11 @@ export class ContextServiceImpl implements ContextService {
     });
   }
 
+  /**
+   * Loads environment variables from the provided file (before expansion)
+   * @param envFile File to load
+   * @returns Environment variables from provided file
+   */
   async getUnexpandedEnvVarsFromFile(envFile: string) {
     if (this.envVars[envFile]) {
       return this.envVars[envFile];
@@ -196,6 +225,10 @@ export class ContextServiceImpl implements ContextService {
     return envVars;
   }
 
+  /**
+   * Builds the base (unscoped) context
+   * @returns Context
+   */
   async buildContext(): Promise<Context> {
     const projectList = await this.projectService.getProjectsWithVersions();
 
@@ -220,6 +253,11 @@ export class ContextServiceImpl implements ContextService {
     };
   }
 
+  /**
+   * Creates a proxy to the target which is case insensitive
+   * @param target 
+   * @returns 
+   */
   getCaseInsensitiveProxy<T>(target: Record<string, T>) {
     return new Proxy(target, {
       get(target, p) {
