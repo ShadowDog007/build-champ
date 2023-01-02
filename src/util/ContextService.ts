@@ -39,6 +39,7 @@ export interface ContextService {
    * Gets the base context
    */
   getContext(): Promise<Context>;
+
   /**
    * Gets a context for the provided scopes
    * @param project Project scope
@@ -46,11 +47,23 @@ export interface ContextService {
    */
   getProjectContext(project: ProjectWithVersion, status?: string): Promise<ProjectContext>;
 
-  // getContext(project?: Project, command?: string): Promise<Context>;
-
+  /**
+   * Get current project status
+   * @param project
+   */
   getProjectStatus(project: Project): ProjectCommandStatus;
+
+  /**
+   * Set current project status
+   * @param project 
+   * @param status 
+   */
   setProjectStatus(project: Project, status: ProjectCommandStatus): void;
 
+  /**
+   * Parses and saves context parameters
+   * @param values context values from command args
+   */
   parseContextParameters(values: `${string}=${string}`[]): void;
 }
 
