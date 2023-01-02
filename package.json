@@ -9,7 +9,7 @@
   },
   "scripts": {
     "exec": "tsx src/index.ts",
-    "build": "tsc --noEmit",
+    "build": "tsc",
     "test": "jest",
     "lint": "eslint src/**/*.ts test/**/*.ts",
     "prepack": "npm run build -- --noEmit false"
