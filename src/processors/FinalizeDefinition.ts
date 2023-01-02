@@ -3,7 +3,7 @@ import { uniq } from 'lodash';
 import { basename } from 'path';
 import 'reflect-metadata';
 import { ProjectProcessor } from '.';
-import { Project } from '../Project';
+import { Project } from '../models/Project';
 
 @injectable()
 export class FinalizeDefinition implements ProjectProcessor {

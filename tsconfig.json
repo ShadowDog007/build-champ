@@ -3,6 +3,11 @@
 
   "compilerOptions": {
     "outDir": "dist",
+    "rootDir": "./",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@package.json": ["./package.json"],
+    },
     "declaration": true,
     "sourceMap": true,
     "experimentalDecorators": true,

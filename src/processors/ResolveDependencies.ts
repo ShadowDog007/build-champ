@@ -1,8 +1,8 @@
 import { inject, injectable } from 'inversify';
 import { relative, resolve } from 'path';
 import { ProjectProcessor } from '.';
-import { TYPES } from '../../TYPES';
-import { Project } from '../Project';
+import { Project } from '../models/Project';
+import { TYPES } from '../TYPES';
 
 /**
  * Resolves relative paths and maps them releative to the base directory

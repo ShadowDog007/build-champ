@@ -1,5 +1,5 @@
+import { ProjectWithVersion } from '@/models/Project';
 import { platform } from 'os';
-import { ProjectWithVersion } from '../src/projects/Project';
 
 export const projectExamples = {
   project1: {

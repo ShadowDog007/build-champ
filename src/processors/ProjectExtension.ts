@@ -5,8 +5,8 @@ import { dirname, relative, resolve } from 'path';
 import 'reflect-metadata';
 import { parse } from 'yaml';
 import { ProjectProcessor } from '.';
-import { TYPES } from '../../TYPES';
-import { Project } from '../Project';
+import { Project } from '../models/Project';
+import { TYPES } from '../TYPES';
 
 export type ProjectExtensionFile = Partial<Omit<Project, 'dir'>>;
 

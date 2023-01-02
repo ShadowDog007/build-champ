@@ -1,11 +1,11 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
+import { BaseDirProvider, BaseDirProviderImpl } from '@/providers/BaseDirProvider';
+import { TYPES } from '@/TYPES';
 import { mkdirSync } from 'fs';
 import { Container } from 'inversify';
 import { join } from 'path';
-import { TYPES } from '../../src/TYPES';
-import { BaseDirProvider, BaseDirProviderImpl } from '../../src/util/BaseDirProvider';
 import { createContainer, resetFs } from '../mocks';
 
 describe('BaseDirProvider', () => {

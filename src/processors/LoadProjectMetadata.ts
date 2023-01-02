@@ -2,11 +2,11 @@ import { inject, injectable, multiInject } from 'inversify';
 import { concat, uniq } from 'lodash';
 import { basename, resolve } from 'path';
 import { ProjectProcessor } from '.';
-import { TYPES } from '../../TYPES';
-import { BaseDirProvider } from '../../util/BaseDirProvider';
-import { globAsync } from '../../util/globAsync';
+import { TYPES } from '../TYPES';
+import { BaseDirProvider } from '../providers/BaseDirProvider';
+import { globAsync } from '../util/globAsync';
 import { ProjectMetadataLoader } from '../metadata';
-import { Project } from '../Project';
+import { Project } from '../models/Project';
 
 /**
  * Loads additional data from meta-data loaders

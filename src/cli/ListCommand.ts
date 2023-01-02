@@ -1,10 +1,10 @@
 import { inject, injectable } from 'inversify';
 import { EOL } from 'os';
-import { ContextService } from '../util/ContextService';
-import { ProjectService } from '../projects/ProjectService';
+import { ContextService } from '../services/ContextService';
+import { EvalService } from '../services/EvalService';
+import { ProjectService } from '../services/ProjectService';
+import { RepositoryService } from '../services/RepositoryService';
 import { TYPES } from '../TYPES';
-import { EvalService } from '../util/EvalService';
-import { RepositoryService } from '../util/RepositoryService';
 import { BaseProjectFilterCommand, ProjectFilterOptions } from './BaseProjectFilterCommand';
 
 export interface ListCommandOptions extends ProjectFilterOptions {

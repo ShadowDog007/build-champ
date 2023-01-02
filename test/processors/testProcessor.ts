@@ -1,5 +1,5 @@
-import { ProjectProcessor } from '../../../src/projects/processors';
-import { Project } from '../../../src/projects/Project';
+import { Project } from '@/models/Project';
+import { ProjectProcessor } from '@/processors';
 
 export async function testProcessor(processor: ProjectProcessor, ...projects: Project[]) {
   const results: Project[] = [];

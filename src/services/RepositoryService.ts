@@ -1,9 +1,9 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { SimpleGit } from 'simple-git';
-import { ProjectVersion } from '../projects/ProjectVersion';
+import { ProjectVersion } from '../models/ProjectVersion';
+import { GitProvider } from '../providers/GitProvider';
 import { TYPES } from '../TYPES';
-import { GitProvider } from './GitProvider';
 
 export interface RepositoryService {
   /**

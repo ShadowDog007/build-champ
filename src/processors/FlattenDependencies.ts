@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 import { uniq } from 'lodash';
 import { ProjectProcessor } from '.';
-import { Project } from '../Project';
+import { Project } from '../models/Project';
 
 /**
  * Flattens dependencies, copying all transitive dependencies

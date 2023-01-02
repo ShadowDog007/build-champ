@@ -1,14 +1,14 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
+import { DotnetMetadataHandler, DotnetSdkProjectFile } from '@/metadata/DotnetMetadataHandler';
+import { TYPES } from '@/TYPES';
 import { mkdir, writeFile } from 'fs/promises';
 import { Container } from 'inversify';
 import { basename } from 'path';
 import 'reflect-metadata';
 import { js2xml } from 'xml-js';
-import { DotnetMetadataHandler, DotnetSdkProjectFile } from '../../../src/projects/metadata/DotnetMetadataHandler';
-import { TYPES } from '../../../src/TYPES';
-import { createContainer, resetFs } from '../../mocks';
+import { createContainer, resetFs } from '../mocks';
 
 describe('DotnetMetadataHandler', () => {
   let container: Container;

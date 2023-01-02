@@ -1,10 +1,10 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
+import { InitCommand } from '@/cli/InitCommand';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import { Container } from 'inversify';
 import { join, sep } from 'path';
-import { InitCommand } from '../../src/cli/InitCommand';
 import { createContainer, resetFs } from '../mocks';
 import { CommandTestHelper } from './CommandTestHelper';
 

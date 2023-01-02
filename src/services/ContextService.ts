@@ -6,10 +6,10 @@ import minimatch from 'minimatch';
 import { resolve } from 'path';
 import 'reflect-metadata';
 import { TYPES } from '../TYPES';
-import { globAsync } from './globAsync';
-import { Project, ProjectWithVersion } from '../projects/Project';
-import { ProjectCommandStatus } from '../projects/ProjectCommandStatus';
-import { ProjectService } from '../projects/ProjectService';
+import { globAsync } from '../util/globAsync';
+import { Project, ProjectWithVersion } from '../models/Project';
+import { ProjectCommandStatus } from '../models/ProjectCommandStatus';
+import { ProjectService } from './ProjectService';
 import { env } from 'process';
 
 export interface ContextFixed {

@@ -1,12 +1,12 @@
+import { Project } from '@/models/Project';
+import { ProjectExtension } from '@/processors/ProjectExtension';
+import { ResolveDependencies } from '@/processors/ResolveDependencies';
+import { BaseDirProvider } from '@/providers/BaseDirProvider';
+import { TYPES } from '@/TYPES';
 import { Container } from 'inversify';
 import 'reflect-metadata';
-import { ProjectExtension } from '../../../src/projects/processors/ProjectExtension';
-import { ResolveDependencies } from '../../../src/projects/processors/ResolveDependencies';
-import { Project } from '../../../src/projects/Project';
-import { TYPES } from '../../../src/TYPES';
-import { BaseDirProvider } from '../../../src/util/BaseDirProvider';
-import { createContainer, MockBaseDirProvider } from '../../mocks';
-import { projectExamples } from '../../project-examples';
+import { createContainer, MockBaseDirProvider } from '../mocks';
+import { projectExamples } from '../project-examples';
 
 describe('ResolveDependencies', () => {
   let container: Container;

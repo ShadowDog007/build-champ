@@ -4,10 +4,10 @@ import { basename, dirname, relative, resolve } from 'path';
 import 'reflect-metadata';
 import { ElementCompact, xml2js } from 'xml-js';
 import { ProjectMetadataLoader } from '.';
-import { TYPES } from '../../TYPES';
-import { BaseDirProvider } from '../../util/BaseDirProvider';
-import { globAsync } from '../../util/globAsync';
-import { ProjectMetadata } from '../ProjectMetadata';
+import { ProjectMetadata } from '../models/ProjectMetadata';
+import { BaseDirProvider } from '../providers/BaseDirProvider';
+import { TYPES } from '../TYPES';
+import { globAsync } from '../util/globAsync';
 
 export interface DotnetSdkProjectFile extends ElementCompact {
   Project: ElementCompact & {

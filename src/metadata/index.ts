@@ -1,4 +1,4 @@
-import { ProjectMetadata } from '../ProjectMetadata';
+import { ProjectMetadata } from '../models/ProjectMetadata';
 
 export interface ProjectMetadataLoader {
   /**

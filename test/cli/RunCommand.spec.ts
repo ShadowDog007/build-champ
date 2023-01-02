@@ -1,14 +1,14 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
+import { RunCommand } from '@/cli/RunCommand';
+import { BaseDirProvider } from '@/providers/BaseDirProvider';
+import { ProjectService } from '@/services/ProjectService';
+import { SpawnService } from '@/services/SpawnService';
+import { TYPES } from '@/TYPES';
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { cwd } from 'process';
-import { RunCommand } from '../../src/cli/RunCommand';
-import { ProjectService } from '../../src/projects/ProjectService';
-import { TYPES } from '../../src/TYPES';
-import { BaseDirProvider } from '../../src/util/BaseDirProvider';
-import { SpawnService } from '../../src/util/SpawnService';
 import { createContainer, MockBaseDirProvider, MockProjectService, MockSpawnService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';

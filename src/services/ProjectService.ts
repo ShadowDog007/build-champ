@@ -3,13 +3,13 @@ import { inject, injectable, multiInject } from 'inversify';
 import { dirname, resolve } from 'path';
 import 'reflect-metadata';
 import { parse } from 'yaml';
+import { Project, ProjectWithVersion } from '../models/Project';
+import { ProjectVersion } from '../models/ProjectVersion';
+import { ProjectProcessor } from '../processors';
+import { BaseDirProvider } from '../providers/BaseDirProvider';
 import { TYPES } from '../TYPES';
-import { BaseDirProvider } from '../util/BaseDirProvider';
 import { globAsync } from '../util/globAsync';
-import { RepositoryService } from '../util/RepositoryService';
-import { ProjectProcessor } from './processors';
-import { Project, ProjectWithVersion } from './Project';
-import { ProjectVersion } from './ProjectVersion';
+import { RepositoryService } from './RepositoryService';
 
 export interface ProjectService {
   getProjects(): Promise<Project[]>;

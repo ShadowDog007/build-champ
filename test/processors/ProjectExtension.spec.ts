@@ -1,14 +1,14 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
+import { Project } from '@/models/Project';
+import { ProjectExtension } from '@/processors/ProjectExtension';
+import { TYPES } from '@/TYPES';
 import { writeFile } from 'fs/promises';
 import { Container } from 'inversify';
 import { sep } from 'path';
 import { stringify } from 'yaml';
-import { ProjectExtension } from '../../../src/projects/processors/ProjectExtension';
-import { Project } from '../../../src/projects/Project';
-import { TYPES } from '../../../src/TYPES';
-import { createContainer, resetFs } from '../../mocks';
+import { createContainer, resetFs } from '../mocks';
 import { createDefaultProject, testProcessor } from './testProcessor';
 
 describe(ProjectExtension, () => {

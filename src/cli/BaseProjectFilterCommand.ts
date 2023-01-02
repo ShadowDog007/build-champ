@@ -1,9 +1,9 @@
 import { inject, injectable } from 'inversify';
 import minimatch from 'minimatch';
-import { ProjectWithVersion } from '../projects/Project';
-import { ProjectService } from '../projects/ProjectService';
+import { ProjectWithVersion } from '../models/Project';
+import { ProjectService } from '../services/ProjectService';
+import { RepositoryService } from '../services/RepositoryService';
 import { TYPES } from '../TYPES';
-import { RepositoryService } from '../util/RepositoryService';
 import { BaseProjectCommand } from './BaseProjectCommand';
 
 export interface ProjectFilterOptions {
