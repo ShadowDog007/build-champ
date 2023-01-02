@@ -9,7 +9,7 @@ import { ProjectService } from '../../src/projects/ProjectService';
 import { TYPES } from '../../src/TYPES';
 import { BaseDirProvider } from '../../src/util/BaseDirProvider';
 import { SpawnService } from '../../src/util/SpawnService';
-import { createContainer, MockBaseDirProvider, MockProjectService, MockSpawnService } from '../mocks';
+import { createContainer, MockBaseDirProvider, MockProjectService, MockSpawnService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -19,7 +19,8 @@ describe('RunCommand', () => {
 
   let projectService: MockProjectService;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await resetFs();
     const container = createContainer();
 
     container.rebind<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();

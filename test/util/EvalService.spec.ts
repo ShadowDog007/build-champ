@@ -2,11 +2,11 @@ jest.mock('fs');
 jest.mock('fs/promises');
 
 import { Container } from 'inversify';
-import { Context, ContextService } from '../../src/util/ContextService';
+import { ContextService } from '../../src/util/ContextService';
 import { ProjectCommandStatus } from '../../src/projects/ProjectCommandStatus';
 import { TYPES } from '../../src/TYPES';
 import { EvalServiceImpl } from '../../src/util/EvalService';
-import { createContainer, MockProjectService } from '../mocks';
+import { createContainer, MockProjectService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 
 describe('EvalService', () => {
@@ -16,6 +16,7 @@ describe('EvalService', () => {
   let contextService: ContextService;
 
   beforeEach(async () => {
+    await resetFs();
     container = createContainer();
 
     container.rebind(TYPES.EvalService).to(EvalServiceImpl).inSingletonScope();

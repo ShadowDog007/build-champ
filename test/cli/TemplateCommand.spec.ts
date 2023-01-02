@@ -4,7 +4,7 @@ jest.mock('fs/promises');
 import { writeFile } from 'fs/promises';
 import { TemplateCommand } from '../../src/cli/TemplateCommand';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockProjectService } from '../mocks';
+import { createContainer, MockProjectService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -14,7 +14,8 @@ describe(TemplateCommand, () => {
 
   let testHelper: CommandTestHelper;
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await resetFs();
     const container = createContainer();
 
     container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();

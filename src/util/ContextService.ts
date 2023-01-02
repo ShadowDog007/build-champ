@@ -152,6 +152,7 @@ export class ContextServiceImpl implements ContextService {
       ...baseEnv,
       ...Object.fromEntries(
         Object.entries(this.contextParameters)
+          .filter(([, value]) => value !== undefined)
           .map(([key, value]) => [`CONTEXT_${key.toUpperCase()}`, value])
       )
     });

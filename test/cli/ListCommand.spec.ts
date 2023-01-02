@@ -6,7 +6,7 @@ import { ProjectWithVersion } from '../../src/projects/Project';
 import { ProjectService } from '../../src/projects/ProjectService';
 import { TYPES } from '../../src/TYPES';
 import { RepositoryService } from '../../src/util/RepositoryService';
-import { createContainer, MockCommit, MockProjectService, MockRepositoryService } from '../mocks';
+import { createContainer, MockCommit, MockProjectService, MockRepositoryService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -64,7 +64,8 @@ describe(ListCommand, () => {
     version: commits.newProject,
   };
 
-  beforeEach(() => {
+  beforeEach(async () => {
+    await resetFs();
     const container = createContainer();
 
     container.rebind<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
