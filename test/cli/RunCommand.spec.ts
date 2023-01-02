@@ -195,7 +195,7 @@ describe('RunCommand', () => {
       const projectDir = join('/', projectExamples.project1.dir);
       await mkdir(projectDir, { recursive: true });
       await writeFile('/.env', 'DOTENV_VAR=parentScope');
-      await writeFile('/src.env', 'DOTENV_VAR=from-dot-env');
+      await writeFile('/src/.env', 'DOTENV_VAR=from-dot-env');
 
       // When/Verify
       await testHelper.testParse(['dotEnvCommand'], [
