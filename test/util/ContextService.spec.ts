@@ -93,5 +93,16 @@ describe(ContextServiceImpl, () => {
       expect(context.env.DOTENV_VAR).toBe('from-global-env-var');
       expect(context.env.DOTENV_GLOBAL2).toBe('load-child-from-build-scope');
     });
+
+    test('when expansion using project variable should expand correctly', async () => {
+      // Given
+      await writeFile(join('/', project.dir, '.env'), 'DOTENV_VAR=${PROJECT_VERSION}');
+
+      // When
+      const context = await contextService.getProjectContext(project);
+
+      // Verify
+      expect(context.env.DOTENV_VAR).toBe(project.version.hash);
+    });
   });
 });
