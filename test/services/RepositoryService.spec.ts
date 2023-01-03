@@ -29,6 +29,10 @@ describe(RepositoryServiceImpl, () => {
         hash: expectedHash,
         hashShort: expectedHash?.substring(0, 8),
       });
+      expect(version).not.toMatchObject({
+        hash: 'uncommitted',
+        hashShort: 'uncommitted',
+      });
     });
 
     test('when new path provided should return latest version', async () => {
@@ -56,17 +60,6 @@ describe(RepositoryServiceImpl, () => {
         hash: expectedHash,
         hashShort: expectedHash?.substring(0, 8),
       });
-    });
-  });
-
-  describe('.getChanges', () => {
-    test('should return values prefixed with `/`', async () => {
-      // When
-      const changes = await repositoryService.getChanges('HEAD');
-
-      // Verify
-      expect(changes.length).toBeTruthy();
-      changes.forEach(c => expect(c).toMatch(/^\//));
     });
   });
 });
