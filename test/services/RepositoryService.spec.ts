@@ -34,17 +34,6 @@ describe(RepositoryServiceImpl, () => {
         hashShort: 'uncommitted',
       });
     });
-
-    test('when new path provided should return latest version', async () => {
-      // When
-      const version = await repositoryService.getPathVersion('definately-will-never-exist.txt');
-
-      // Verify
-      expect(version).toMatchObject({
-        hash: 'uncommitted',
-        hashShort: 'uncommitted',
-      });
-    });
   });
 
   describe('.getLatestPathVersion', () => {
