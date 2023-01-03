@@ -1,6 +1,6 @@
 {
   "name": "build-champ",
-  "version": "1.0.0-beta.3",
+  "version": "1.0.0-beta.4",
   "description": "CLI tool to help manage builds of various projects in a single repository",
   "types": "src/index.d.ts",
   "main": "src/index.js",
