@@ -7,5 +7,4 @@ export const providerTypeMappings = {
   BaseDirProvider: BaseDirProvider,
   GitProvider: GitProvider,
   ProgramProvider: ProgramProvider,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} satisfies Record<keyof typeof ProviderTypes, new (...args: any[]) => ValueProvider<unknown>>;
+} satisfies Record<keyof typeof ProviderTypes, new (...args: never[]) => ValueProvider<unknown>>;

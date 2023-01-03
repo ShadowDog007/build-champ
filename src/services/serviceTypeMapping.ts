@@ -15,5 +15,4 @@ export const serviceTypeMapping = {
   ProjectService: ProjectServiceImpl,
   RepositoryService: RepositoryServiceImpl,
   SpawnService: SpawnServiceImpl,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} satisfies Record<keyof typeof ServiceTypes, new (...args: any[]) => any>;
+} satisfies Record<keyof typeof ServiceTypes, new (...args: never[]) => unknown>;
