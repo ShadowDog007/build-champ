@@ -43,21 +43,30 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
       return this.directoryPropsFiles;
     }
 
-    this.directoryPropsFiles = this.globService.glob('Directory.*.props', { nocase: true });
+    this.directoryPropsFiles = this.globService.glob('**/Directory.*.props', { nocase: true });
     return this.directoryPropsFiles;
+  }
+
+  async getMatchingDirectoryPropsFiles(...dirs: string[]) {
+    const directoryPropsFiles = await this.getDirectoryPropsFiles();
+
+    return directoryPropsFiles.filter(propFile => dirs.some(dir => dir.replaceAll(/\\/g, '/').startsWith(dirname(propFile))));
   }
 
   async loadMetadata(filePath: string): Promise<ProjectMetadata> {
     const projectDependencies = await this.loadCachedProjectReferences(filePath);
-    const directoryPropsFiles = await this.getDirectoryPropsFiles();
 
     const projectDir = dirname(filePath);
+    const absoluteProjectDependencies = projectDependencies.map(d => join(projectDir, d));
+
+    // Collect any Directory.*.props files which could impact any of the depending projects
+    const directoryPropsFiles = await this.getMatchingDirectoryPropsFiles(projectDir, ...absoluteProjectDependencies);
+
     return {
       name: basename(filePath, '.csproj'),
       dependencies: [
         ...projectDependencies,
-        // Collect any Directory.*.props files which could impact any of the dependening projects 
-        ...directoryPropsFiles.filter(propFile => projectDependencies.some(dir => join(projectDir, dir).replaceAll(/\\/g, '/').startsWith(dirname(propFile))))
+        ...directoryPropsFiles
       ],
       tags: [
         'project-type:dotnet',
