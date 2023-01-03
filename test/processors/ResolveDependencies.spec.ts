@@ -1,11 +1,11 @@
 import { Container } from 'inversify';
 import 'reflect-metadata';
 import { Project } from '../../src/models/Project';
+import { LoadProjectMetadata } from '../../src/processors/LoadProjectMetadata';
 import { ProjectExtension } from '../../src/processors/ProjectExtension';
 import { ResolveDependencies } from '../../src/processors/ResolveDependencies';
-import { BaseDirProvider } from '../../src/providers/BaseDirProvider';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockBaseDirProvider } from '../mocks';
+import { createContainer } from '../mocks';
 import { projectExamples } from '../project-examples';
 
 describe('ResolveDependencies', () => {
@@ -15,16 +15,15 @@ describe('ResolveDependencies', () => {
   beforeEach(() => {
     container = createContainer();
 
-    container.rebind<BaseDirProvider>(TYPES.BaseDirProvider).to(MockBaseDirProvider);
-
     processor = container.resolve(ResolveDependencies);
   });
 
-  test('should resolve after ProjectExtension from container', () => {
+  test('should resolve after ProjectExtension and LoadProjectMetadata from container', () => {
     const processors = container.getAll(TYPES.ProjectProcessor);
 
     expect(processors.at(0)).toBeInstanceOf(ProjectExtension);
-    expect(processors.at(1)).toBeInstanceOf(ResolveDependencies);
+    expect(processors.at(1)).toBeInstanceOf(LoadProjectMetadata);
+    expect(processors.at(2)).toBeInstanceOf(ResolveDependencies);
   });
 
   test('should return all projects', async () => {

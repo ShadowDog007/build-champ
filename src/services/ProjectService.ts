@@ -1,12 +1,11 @@
-import { readFile } from 'fs/promises';
 import { inject, injectable, multiInject } from 'inversify';
-import { dirname, join } from 'path';
+import { dirname } from 'path';
 import 'reflect-metadata';
-import { parse } from 'yaml';
 import { Project, ProjectWithVersion } from '../models/Project';
 import { ProjectVersion } from '../models/ProjectVersion';
 import { ProjectProcessor } from '../processors';
 import { TYPES } from '../TYPES';
+import { FileService } from './FileService';
 import { GlobService } from './GlobService';
 import { RepositoryService } from './RepositoryService';
 
@@ -22,6 +21,7 @@ export class ProjectServiceImpl implements ProjectService {
 
   constructor(
     @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.FileService) private readonly fileService: FileService,
     @inject(TYPES.GlobService) private readonly globService: GlobService,
     @inject(TYPES.RepositoryService) private readonly repositoryService: RepositoryService,
     @multiInject(TYPES.ProjectProcessor) private readonly projectProcessors: ProjectProcessor[],
@@ -69,22 +69,15 @@ export class ProjectServiceImpl implements ProjectService {
 
   async * loadProjectsBase(): AsyncGenerator<Project> {
     for (const projectFile of await this.globService.glob(ProjectServiceImpl.projectFileGlob, { nocase: true })) {
-      const yamlContent = await readFile(join(this.baseDir, projectFile), { encoding: 'utf8' });
-      try {
-        const parsedYaml = parse(yamlContent) as Partial<Omit<Project, 'dir'>>;
-
-        yield {
-          name: '', // If not provided, should be loaded by meta-data or default to directory name
-          dir: dirname(projectFile),
-          dependencies: [],
-          commands: {},
-          tags: [],
-          ...parsedYaml,
-        };
-      } catch (error) {
-        console.error(`Error parsing project file '#%s' #%s`, projectFile, error);
-        throw error;
-      }
+      const parsedYaml = await this.fileService.readFileYaml<Partial<Omit<Project, 'dir'>>>(projectFile);
+      yield {
+        name: '', // If not provided, should be loaded by meta-data or default to directory name
+        dir: dirname(projectFile),
+        dependencies: [],
+        commands: {},
+        tags: [],
+        ...parsedYaml,
+      };
     }
   }
 }

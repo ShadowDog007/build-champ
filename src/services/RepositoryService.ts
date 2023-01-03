@@ -2,7 +2,6 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { SimpleGit } from 'simple-git';
 import { ProjectVersion } from '../models/ProjectVersion';
-import { GitProvider } from '../providers/GitProvider';
 import { TYPES } from '../TYPES';
 
 export interface RepositoryService {
@@ -34,15 +33,11 @@ export interface RepositoryService {
 
 @injectable()
 export class RepositoryServiceImpl implements RepositoryService {
-  private readonly git: SimpleGit;
-
   private readonly pathVersions: Record<string, ProjectVersion> = {};
 
   constructor(
-    @inject(TYPES.GitProvider) gitProvider: GitProvider,
-  ) {
-    this.git = gitProvider.git;
-  }
+    @inject(TYPES.Git) private readonly git: SimpleGit,
+  ) { }
 
   async getPathVersion(path: string) {
     const version = this.pathVersions[path];

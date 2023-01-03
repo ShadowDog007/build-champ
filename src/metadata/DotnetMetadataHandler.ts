@@ -1,10 +1,10 @@
-import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
-import { basename, dirname, join, relative, resolve } from 'path';
+import { basename, dirname, join, relative } from 'path';
 import 'reflect-metadata';
 import { ElementCompact, xml2js } from 'xml-js';
 import { ProjectMetadataLoader } from '.';
 import { ProjectMetadata } from '../models/ProjectMetadata';
+import { FileService } from '../services/FileService';
 import { GlobService } from '../services/GlobService';
 import { TYPES } from '../TYPES';
 
@@ -35,6 +35,7 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
   constructor(
     @inject(TYPES.BaseDir) private readonly baseDir: string,
     @inject(TYPES.GlobService) private readonly globService: GlobService,
+    @inject(TYPES.FileService) private readonly fileService: FileService,
   ) { }
 
   async getDirectoryPropsFiles() {
@@ -80,7 +81,7 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
   }
 
   async loadProjectReferences(filePath: string): Promise<string[]> {
-    const xml = await readFile(filePath, { encoding: 'utf8' });
+    const xml = await this.fileService.readFileUtf8(filePath);
 
     const csproj = xml2js(xml, {
       compact: true
@@ -100,7 +101,7 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
     const dirDependencies = [
       ...directCsprojDependencies.map(dirname),
       ...(await Promise.all(
-        directCsprojDependencies.map(dep => this.loadCachedProjectReferences(join(this.baseDir, dirname(filePath), dep)))
+        directCsprojDependencies.map(dep => this.loadCachedProjectReferences(join(dirname(filePath), dep)))
       )).flat()
     ];
     return dirDependencies;

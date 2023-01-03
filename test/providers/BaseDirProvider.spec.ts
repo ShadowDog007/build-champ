@@ -4,13 +4,14 @@ jest.mock('fs/promises');
 import { mkdirSync } from 'fs';
 import { Container } from 'inversify';
 import { join } from 'path';
-import { BaseDirProvider, BaseDirProviderImpl } from '../../src/providers/BaseDirProvider';
+import { ValueProvider } from '../../src/providers';
+import { BaseDirProvider } from '../../src/providers/BaseDirProvider';
 import { TYPES } from '../../src/TYPES';
 import { createContainer, resetFs } from '../mocks';
 
 describe('BaseDirProvider', () => {
   let container: Container;
-  let baseDirProvider: BaseDirProvider;
+  let baseDirProvider: ValueProvider<string>;
 
   beforeEach(async () => {
     await resetFs();
@@ -21,7 +22,7 @@ describe('BaseDirProvider', () => {
 
   test('should be resolvable and be singleton', () => {
     // Verify
-    expect(baseDirProvider).toBeInstanceOf(BaseDirProviderImpl);
+    expect(baseDirProvider).toBeInstanceOf(BaseDirProvider);
     expect(container.get(TYPES.BaseDirProvider)).toBe(baseDirProvider);
   });
 
@@ -31,6 +32,6 @@ describe('BaseDirProvider', () => {
 
     mkdirSync(join(dir, '.git'), { recursive: true });
 
-    expect(baseDirProvider.baseDir.replaceAll(/\\/g, '/')).toBe(dir);
+    expect(baseDirProvider.value.replaceAll(/\\/g, '/')).toBe(dir);
   });
 });

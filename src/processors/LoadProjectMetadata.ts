@@ -26,7 +26,7 @@ export class LoadProjectMetadata implements ProjectProcessor {
         const extensionFiles = await this.globService.glob(loader.extensionPattern, { cwd: project.dir, nocase: true });
 
         for (const metadataFile of extensionFiles) {
-          const metadata = await loader.loadMetadata(join(this.baseDir, project.dir, metadataFile));
+          const metadata = await loader.loadMetadata(join(project.dir, metadataFile));
           project = {
             extends: project.extends,
             name: project.name || metadata.name || '',

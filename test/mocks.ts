@@ -10,7 +10,6 @@ import 'reflect-metadata';
 import { containerModule } from '../src/containerModule';
 import { Project, ProjectWithVersion } from '../src/models/Project';
 import { ProjectVersion } from '../src/models/ProjectVersion';
-import { BaseDirProvider } from '../src/providers/BaseDirProvider';
 import { GlobServiceImpl } from '../src/services/GlobService';
 import { ProjectService } from '../src/services/ProjectService';
 import { RepositoryService } from '../src/services/RepositoryService';
@@ -19,8 +18,8 @@ import { TYPES } from '../src/TYPES';
 
 export function createContainer() {
   const container = new Container();
-  container.bind(TYPES.BaseDir).toConstantValue('/');
   container.load(containerModule);
+  container.rebind(TYPES.BaseDir).toConstantValue('/');
   container.snapshot();
   return container;
 }
@@ -40,14 +39,6 @@ export async function resetFs() {
     fs.rmdirSync(dir);
   }
   fs.mkdirSync('/.git');
-}
-
-@injectable()
-export class MockBaseDirProvider implements BaseDirProvider {
-  readonly baseDir = '/';
-  checkBaseDir() {
-    return true;
-  }
 }
 
 @injectable()

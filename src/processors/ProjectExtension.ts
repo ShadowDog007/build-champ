@@ -1,11 +1,10 @@
-import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
 import { concat } from 'lodash';
-import { dirname, join, relative, resolve } from 'path';
+import { dirname, join, relative } from 'path';
 import 'reflect-metadata';
-import { parse } from 'yaml';
 import { ProjectProcessor } from '.';
 import { Project } from '../models/Project';
+import { FileService } from '../services/FileService';
 import { TYPES } from '../TYPES';
 
 export type ProjectExtensionFile = Partial<Omit<Project, 'dir'>>;
@@ -20,6 +19,7 @@ export class ProjectExtension implements ProjectProcessor {
 
   constructor(
     @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.FileService) private readonly fileService: FileService,
   ) { }
 
   async * processProjects(projects: AsyncGenerator<Project>): AsyncGenerator<Project> {
@@ -51,9 +51,7 @@ export class ProjectExtension implements ProjectProcessor {
       return this.extensionFiles[file];
     }
 
-    const yaml = await readFile(join(this.baseDir, file), 'utf8');
-    const extension = this.extensionFiles[file] = parse(yaml) as ProjectExtensionFile;
-    return extension;
+    return this.extensionFiles[file] = await this.fileService.readFileYaml<ProjectExtensionFile>(file);
   }
 
   mergeProjects(extensionFile: string, extension: ProjectExtensionFile, project: Project): Project {

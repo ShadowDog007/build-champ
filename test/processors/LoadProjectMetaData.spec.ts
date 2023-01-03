@@ -8,7 +8,7 @@ import { ProjectMetadataLoader } from '../../src/metadata';
 import { Project } from '../../src/models/Project';
 import { LoadProjectMetadata } from '../../src/processors/LoadProjectMetadata';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockBaseDirProvider, resetFs } from '../mocks';
+import { createContainer, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { testProcessor } from './testProcessor';
 
@@ -23,7 +23,7 @@ async function addMetadata(project: string, meta: Partial<Omit<Project, 'dir'>>)
   await writeFile(`/${project}/.metadata.json`, JSON.stringify(meta));
 }
 
-describe('ResolveDependencies', () => {
+describe(LoadProjectMetadata, () => {
   let container: Container;
   let processor: LoadProjectMetadata;
 
@@ -31,7 +31,6 @@ describe('ResolveDependencies', () => {
     await resetFs();
     container = createContainer();
 
-    container.rebind(TYPES.BaseDirProvider).to(MockBaseDirProvider);
     container.unbind(TYPES.ProjectMetadataHandler);
     container.bind(TYPES.ProjectMetadataHandler).to(MockProjectMetadataLoader).inSingletonScope();
 
@@ -50,28 +49,28 @@ describe('ResolveDependencies', () => {
   test('should load dependencies correctly', async () => {
     // Given
     await addMetadata('project1', {
-      dependencies: ['project2'],
+      dependencies: ['../project2'],
     });
     await addMetadata('project2', {
-      dependencies: ['project4'],
+      dependencies: ['../project4'],
     });
 
     // When
     const projectDependencies = (await testProcessor(processor,
       {
         ...projectExamples.project1,
-        dir: 'project1',
+        dir: '/project1',
         dependencies: [],
       }, {
       ...projectExamples.project2,
-      dir: 'project2',
-      dependencies: ['project3'],
+      dir: '/project2',
+      dependencies: ['../project3'],
     }))
       .map(p => p.dependencies);
 
     // Verify
     expect(projectDependencies)
-      .toMatchObject([['project2'], ['project3', 'project4']]);
+      .toMatchObject([['../project2'], ['../project3', '../project4']]);
   });
 
   test('should load tags correctly', async () => {
@@ -86,11 +85,11 @@ describe('ResolveDependencies', () => {
     // When
     const projectTags = (await testProcessor(processor, {
       ...projectExamples.project1,
-      dir: 'project1',
+      dir: '/project1',
       tags: [],
     }, {
       ...projectExamples.project2,
-      dir: 'project2',
+      dir: '/project2',
       tags: ['test']
     }))
       .map(p => p.tags);

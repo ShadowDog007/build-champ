@@ -1,4 +1,5 @@
 import { ProjectMetadata } from '../models/ProjectMetadata';
+import { DotnetMetadataHandler } from './DotnetMetadataHandler';
 
 export interface ProjectMetadataLoader {
   /**
@@ -8,3 +9,7 @@ export interface ProjectMetadataLoader {
 
   loadMetadata(filePath: string): Promise<ProjectMetadata>;
 }
+
+export const metadataLoaders = [
+  DotnetMetadataHandler,
+]satisfies (new (...args: never[]) => ProjectMetadataLoader)[];
