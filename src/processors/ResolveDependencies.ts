@@ -29,7 +29,7 @@ export class ResolveDependencies implements ProjectProcessor {
       return relativeDir;
     }
     const absoluteDir = join(project.dir, relativeDir);
-    return `/${relative(this.baseDir, absoluteDir)}`;
+    return `/${relative(this.baseDir, join(this.baseDir, absoluteDir))}`;
   }
 
 }

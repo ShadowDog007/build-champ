@@ -47,7 +47,7 @@ export class RepositoryServiceImpl implements RepositoryService {
     }
 
     const log = await this.git.log({
-      file: `${path.startsWith('/') ? path.slice(1) : path}*`,
+      file: path.startsWith('/') ? path.slice(1) : path,
       maxCount: 1,
     });
 
