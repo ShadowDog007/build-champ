@@ -19,14 +19,14 @@ export interface RepositoryService {
 
   /**
    * Collects all the changes from the provided object
-   * @param objectish 
+   * @param objectish
    */
   getChanges(objectish: string): Promise<string[]>;
 
   /**
    * Collects all changes between the the provided objects
    * @param objectishFrom
-   * @param objectishTo 
+   * @param objectishTo
    */
   getChanges(objectishFrom: string, objectishTo: string): Promise<string[]>;
 }
@@ -47,7 +47,7 @@ export class RepositoryServiceImpl implements RepositoryService {
     }
 
     const log = await this.git.log({
-      file: path.startsWith('/') ? path.slice(1) : path,
+      file: path.startsWith('/') ? path.slice(1) || '.' : path,
       maxCount: 1,
     });
 

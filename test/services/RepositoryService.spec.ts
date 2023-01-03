@@ -22,7 +22,7 @@ describe(RepositoryServiceImpl, () => {
       const expectedHash = (await git.log({ maxCount: 1 })).latest?.hash;
 
       // When
-      const version = await repositoryService.getPathVersion('/.');
+      const version = await repositoryService.getPathVersion('/');
 
       // Verify
       expect(version).toMatchObject({
