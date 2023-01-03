@@ -202,7 +202,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
 
     return await new Promise<boolean>(resolve => {
       const commandName = projectCommand.name
-        || `\`${projectCommand.command}${projectCommand.arguments?.map(a => ` "${a.replaceAll('"', '\\"') ?? ''}"`).join('') ?? ''}\``;
+        || `\`${projectCommand.command}${projectCommand.arguments?.map(a => ` "${a.replaceAll('"', '\\"')}"`).join('') ?? ''}\``;
 
       this.updateProjectStatus(project, ProjectCommandStatus.running, commandName);
 

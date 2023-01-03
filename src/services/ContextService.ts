@@ -186,8 +186,8 @@ export class ContextServiceImpl implements ContextService {
     });
 
     const expandResult = expand({ parsed: envVars, ignoreProcessEnv: true });
-    if (!expandResult.parsed) {
-      throw (expandResult.error || new Error(`Unknown error when parsing env vars for ${dir}`));
+    if (expandResult.error) {
+      throw expandResult.error;
     }
     return expandResult.parsed;
   }
