@@ -50,12 +50,14 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
   async loadMetadata(filePath: string): Promise<ProjectMetadata> {
     const projectDependencies = await this.loadCachedProjectReferences(filePath);
     const directoryPropsFiles = await this.getDirectoryPropsFiles();
+
+    const projectDir = dirname(filePath);
     return {
       name: basename(filePath, '.csproj'),
       dependencies: [
         ...projectDependencies,
         // Collect any Directory.*.props files which could impact any of the dependening projects 
-        ...directoryPropsFiles.filter(propFile => projectDependencies.some(dir => join(this.baseDir, dir).startsWith(join(this.baseDir, dirname(propFile)))))
+        ...directoryPropsFiles.filter(propFile => projectDependencies.some(dir => join(projectDir, dir).replaceAll(/\\/g, '/').startsWith(dirname(propFile))))
       ],
       tags: [
         'project-type:dotnet',
