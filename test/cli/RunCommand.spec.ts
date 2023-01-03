@@ -5,11 +5,10 @@ import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
 import { cwd } from 'process';
 import { RunCommand } from '../../src/cli/RunCommand';
-import { BaseDirProvider } from '../../src/providers/BaseDirProvider';
 import { ProjectService } from '../../src/services/ProjectService';
 import { SpawnService } from '../../src/services/SpawnService';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockBaseDirProvider, MockProjectService, MockSpawnService, resetFs } from '../mocks';
+import { createContainer, MockProjectService, MockSpawnService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -24,7 +23,6 @@ describe('RunCommand', () => {
     const container = createContainer();
 
     container.rebind<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
-    container.rebind<BaseDirProvider>(TYPES.BaseDirProvider).to(MockBaseDirProvider);
     container.rebind<SpawnService>(TYPES.SpawnService).to(MockSpawnService);
 
     command = container.resolve(RunCommand);

@@ -2,18 +2,13 @@ import { statSync } from 'fs';
 import { injectable } from 'inversify';
 import { dirname, join } from 'path';
 import 'reflect-metadata';
-
-export interface BaseDirProvider {
-  baseDir: string;
-
-  // checkBaseDir(): boolean;
-}
+import { ValueProvider } from '.';
 
 @injectable()
-export class BaseDirProviderImpl implements BaseDirProvider {
+export class BaseDirProvider implements ValueProvider<string> {
   private _baseDir: string | null = null;
 
-  get baseDir(): string {
+  get value(): string {
     if (this._baseDir === null) {
       this._baseDir = this.findBaseDir();
     }

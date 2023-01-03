@@ -1,61 +1,22 @@
-import { Command } from 'commander';
 import { ContainerModule } from 'inversify';
+import { forEach, forIn } from 'lodash';
 import 'reflect-metadata';
-import { version } from '../package.json';
-import { BaseProjectCommand } from './cli/BaseProjectCommand';
-import { InitCommand } from './cli/InitCommand';
-import { ListCommand } from './cli/ListCommand';
-import { RunCommand } from './cli/RunCommand';
-import { TemplateCommand } from './cli/TemplateCommand';
-import { ProjectMetadataLoader } from './metadata';
-import { DotnetMetadataHandler } from './metadata/DotnetMetadataHandler';
-import { ProjectProcessor } from './processors';
-import { FinalizeDefinition } from './processors/FinalizeDefinition';
-import { FlattenDependencies } from './processors/FlattenDependencies';
-import { LoadProjectMetadata } from './processors/LoadProjectMetadata';
-import { ProjectExtension } from './processors/ProjectExtension';
-import { ResolveDependencies } from './processors/ResolveDependencies';
-import { BaseDirProvider, BaseDirProviderImpl } from './providers/BaseDirProvider';
-import { GitProvider } from './providers/GitProvider';
-import { ContextService, ContextServiceImpl } from './services/ContextService';
-import { EvalService, EvalServiceImpl } from './services/EvalService';
-import { ProjectService, ProjectServiceImpl } from './services/ProjectService';
-import { RepositoryService, RepositoryServiceImpl } from './services/RepositoryService';
-import { SpawnService, SpawnServiceImpl } from './services/SpawnService';
+import { commands } from './cli';
+import { metadataLoaders, ProjectMetadataLoader } from './metadata';
+import { processors, ProjectProcessor } from './processors';
+import { ProviderTypes, ProviderValueTypes, ValueProvider } from './providers';
+import { providerTypeMappings } from './providers/providerTypeMappings';
+import { ServiceTypes } from './services';
+import { serviceTypeMapping } from './services/serviceTypeMapping';
 import { TYPES } from './TYPES';
 
-export const containerModule = new ContainerModule((bind, _, isBound) => {
-  bind(TYPES.Command).to(InitCommand);
-  bind(TYPES.Command).to(ListCommand);
-  bind(TYPES.Command).to(RunCommand);
-  bind(TYPES.Command).to(TemplateCommand);
+export const containerModule = new ContainerModule(bind => {
+  forEach(commands, v => bind(TYPES.Command).to(v).inSingletonScope());
 
-  bind(TYPES.Program).toDynamicValue(c => {
-    const program = new Command();
-    program.version(version);
-    c.container.getAll<BaseProjectCommand<unknown[]>>(TYPES.Command).forEach(c => program.addCommand(c.command));
-    return program;
-  });
+  forIn(providerTypeMappings, (v, k) => bind(ProviderTypes[k as keyof typeof providerTypeMappings]).to(v).inSingletonScope());
+  forIn(ProviderValueTypes, (v, k) => bind(v).toDynamicValue(c => c.container.get<ValueProvider<unknown>>(ProviderTypes[`${k as keyof typeof ProviderValueTypes}Provider`]).value));
+  forIn(serviceTypeMapping, (v, k) => bind(ServiceTypes[k as keyof typeof serviceTypeMapping]).to(v).inSingletonScope());
 
-  bind<BaseDirProvider>(TYPES.BaseDirProvider).to(BaseDirProviderImpl).inSingletonScope();
-  if (!isBound(TYPES.BaseDir)) {
-    bind<string>(TYPES.BaseDir)
-      .toDynamicValue(c => c.container.get<BaseDirProvider>(TYPES.BaseDirProvider).baseDir);
-  }
-
-  bind<ContextService>(TYPES.ContextService).to(ContextServiceImpl).inSingletonScope();
-  bind<EvalService>(TYPES.EvalService).to(EvalServiceImpl).inSingletonScope();
-  bind<GitProvider>(TYPES.GitProvider).to(GitProvider).inSingletonScope();
-  bind<ProjectService>(TYPES.ProjectService).to(ProjectServiceImpl).inSingletonScope();
-  bind<RepositoryService>(TYPES.RepositoryService).to(RepositoryServiceImpl).inSingletonScope();
-  bind<SpawnService>(TYPES.SpawnService).to(SpawnServiceImpl).inSingletonScope();
-
-  // Project processors in the order they need to be processed
-  bind<ProjectProcessor>(TYPES.ProjectProcessor).to(ProjectExtension).inSingletonScope();
-  bind<ProjectProcessor>(TYPES.ProjectProcessor).to(ResolveDependencies).inSingletonScope();
-  bind<ProjectProcessor>(TYPES.ProjectProcessor).to(LoadProjectMetadata).inSingletonScope();
-  bind<ProjectProcessor>(TYPES.ProjectProcessor).to(FlattenDependencies).inSingletonScope();
-  bind<ProjectProcessor>(TYPES.ProjectProcessor).to(FinalizeDefinition).inSingletonScope();
-
-  bind<ProjectMetadataLoader>(TYPES.ProjectMetadataHandler).to(DotnetMetadataHandler).inSingletonScope();
+  forEach(processors, v => bind<ProjectProcessor>(TYPES.ProjectProcessor).to(v).inSingletonScope());
+  forEach(metadataLoaders, v => bind<ProjectMetadataLoader>(TYPES.ProjectMetadataHandler).to(v).inSingletonScope());
 });

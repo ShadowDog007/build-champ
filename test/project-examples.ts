@@ -4,9 +4,9 @@ import { ProjectWithVersion } from '../src/models/Project';
 export const projectExamples = {
   project1: {
     name: 'Project1',
-    dir: 'src/Project1',
+    dir: '/src/Project1',
     dependencies: [
-      'src/Project2'
+      '/src/Project2'
     ],
     tags: [
       'project:project1',
@@ -81,9 +81,9 @@ export const projectExamples = {
   } satisfies ProjectWithVersion,
   project2: {
     name: 'Project2',
-    dir: 'src/Project2',
+    dir: '/src/Project2',
     dependencies: [
-      'src/Project3'
+      '/src/Project3'
     ],
     tags: [
       'project:project2',
@@ -105,7 +105,7 @@ export const projectExamples = {
   } satisfies ProjectWithVersion,
   project3: {
     name: 'Project3',
-    dir: 'src/Project3',
+    dir: '/src/Project3',
     dependencies: [],
     tags: [
       'project:project3',

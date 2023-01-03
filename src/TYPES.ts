@@ -1,13 +1,10 @@
+import { ProviderTypes, ProviderValueTypes } from './providers';
+import { ServiceTypes } from './services';
+
 export const singleInjectTypes = {
-  BaseDir: Symbol.for('BaseDir'),
-  BaseDirProvider: Symbol.for('BaseDirProvider'),
-  ContextService: Symbol.for('ContextService'),
-  EvalService: Symbol.for('EvalService'),
-  GitProvider: Symbol.for('GitProvider'),
-  Program: Symbol.for('Program'),
-  ProjectService: Symbol.for('ProjectService'),
-  SpawnService: Symbol.for('SpawnService'),
-  RepositoryService: Symbol.for('RepositoryService'),
+  ...ProviderTypes,
+  ...ProviderValueTypes,
+  ...ServiceTypes,
 };
 
 export const multiInjectTypes = {

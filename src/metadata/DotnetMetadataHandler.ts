@@ -1,13 +1,12 @@
-import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
-import { basename, dirname, relative, resolve } from 'path';
+import { basename, dirname, join, relative } from 'path';
 import 'reflect-metadata';
 import { ElementCompact, xml2js } from 'xml-js';
 import { ProjectMetadataLoader } from '.';
 import { ProjectMetadata } from '../models/ProjectMetadata';
-import { BaseDirProvider } from '../providers/BaseDirProvider';
+import { FileService } from '../services/FileService';
+import { GlobService } from '../services/GlobService';
 import { TYPES } from '../TYPES';
-import { globAsync } from '../util/globAsync';
 
 export interface DotnetSdkProjectFile extends ElementCompact {
   Project: ElementCompact & {
@@ -29,35 +28,45 @@ export interface DotnetSdkReference {
 export class DotnetMetadataHandler implements ProjectMetadataLoader {
   readonly extensionPattern = '*.csproj';
 
-  private readonly baseDir: string;
   private directoryPropsFiles?: Promise<string[]>;
 
   private readonly csprojProjectReferences: Record<string, Promise<string[]> | undefined> = {};
 
   constructor(
-    @inject(TYPES.BaseDirProvider) baseDirProvider: BaseDirProvider
-  ) {
-    this.baseDir = baseDirProvider.baseDir;
-  }
+    @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.GlobService) private readonly globService: GlobService,
+    @inject(TYPES.FileService) private readonly fileService: FileService,
+  ) { }
 
   async getDirectoryPropsFiles() {
     if (this.directoryPropsFiles) {
       return this.directoryPropsFiles;
     }
 
-    this.directoryPropsFiles = globAsync('Directory.*.props', { cwd: this.baseDir, nocase: true });
+    this.directoryPropsFiles = this.globService.glob('**/Directory.*.props', { nocase: true });
     return this.directoryPropsFiles;
+  }
+
+  async getMatchingDirectoryPropsFiles(...dirs: string[]) {
+    const directoryPropsFiles = await this.getDirectoryPropsFiles();
+
+    return directoryPropsFiles.filter(propFile => dirs.some(dir => dir.replaceAll(/\\/g, '/').startsWith(dirname(propFile))));
   }
 
   async loadMetadata(filePath: string): Promise<ProjectMetadata> {
     const projectDependencies = await this.loadCachedProjectReferences(filePath);
-    const directoryPropsFiles = await this.getDirectoryPropsFiles();
+
+    const projectDir = dirname(filePath);
+    const absoluteProjectDependencies = projectDependencies.map(d => join(projectDir, d));
+
+    // Collect any Directory.*.props files which could impact any of the depending projects
+    const directoryPropsFiles = await this.getMatchingDirectoryPropsFiles(projectDir, ...absoluteProjectDependencies);
+
     return {
       name: basename(filePath, '.csproj'),
       dependencies: [
         ...projectDependencies,
-        // Collect any Directory.*.props files which could impact any of the dependening projects 
-        ...directoryPropsFiles.filter(propFile => projectDependencies.some(dir => resolve(this.baseDir, dir).startsWith(resolve(this.baseDir, dirname(propFile)))))
+        ...directoryPropsFiles
       ],
       tags: [
         'project-type:dotnet',
@@ -83,7 +92,7 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
   }
 
   async loadProjectReferences(filePath: string): Promise<string[]> {
-    const xml = await readFile(filePath, { encoding: 'utf8' });
+    const xml = await this.fileService.readFileUtf8(filePath);
 
     const csproj = xml2js(xml, {
       compact: true
@@ -96,14 +105,14 @@ export class DotnetMetadataHandler implements ProjectMetadataLoader {
       .filter((g): g is ItemGroup => !!g && !!g.ProjectReference)
       .flatMap(itemGroup => itemGroup.ProjectReference)
       // Map project references to project dir relative to base dir
-      .map(ref => relative(this.baseDir, resolve(dirname(filePath), ref._attributes.Include)))
+      .map(ref => ref._attributes.Include)
       || [];
 
     /** Project dir dependencies (parent folders of csproj refs) */
     const dirDependencies = [
       ...directCsprojDependencies.map(dirname),
       ...(await Promise.all(
-        directCsprojDependencies.map(dep => this.loadCachedProjectReferences(resolve(this.baseDir, dep)))
+        directCsprojDependencies.map(dep => this.loadCachedProjectReferences(join(dirname(filePath), dep)))
       )).flat()
     ];
     return dirDependencies;

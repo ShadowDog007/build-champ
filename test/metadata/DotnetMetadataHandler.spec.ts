@@ -58,7 +58,7 @@ describe('DotnetMetadataHandler', () => {
       // Verify
       expect(result).not.toBeUndefined();
       expect(result.name).toBe(basename(csprojPath, '.csproj'));
-      expect(result.dependencies).toMatchObject(['Dependency1']);
+      expect(result.dependencies).toMatchObject(['../Dependency1']);
       expect(result.tags).toContain('project-type:dotnet');
     });
 
@@ -75,7 +75,7 @@ describe('DotnetMetadataHandler', () => {
 
       expect(mainResult).not.toBeUndefined();
       expect(mainResult.name).toBe(basename(csprojPath, '.csproj'));
-      expect(mainResult.dependencies).toMatchObject(['Dependency1']);
+      expect(mainResult.dependencies).toMatchObject(['../Dependency1']);
       expect(mainResult.tags).toContain('project-type:dotnet');
     });
 
@@ -87,7 +87,7 @@ describe('DotnetMetadataHandler', () => {
       const result = await handler.loadMetadata(csprojPath);
 
       // Verify
-      expect(result.dependencies).toContain('Directory.Build.props');
+      expect(result.dependencies).toContain('/Directory.Build.props');
     });
   });
 });

@@ -1,11 +1,10 @@
-import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
 import { concat } from 'lodash';
-import { dirname, relative, resolve } from 'path';
+import { dirname, join, relative } from 'path';
 import 'reflect-metadata';
-import { parse } from 'yaml';
 import { ProjectProcessor } from '.';
 import { Project } from '../models/Project';
+import { FileService } from '../services/FileService';
 import { TYPES } from '../TYPES';
 
 export type ProjectExtensionFile = Partial<Omit<Project, 'dir'>>;
@@ -20,6 +19,7 @@ export class ProjectExtension implements ProjectProcessor {
 
   constructor(
     @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.FileService) private readonly fileService: FileService,
   ) { }
 
   async * processProjects(projects: AsyncGenerator<Project>): AsyncGenerator<Project> {
@@ -33,13 +33,13 @@ export class ProjectExtension implements ProjectProcessor {
       let extensionFile: string | undefined = project.extends;
 
       do {
-        const resolvedExtensionFile = resolve(this.baseDir, project.dir, extensionFile);
-        const extension: ProjectExtensionFile = await this.getExtension(resolvedExtensionFile);
+        const extensionFileAbsolute = join(project.dir, extensionFile);
+        const extension: ProjectExtensionFile = await this.getExtension(extensionFileAbsolute);
 
         project = this.mergeProjects(extensionFile, extension, project);
 
 
-        extensionFile = extension.extends ? relative(project.dir, resolve(dirname(resolvedExtensionFile), extension.extends)) : undefined;
+        extensionFile = extension.extends ? relative(project.dir, join(dirname(extensionFileAbsolute), extension.extends)) : undefined;
       } while (extensionFile);
 
       yield project;
@@ -51,9 +51,7 @@ export class ProjectExtension implements ProjectProcessor {
       return this.extensionFiles[file];
     }
 
-    const yaml = await readFile(file, 'utf8');
-    const extension = this.extensionFiles[file] = parse(yaml) as ProjectExtensionFile;
-    return extension;
+    return this.extensionFiles[file] = await this.fileService.readFileYaml<ProjectExtensionFile>(file);
   }
 
   mergeProjects(extensionFile: string, extension: ProjectExtensionFile, project: Project): Project {
@@ -62,7 +60,7 @@ export class ProjectExtension implements ProjectProcessor {
       name: project.name || extension.name || '',
       dir: project.dir,
       dependencies: concat(
-        extension.dependencies?.map(d => relative(project.dir, resolve(project.dir, dirname(extensionFile), d))) || [],
+        extension.dependencies?.map(d => relative(project.dir, join(project.dir, dirname(extensionFile), d))) || [],
         project.dependencies
       ),
       tags: concat(extension.tags || [], project.tags),

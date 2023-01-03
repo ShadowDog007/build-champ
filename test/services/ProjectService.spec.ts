@@ -3,7 +3,7 @@ jest.mock('fs/promises');
 
 import { mkdir, writeFile } from 'fs/promises';
 import { Container } from 'inversify';
-import { resolve } from 'path';
+import { join, resolve } from 'path';
 import { stringify } from 'yaml';
 import { Project } from '../../src/models/Project';
 import { ProjectVersion } from '../../src/models/ProjectVersion';
@@ -19,7 +19,7 @@ describe('ProjectService', () => {
   let project: Omit<Project, 'dir'>;
 
   async function defineProject(dir: string, project: Omit<Project, 'dir'>) {
-    const fullDir = resolve('/', dir);
+    const fullDir = join(container.get(TYPES.BaseDir), dir);
     await mkdir(fullDir, { recursive: true });
     await writeFile(resolve(fullDir, '.project.yaml'), stringify(project));
   }
@@ -84,8 +84,8 @@ describe('ProjectService', () => {
       expect(projects).toMatchObject([{
         ...project,
         dependencies: [
-          'src/dependency2',
-          'src/shared-dependency'
+          '/src/dependency2',
+          '/src/shared-dependency'
         ]
       }]);
     });
@@ -100,8 +100,8 @@ describe('ProjectService', () => {
 
       // Verify
       expect(projects.map(p => p.dir)).toMatchObject([
-        'project1',
-        'project2'
+        '/project1',
+        '/project2'
       ]);
     });
   });
@@ -124,7 +124,7 @@ describe('ProjectService', () => {
       };
       const commit: MockCommit = {
         ...version,
-        files: ['project1/test.txt'],
+        files: ['/project1/test.txt'],
       };
       repositoryService.addCommitChanges(commit);
       await defineProject('project1', project);
@@ -136,7 +136,7 @@ describe('ProjectService', () => {
       expect(projects).toMatchObject([{
         ...project,
         dependencies: [
-          'dependency2',
+          '/dependency2',
         ],
         version,
       }]);
@@ -159,13 +159,13 @@ describe('ProjectService', () => {
         hashShort: '00000000',
         timestamp: new Date('2022-11-01'),
       };
-      repositoryService.addCommitChanges({ ...latestVersion, files: ['project1/test.txt'] });
-      repositoryService.addCommitChanges({ ...middleVersion, files: ['dependency2/file.json'] });
+      repositoryService.addCommitChanges({ ...latestVersion, files: ['/project1/test.txt'] });
+      repositoryService.addCommitChanges({ ...middleVersion, files: ['/dependency2/file.json'] });
       repositoryService.addCommitChanges({
         ...earlierVersion,
         files: [
-          'project1/test.txt',
-          'project2/foo.bar.json'
+          '/project1/test.txt',
+          '/project2/foo.bar.json'
         ]
       });
       await defineProject('project1', project);
@@ -175,8 +175,8 @@ describe('ProjectService', () => {
       const projects = await projectService.getProjectsWithVersions();
 
       // Verify
-      expect(projects.find(p => p.dir === 'project1')?.version).toMatchObject(latestVersion);
-      expect(projects.find(p => p.dir === 'project2')?.version).toMatchObject(middleVersion);
+      expect(projects.find(p => p.dir === '/project1')?.version).toMatchObject(latestVersion);
+      expect(projects.find(p => p.dir === '/project2')?.version).toMatchObject(middleVersion);
     });
   });
 });

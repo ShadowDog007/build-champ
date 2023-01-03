@@ -10,23 +10,22 @@ import 'reflect-metadata';
 import { containerModule } from '../src/containerModule';
 import { Project, ProjectWithVersion } from '../src/models/Project';
 import { ProjectVersion } from '../src/models/ProjectVersion';
-import { BaseDirProvider } from '../src/providers/BaseDirProvider';
+import { GlobServiceImpl } from '../src/services/GlobService';
 import { ProjectService } from '../src/services/ProjectService';
 import { RepositoryService } from '../src/services/RepositoryService';
 import { SpawnService } from '../src/services/SpawnService';
 import { TYPES } from '../src/TYPES';
-import { globAsync } from '../src/util/globAsync';
 
 export function createContainer() {
   const container = new Container();
-  container.bind(TYPES.BaseDir).toConstantValue('/');
   container.load(containerModule);
+  container.rebind(TYPES.BaseDir).toConstantValue('/');
   container.snapshot();
   return container;
 }
 
 export async function resetFs() {
-  const toDelete = (await globAsync('**/*', { cwd: '/', dot: true }))
+  const toDelete = (await GlobServiceImpl.globAsync('**/*', { cwd: '/', dot: true }))
     .map(p => resolve('/', p))
     .map(p => [p, fs.statSync(p).isDirectory()] as [string, boolean]);
 
@@ -40,14 +39,6 @@ export async function resetFs() {
     fs.rmdirSync(dir);
   }
   fs.mkdirSync('/.git');
-}
-
-@injectable()
-export class MockBaseDirProvider implements BaseDirProvider {
-  readonly baseDir = '/';
-  checkBaseDir() {
-    return true;
-  }
 }
 
 @injectable()

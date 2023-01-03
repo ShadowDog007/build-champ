@@ -2,7 +2,6 @@ import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { SimpleGit } from 'simple-git';
 import { ProjectVersion } from '../models/ProjectVersion';
-import { GitProvider } from '../providers/GitProvider';
 import { TYPES } from '../TYPES';
 
 export interface RepositoryService {
@@ -20,29 +19,25 @@ export interface RepositoryService {
 
   /**
    * Collects all the changes from the provided object
-   * @param objectish 
+   * @param objectish
    */
   getChanges(objectish: string): Promise<string[]>;
 
   /**
    * Collects all changes between the the provided objects
    * @param objectishFrom
-   * @param objectishTo 
+   * @param objectishTo
    */
   getChanges(objectishFrom: string, objectishTo: string): Promise<string[]>;
 }
 
 @injectable()
 export class RepositoryServiceImpl implements RepositoryService {
-  private readonly git: SimpleGit;
-
   private readonly pathVersions: Record<string, ProjectVersion> = {};
 
   constructor(
-    @inject(TYPES.GitProvider) gitProvider: GitProvider,
-  ) {
-    this.git = gitProvider.git;
-  }
+    @inject(TYPES.Git) private readonly git: SimpleGit,
+  ) { }
 
   async getPathVersion(path: string) {
     const version = this.pathVersions[path];
@@ -52,7 +47,7 @@ export class RepositoryServiceImpl implements RepositoryService {
     }
 
     const log = await this.git.log({
-      file: `${path}*`,
+      file: path.startsWith('/') ? path.slice(1) || '.' : path,
       maxCount: 1,
     });
 
@@ -75,6 +70,6 @@ export class RepositoryServiceImpl implements RepositoryService {
     const args = objectishTo === undefined ? [objectishFrom] : [objectishFrom, objectishTo];
     const diff = await this.git.diffSummary(args);
 
-    return diff.files.map(f => f.file);
+    return diff.files.map(f => `/${f.file}`);
   }
 }
