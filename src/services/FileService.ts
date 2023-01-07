@@ -3,6 +3,7 @@ import { inject, injectable } from 'inversify';
 import { join } from 'path';
 import 'reflect-metadata';
 import { parse } from 'yaml';
+import { ProviderTypes } from '../providers';
 import { TYPES } from '../TYPES';
 
 export interface FileService {
@@ -15,15 +16,15 @@ export interface FileService {
 export class FileServiceImpl implements FileService {
 
   constructor(
-    @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(ProviderTypes.BaseDirProvider) private readonly baseDir: Promise<string>,
   ) { }
 
   async readFileBuffer(repositoryPath: string) {
-    return readFile(join(this.baseDir, repositoryPath));
+    return readFile(join(await this.baseDir, repositoryPath));
   }
 
   async readFileUtf8(repositoryPath: string) {
-    return readFile(join(this.baseDir, repositoryPath), 'utf8');
+    return readFile(join(await this.baseDir, repositoryPath), 'utf8');
   }
 
   async readFileYaml<T>(repositoryPath: string): Promise<T> {

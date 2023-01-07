@@ -7,8 +7,8 @@ import { basename } from 'path';
 import 'reflect-metadata';
 import { js2xml } from 'xml-js';
 import { DotnetMetadataHandler, DotnetSdkProjectFile } from '../../src/metadata/DotnetMetadataHandler';
-import { TYPES } from '../../src/TYPES';
-import { createContainer, resetFs } from '../mocks';
+import { TYPES } from '../../../src/TYPES';
+import { createContainer, resetFs } from '../../mocks';
 
 describe('DotnetMetadataHandler', () => {
   let container: Container;

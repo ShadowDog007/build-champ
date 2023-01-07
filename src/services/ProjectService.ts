@@ -20,7 +20,6 @@ export class ProjectServiceImpl implements ProjectService {
   private projects?: Promise<Project[]>;
 
   constructor(
-    @inject(TYPES.BaseDir) private readonly baseDir: string,
     @inject(TYPES.FileService) private readonly fileService: FileService,
     @inject(TYPES.GlobService) private readonly globService: GlobService,
     @inject(TYPES.RepositoryService) private readonly repositoryService: RepositoryService,

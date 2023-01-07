@@ -10,6 +10,7 @@ import 'reflect-metadata';
 import { containerModule } from '../src/containerModule';
 import { Project, ProjectWithVersion } from '../src/models/Project';
 import { ProjectVersion } from '../src/models/ProjectVersion';
+import { ValueProvider } from '../src/providers';
 import { GlobServiceImpl } from '../src/services/GlobService';
 import { ProjectService } from '../src/services/ProjectService';
 import { RepositoryService } from '../src/services/RepositoryService';
@@ -19,7 +20,7 @@ import { TYPES } from '../src/TYPES';
 export function createContainer() {
   const container = new Container();
   container.load(containerModule);
-  container.rebind(TYPES.BaseDir).toConstantValue('/');
+  container.rebind(TYPES.BaseDirProvider).toConstantValue(new ValueProvider(() => Promise.resolve('/')));
   container.snapshot();
   return container;
 }

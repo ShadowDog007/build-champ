@@ -36,7 +36,7 @@ export class RepositoryServiceImpl implements RepositoryService {
   private readonly pathVersions: Record<string, ProjectVersion> = {};
 
   constructor(
-    @inject(TYPES.Git) private readonly git: SimpleGit,
+    @inject(TYPES.GitProvider) private readonly git: PromiseLike<SimpleGit>,
   ) { }
 
   async getPathVersion(path: string) {
@@ -46,7 +46,9 @@ export class RepositoryServiceImpl implements RepositoryService {
       return version;
     }
 
-    const log = await this.git.log({
+    const git = await this.git;
+
+    const log = await git.log({
       file: path.startsWith('/') ? path.slice(1) || '.' : path,
       maxCount: 1,
     });
@@ -67,8 +69,9 @@ export class RepositoryServiceImpl implements RepositoryService {
   async getChanges(objectish: string): Promise<string[]>;
   async getChanges(objectishFrom: string, objectishTo: string): Promise<string[]>;
   async getChanges(objectishFrom: string, objectishTo?: string): Promise<string[]> {
+    const git = await this.git;
     const args = objectishTo === undefined ? [objectishFrom] : [objectishFrom, objectishTo];
-    const diff = await this.git.diffSummary(args);
+    const diff = await git.diffSummary(args);
 
     return diff.files.map(f => `/${f.file}`);
   }

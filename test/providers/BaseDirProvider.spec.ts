@@ -26,12 +26,12 @@ describe('BaseDirProvider', () => {
     expect(container.get(TYPES.BaseDirProvider)).toBe(baseDirProvider);
   });
 
-  test.each(['/repo', '/projects/repo'])('when git repo exists in %s should find base dir', dir => {
+  test.each(['/repo', '/projects/repo'])('when git repo exists in %s should find base dir', async dir => {
     const spy = jest.spyOn(process, 'cwd');
     spy.mockReturnValue(join(dir, 'some-child-dir'));
 
     mkdirSync(join(dir, '.git'), { recursive: true });
 
-    expect(baseDirProvider.value.replaceAll(/\\/g, '/')).toBe(dir);
+    expect((await baseDirProvider).replaceAll(/\\/g, '/')).toBe(dir);
   });
 });

@@ -11,6 +11,13 @@ export interface ProjectCommand {
   command: string;
 
   /**
+   * Directory to run this command from
+   * 
+   * @default Directory the project file is in
+   */
+  workingDirectory?: string;
+
+  /**
    * Run the command in a specific or default shell
    * 
    * e.g. 'Powershell.exe', '/bin/bash'

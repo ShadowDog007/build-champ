@@ -7,12 +7,14 @@ import { BaseProjectCommand } from '../cli/BaseProjectCommand';
 import { TYPES } from '../TYPES';
 
 @injectable()
-export class ProgramProvider implements ValueProvider<Command> {
-  readonly value: Command;
+export class ProgramProvider extends ValueProvider<Command> {
+
 
   constructor(@multiInject(TYPES.Command) commands: BaseProjectCommand<unknown[]>[]) {
-    this.value = new Command();
-    this.value.version(version);
-    commands.forEach(c => this.value.addCommand(c.command));
+    const command = new Command();
+    command.version(version);
+    commands.forEach(c => command.addCommand(c.command));
+
+    super(async () => command);
   }
 }

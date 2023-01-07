@@ -9,11 +9,11 @@ describe(RepositoryServiceImpl, () => {
   let repositoryService: RepositoryService;
   let git: SimpleGit;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     container = new Container();
     container.load(containerModule);
     repositoryService = container.get(TYPES.RepositoryService);
-    git = container.get(TYPES.Git);
+    git = await container.get(TYPES.GitProvider);
   });
 
   describe('.getPathVersion', () => {

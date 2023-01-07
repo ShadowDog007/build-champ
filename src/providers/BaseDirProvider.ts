@@ -5,24 +5,20 @@ import 'reflect-metadata';
 import { ValueProvider } from '.';
 
 @injectable()
-export class BaseDirProvider implements ValueProvider<string> {
-  private _baseDir: string | null = null;
+export class BaseDirProvider extends ValueProvider<string> {
 
-  get value(): string {
-    if (this._baseDir === null) {
-      this._baseDir = this.findBaseDir();
-    }
-    return this._baseDir;
+  constructor() {
+    super(async () => this.findBaseDir());
   }
 
+  // TODO - Should this just use the current CWD ?
   findBaseDir() {
     let dir = process.cwd();
 
     while (!this.exists(join(dir, '.git'))) {
       const parentDir = dirname(dir);
       if (dir === parentDir) {
-        // Can't find base dir
-        return '';
+        throw new Error(`Can't find base dir in ${process.cwd()}`);
       }
       dir = parentDir;
     }

@@ -2,22 +2,22 @@ jest.mock('fs');
 jest.mock('fs/promises');
 
 import { Container } from 'inversify';
-import { Project } from '../../src/models/Project';
-import { FinalizeDefinition } from '../../src/processors/FinalizeDefinition';
-import { ProjectExtension } from '../../src/processors/ProjectExtension';
-import { TYPES } from '../../src/TYPES';
-import { createContainer, resetFs } from '../mocks';
-import { createDefaultProject, testProcessor } from './testProcessor';
+import { Project } from '../../../src/models/Project';
+import { FinalizeDefinitionProjectProcessor } from '../../../src/plugins/default/FinalizeDefinitionProjectProcessor';
+import { ProjectExtension } from '../../src/plugins/default/ProjectExtension';
+import { TYPES } from '../../../src/TYPES';
+import { createContainer, resetFs } from '../../mocks';
+import { createDefaultProject, testProcessor } from '../../processors/testProcessor';
 
 describe(ProjectExtension, () => {
-  let processor: FinalizeDefinition;
+  let processor: FinalizeDefinitionProjectProcessor;
   let container: Container;
 
   beforeEach(async () => {
     await resetFs();
 
     container = createContainer();
-    processor = container.resolve(FinalizeDefinition);
+    processor = container.resolve(FinalizeDefinitionProjectProcessor);
   });
 
   test('should be resolved last in container', () => {
@@ -25,7 +25,7 @@ describe(ProjectExtension, () => {
     const processors = container.getAll(TYPES.ProjectProcessor);
 
     // Verify
-    expect(processors.at(-1)).toBeInstanceOf(FinalizeDefinition);
+    expect(processors.at(-1)).toBeInstanceOf(FinalizeDefinitionProjectProcessor);
   });
 
   test('should not override any project properties', async () => {

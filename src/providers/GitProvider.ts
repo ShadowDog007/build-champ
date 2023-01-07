@@ -5,10 +5,8 @@ import { ValueProvider } from '.';
 import { TYPES } from '../TYPES';
 
 @injectable()
-export class GitProvider implements ValueProvider<SimpleGit> {
-  readonly value: SimpleGit;
-
-  constructor(@inject(TYPES.BaseDir) baseDir: string) {
-    this.value = simpleGit(baseDir);
+export class GitProvider extends ValueProvider<SimpleGit> {
+  constructor(@inject(TYPES.BaseDirProvider) baseDir: PromiseLike<string>) {
+    super(async () => simpleGit(await baseDir));
   }
 }

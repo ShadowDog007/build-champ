@@ -1,9 +1,9 @@
 import { Container } from 'inversify';
 import 'reflect-metadata';
-import { FlattenDependencies } from '../../src/processors/FlattenDependencies';
-import { createContainer } from '../mocks';
-import { projectExamples } from '../project-examples';
-import { testProcessor } from './testProcessor';
+import { FlattenDependencies } from '../../../src/plugins/default/FlattenDependenciesProjectProcessor';
+import { createContainer } from '../../mocks';
+import { projectExamples } from '../../project-examples';
+import { testProcessor } from '../../processors/testProcessor';
 
 describe('FlattenDependencies', () => {
   let container: Container;
