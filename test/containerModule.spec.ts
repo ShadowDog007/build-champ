@@ -1,5 +1,7 @@
 import { Container } from 'inversify';
 import { containerModule } from '../src/containerModule';
+import { DefaultPlugin } from '../src/plugins/default/DefaultPlugin';
+import { DotnetPlugin } from '../src/plugins/dotnet/DotnetPlugin';
 import { multiInjectTypes, singleInjectTypes } from '../src/TYPES';
 
 describe('containerModule', () => {
@@ -8,6 +10,8 @@ describe('containerModule', () => {
   beforeAll(() => {
     container = new Container();
     container.load(containerModule);
+    container.load(new DotnetPlugin().getContainerModule());
+    container.load(new DefaultPlugin().getContainerModule());
   });
 
   test.each(Object.values(singleInjectTypes))('should have %p registered once', type => {

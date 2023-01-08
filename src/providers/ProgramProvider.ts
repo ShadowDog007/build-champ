@@ -8,13 +8,14 @@ import { TYPES } from '../TYPES';
 
 @injectable()
 export class ProgramProvider extends ValueProvider<Command> {
+  constructor(@multiInject(TYPES.Command) private readonly commands: BaseProjectCommand<unknown[]>[]) {
+    super();
+  }
 
-
-  constructor(@multiInject(TYPES.Command) commands: BaseProjectCommand<unknown[]>[]) {
+  async provider() {
     const command = new Command();
     command.version(version);
-    commands.forEach(c => command.addCommand(c.command));
-
-    super(async () => command);
+    this.commands.forEach(c => command.addCommand(c.command));
+    return command;
   }
 }

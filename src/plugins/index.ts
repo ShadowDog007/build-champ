@@ -6,7 +6,7 @@ import { Plugin } from './Plugin';
 export async function loadPluginModules(container: Container) {
   const workspaceConfiguration = await container.getAsync(ProviderTypes.WorkspaceConfigurationProvider);
 
-  const plugins = uniq(['default', ...Object.keys(workspaceConfiguration.plugins)]);
+  const plugins = uniq([...Object.keys(workspaceConfiguration.plugins), 'default']);
 
   for (const pluginName of plugins) {
     const plugin = await getPlugin(pluginName);

@@ -6,7 +6,10 @@ import { TYPES } from '../TYPES';
 
 @injectable()
 export class GitProvider extends ValueProvider<SimpleGit> {
-  constructor(@inject(TYPES.BaseDirProvider) baseDir: PromiseLike<string>) {
-    super(async () => simpleGit(await baseDir));
+  constructor(@inject(TYPES.BaseDirProvider) private readonly baseDir: PromiseLike<string>) {
+    super();
+  }
+  async provider() {
+    return simpleGit(await this.baseDir);
   }
 }

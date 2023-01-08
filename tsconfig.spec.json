@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
-    "composite": true
+    "composite": true,
+    "experimentalDecorators": true
   },
 
-  "include": ["test/**/*.ts"]
+  "include": ["src/**/*.ts", "test/**/*.ts"]
 }

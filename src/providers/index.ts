@@ -7,11 +7,11 @@ import { TypeRecord } from '../TYPES';
 import { PromiseCache } from '../util/PromiseCache';
 
 @injectable()
-export class ValueProvider<T> implements PromiseLike<T> {
+export abstract class ValueProvider<T> implements PromiseLike<T> {
 
-  private valueCache = new PromiseCache(this.provider);
+  private valueCache = new PromiseCache(() => this.provider());
 
-  constructor(private readonly provider: () => Promise<T>) { }
+  protected abstract provider(): Promise<T>;
 
   then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null | undefined, onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null | undefined): PromiseLike<TResult1 | TResult2> {
     return this.valueCache.get().then(onfulfilled, onrejected);

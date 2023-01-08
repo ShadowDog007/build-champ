@@ -7,12 +7,8 @@ import { ValueProvider } from '.';
 @injectable()
 export class BaseDirProvider extends ValueProvider<string> {
 
-  constructor() {
-    super(async () => this.findBaseDir());
-  }
-
   // TODO - Should this just use the current CWD ?
-  findBaseDir() {
+  async provider() {
     let dir = process.cwd();
 
     while (!this.exists(join(dir, '.git'))) {

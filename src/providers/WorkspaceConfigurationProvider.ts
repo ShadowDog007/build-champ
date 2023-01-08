@@ -13,10 +13,10 @@ export class WorkspaceConfigurationProvider extends ValueProvider<WorkspaceConfi
     @inject(ServiceTypes.FileService) private readonly fileService: FileService,
     @inject(ServiceTypes.GlobService) private readonly globService: GlobService,
   ) {
-    super(() => this.loadWorkspaceConfiguration());
+    super();
   }
 
-  async loadWorkspaceConfiguration(): Promise<WorkspaceConfiguration> {
+  async provider(): Promise<WorkspaceConfiguration> {
     const configFiles = await this.globService.glob('{build-champ,workspace}.{yaml,yml}');
 
     const config: WorkspaceConfiguration | undefined = configFiles.length > 0

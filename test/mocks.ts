@@ -10,6 +10,8 @@ import 'reflect-metadata';
 import { containerModule } from '../src/containerModule';
 import { Project, ProjectWithVersion } from '../src/models/Project';
 import { ProjectVersion } from '../src/models/ProjectVersion';
+import { DefaultPlugin } from '../src/plugins/default/DefaultPlugin';
+import { DotnetPlugin } from '../src/plugins/dotnet/DotnetPlugin';
 import { ValueProvider } from '../src/providers';
 import { GlobServiceImpl } from '../src/services/GlobService';
 import { ProjectService } from '../src/services/ProjectService';
@@ -20,6 +22,8 @@ import { TYPES } from '../src/TYPES';
 export function createContainer() {
   const container = new Container();
   container.load(containerModule);
+  container.load(new DotnetPlugin().getContainerModule());
+  container.load(new DefaultPlugin().getContainerModule());
   container.rebind(TYPES.BaseDirProvider).toConstantValue(new ValueProvider(() => Promise.resolve('/')));
   container.snapshot();
   return container;
