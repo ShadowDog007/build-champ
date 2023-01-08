@@ -12,9 +12,9 @@
   },
 
   "exclude": ["node_modules"],
-  
+
   "references": [
-    "./tsconfig.lib.json",
-    "./tsconfig.spec.json",
+    { "path": "./tsconfig.lib.json" },
+    { "path": "./tsconfig.spec.json" }
   ]
 }

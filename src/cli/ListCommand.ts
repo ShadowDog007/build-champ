@@ -18,7 +18,7 @@ export const defaultTemplate = '=> ${{name}} (${{longVersion ? version.hash : ve
 @injectable()
 export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]> {
   constructor(
-    @inject(TYPES.BaseDir) public baseDir: string,
+    @inject(TYPES.BaseDirProvider) public baseDir: PromiseLike<string>,
     @inject(TYPES.ProjectService) projectService: ProjectService,
     @inject(TYPES.RepositoryService) repositoryService: RepositoryService,
     @inject(TYPES.ContextService) private readonly contextService: ContextService,
@@ -35,7 +35,7 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
   }
 
   async action(options: ListCommandOptions) {
-    this.checkBaseDir(this.baseDir);
+    this.checkBaseDir(await this.baseDir);
 
     this.verbose(`Listing projects within \`${this.baseDir}\``);
 

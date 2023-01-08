@@ -36,7 +36,7 @@ describe('RunCommand', () => {
   describe('.parseAsync(args: string[])', () => {
     test('when no base dir, should exit with code 2',
       async () => {
-        command.baseDir = '';
+        command.baseDir = Promise.resolve('');
         return testHelper.testParseError(['dummy'], 2, `Couldn't find git repository containing ${cwd()}`);
       }
     );

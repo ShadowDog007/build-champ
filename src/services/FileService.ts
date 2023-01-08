@@ -4,7 +4,6 @@ import { join } from 'path';
 import 'reflect-metadata';
 import { parse } from 'yaml';
 import { ProviderTypes } from '../providers';
-import { TYPES } from '../TYPES';
 
 export interface FileService {
   readFileBuffer(repositoryPath: string): Promise<Buffer>;

@@ -1,23 +1,22 @@
 import { Container } from 'inversify';
 import 'reflect-metadata';
-import { FlattenDependencies } from '../../../src/plugins/default/FlattenDependenciesProjectProcessor';
+import { FlattenDependenciesProjectProcessor } from '../../../src/plugins/default/FlattenDependenciesProjectProcessor';
 import { createContainer } from '../../mocks';
 import { projectExamples } from '../../project-examples';
-import { testProcessor } from '../../processors/testProcessor';
 
-describe('FlattenDependencies', () => {
+describe(FlattenDependenciesProjectProcessor, () => {
   let container: Container;
-  let processor: FlattenDependencies;
+  let processor: FlattenDependenciesProjectProcessor;
 
   beforeEach(() => {
     container = createContainer();
-    processor = container.resolve(FlattenDependencies);
+    processor = container.resolve(FlattenDependenciesProjectProcessor);
   });
 
   describe('.processProejcts', () => {
     test('should flatten dependencies', async () => {
       // When
-      const projects = await testProcessor(processor,
+      const projects = await processor.processBatch([
         {
           ...projectExamples.project1,
           dependencies: ['a'],
@@ -26,7 +25,8 @@ describe('FlattenDependencies', () => {
           ...projectExamples.project2,
           dir: 'a',
           dependencies: ['b'],
-        });
+        }
+      ]);
 
       // Verify
       expect(projects[0].dependencies).toMatchObject(['a', 'b']);
@@ -34,7 +34,7 @@ describe('FlattenDependencies', () => {
 
     test('should flatten nested dependencies', async () => {
       // When
-      const projects = await testProcessor(processor,
+      const projects = await processor.processBatch([
         {
           ...projectExamples.project1,
           dependencies: ['a'],
@@ -48,7 +48,8 @@ describe('FlattenDependencies', () => {
           ...projectExamples.project2,
           dir: 'a',
           dependencies: ['b'],
-        });
+        }
+      ]);
 
       // Verify
       expect(projects[0].dependencies).toMatchObject(['a', 'b', 'c']);

@@ -16,8 +16,8 @@ export interface DotnetSdkProjectFile extends ElementCompact {
 }
 
 export interface ItemGroup extends ElementCompact {
-  ProjectReference: DotnetSdkReference | DotnetSdkReference[];
-  PackageReference: DotnetSdkReference | DotnetSdkReference[];
+  ProjectReference?: DotnetSdkReference | DotnetSdkReference[];
+  PackageReference?: DotnetSdkReference | DotnetSdkReference[];
 }
 
 export interface DotnetSdkReference {
@@ -81,17 +81,15 @@ export class DotnetService {
   async getPackageReferences(csproj: string) {
     const projectFile = await this.getProjectFile(csproj);
 
-    if (!projectFile.Project.PropertyGroup)
-      return {};
+    if (!projectFile.Project.ItemGroup)
+      return [];
 
 
-    return Object.fromEntries(
-      [projectFile.Project.PropertyGroup]
-        .flat()
-        .map(g => Object.entries(g))
-        .flat()
-        .filter(([k]) => !k.startsWith('_'))
-    );
+    return [projectFile.Project.ItemGroup]
+      .flat()
+      .flatMap(g => g.PackageReference)
+      .filter((r): r is DotnetSdkReference => !!r?._attributes?.Include)
+      .map(r => r._attributes.Include);
   }
 
   async getProjectDependencies(csproj: string) {
@@ -106,17 +104,17 @@ export class DotnetService {
   private async loadProjectReferences(match: string): Promise<string[]> {
     const projectFile = await this.projectFileCache.get(match);
 
+    if (!projectFile.Project.ItemGroup)
+      return [];
+
     const relativeCsprojPaths = [
       projectFile.Project.ItemGroup,
-
     ]
       .flat()
-      // Only take item groups which have project references
-      .filter((g): g is ItemGroup => !!g && !!g.ProjectReference)
-      .flatMap(itemGroup => itemGroup.ProjectReference)
+      .flatMap(g => g.ProjectReference)
+      .filter((r): r is DotnetSdkReference => !!r?._attributes?.Include)
       // Map project references to project dir relative to base dir
-      .map(ref => ref._attributes.Include)
-      || [];
+      .map(ref => ref._attributes.Include);
 
     const transitiveDependencies = await Promise.all(
       relativeCsprojPaths.map(dep => this.projectReferenceCache.get(join(dirname(match), dep)))

@@ -9,19 +9,19 @@ import { BaseProjectCommand } from './BaseProjectCommand';
 
 @injectable()
 export class InitCommand extends BaseProjectCommand<[string?]> {
-
   constructor(
-    @inject(TYPES.BaseDir) public baseDir: string
+    @inject(TYPES.BaseDirProvider) public baseDir: PromiseLike<string>
   ) {
     super();
 
-    this.command.name('init')
+    this.command
+      .name('init')
       .description('Initializes a directory with a default .project.yaml file')
       .argument('[projectDir]', 'Directory to initalize (default: current working directory)');
   }
 
   async action(projectDir?: string): Promise<void> {
-    this.checkBaseDir(this.baseDir);
+    this.checkBaseDir(await this.baseDir);
     const resolvedProjectDir = projectDir ?? '.';
 
     const dirStat = await stat(resolvedProjectDir).catch(() => undefined);

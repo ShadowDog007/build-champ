@@ -6,7 +6,7 @@ import { Project } from '../../models/Project';
 import { ProjectProcessorPhase, SimpleProjectProcessor } from '../ProjectProcessor';
 
 @injectable()
-export class FinalizeDefinitionProjectProcessor implements SimpleProjectProcessor {
+export class FinalizeDefinitionProjectProcessor extends SimpleProjectProcessor {
 
   phase = ProjectProcessorPhase.last;
 

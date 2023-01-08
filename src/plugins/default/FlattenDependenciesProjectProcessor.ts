@@ -2,18 +2,18 @@ import { injectable } from 'inversify';
 import { uniq } from 'lodash';
 import 'reflect-metadata';
 import { Project } from '../../models/Project';
-import { BatchProjectProcessor, ProjectProcessorPhase } from '../ProjectProcessor';
+import { ProjectProcessor, ProjectProcessorPhase } from '../ProjectProcessor';
 
 /**
  * Flattens dependencies, copying all transitive dependencies
  */
 @injectable()
-export class FlattenDependencies implements BatchProjectProcessor {
+export class FlattenDependenciesProjectProcessor extends ProjectProcessor {
 
   readonly batch = true;
   readonly phase = ProjectProcessorPhase.end;
 
-  async process(projects: Project[]): Promise<Project[]> {
+  async processBatch(projects: Project[]): Promise<Project[]> {
     const dependenciesByDir = Object.fromEntries(projects.map(p => [p.dir.toLocaleUpperCase(), p.dependencies]));
     const todo = Object.keys(dependenciesByDir);
 
@@ -31,7 +31,7 @@ export class FlattenDependencies implements BatchProjectProcessor {
 
     /**
      * Recursively flatten dependencies
-     * @param dir 
+     * @param dir
      */
     function flattenDependenciesFor(dir: string) {
       const dependencies = dependenciesByDir[dir];

@@ -16,7 +16,7 @@ export class MergeProjectProcessor extends ProjectProcessor {
       }
     }
 
-    return Promise.resolve(Object.values(mergedProjects));
+    return Promise.resolve(Array.from(mergedProjects.values()));
   }
 
   mergeProjects(project1: Project | undefined, project2: Project): Project {

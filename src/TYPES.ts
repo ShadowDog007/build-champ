@@ -15,8 +15,6 @@ export const singleInjectTypes = {
 export const multiInjectTypes = {
   ...PluginTypes,
   Command: Symbol.for('Command'),
-  ProjectMetadataHandler: Symbol.for('ProjectMetadataHandler'),
-  ProjectProcessor: Symbol.for('ProjectProcessor'),
 } satisfies TypeRecord;
 
 export const TYPES = {

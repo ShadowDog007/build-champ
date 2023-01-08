@@ -6,23 +6,34 @@ import { Container } from 'inversify';
 import { basename } from 'path';
 import 'reflect-metadata';
 import { js2xml } from 'xml-js';
-import { DotnetMetadataHandler, DotnetSdkProjectFile } from '../../src/metadata/DotnetMetadataHandler';
+import { DotnetProjectLoader } from '../../../src/plugins/dotnet/DotnetProjectLoader';
+import { DotnetSdkProjectFile } from '../../../src/plugins/dotnet/DotnetService';
+import { PluginTypes } from '../../../src/plugins/PluginTypes';
 import { TYPES } from '../../../src/TYPES';
 import { createContainer, resetFs } from '../../mocks';
 
-describe('DotnetMetadataHandler', () => {
+describe(DotnetProjectLoader, () => {
   let container: Container;
-  let handler: DotnetMetadataHandler;
+  let loader: DotnetProjectLoader;
 
   let csprojPath: string;
   let dependencyCsprojPath: string;
+  let testCsprojPath: string;
 
-  async function addCsproj(name: string, ...dependencies: string[]): Promise<[string, DotnetSdkProjectFile]> {
+  async function addCsproj(name: string, { dependencies, testProject }: {
+    dependencies?: string[],
+    testProject?: boolean,
+  } = {}): Promise<[string, DotnetSdkProjectFile]> {
     const filePath = `/${name}/${name}.csproj`;
     const content: DotnetSdkProjectFile = {
       Project: {
         ItemGroup: [{
-          ProjectReference: dependencies.map(dep => ({
+          PackageReference: testProject ? [
+            { _attributes: {
+
+            }
+          }] : [],
+          ProjectReference: dependencies?.map(dep => ({
             _attributes: {
               Include: `../${dep}/${dep}.csproj`,
             }
@@ -39,21 +50,22 @@ describe('DotnetMetadataHandler', () => {
   beforeEach(async () => {
     await resetFs();
     container = createContainer();
-    handler = container.resolve(DotnetMetadataHandler);
+    loader = container.resolve(DotnetProjectLoader);
 
-    [csprojPath] = await addCsproj('Project1', 'Dependency1');
+    [csprojPath] = await addCsproj('Project1', { dependencies: ['Dependency1'] });
     [dependencyCsprojPath] = await addCsproj('Dependency1');
+    [testCsprojPath] = await addCsproj('Project1.Tests', { dependencies: ['Project1'] })
   });
 
   test('should be registered in the container', () => {
-    const registeredHandler = container.getAll(TYPES.ProjectMetadataHandler).find(h => h instanceof DotnetMetadataHandler);
-    expect(registeredHandler).toBeInstanceOf(DotnetMetadataHandler);
+    const registeredHandler = container.getAll(PluginTypes.ProjectLoader).find(h => h instanceof DotnetProjectLoader);
+    expect(registeredHandler).toBeInstanceOf(DotnetProjectLoader);
   });
 
   describe('.loadMetadata(filePath: string)', () => {
     test('should successfully load file', async () => {
       // When
-      const result = await handler.loadMetadata(csprojPath);
+      const result = await loader.loadProject(csprojPath);
 
       // Verify
       expect(result).not.toBeUndefined();
@@ -64,8 +76,8 @@ describe('DotnetMetadataHandler', () => {
 
     test('when loading multiple dependencies should successfully load files', async () => {
       // When
-      const dependencyResult = await handler.loadMetadata(dependencyCsprojPath);
-      const mainResult = await handler.loadMetadata(csprojPath);
+      const dependencyResult = await loader.loadProject(dependencyCsprojPath);
+      const mainResult = await loader.loadProject(csprojPath);
 
       // Verify
       expect(dependencyResult).not.toBeUndefined();
@@ -84,10 +96,18 @@ describe('DotnetMetadataHandler', () => {
       await writeFile('/Directory.Build.props', 'dummy');
 
       // When
-      const result = await handler.loadMetadata(csprojPath);
+      const result = await loader.loadProject(csprojPath);
 
       // Verify
       expect(result.dependencies).toContain('/Directory.Build.props');
     });
   });
+
+  test('when test project is loaded, should include test command', async () => {
+    // When
+    const result = await loader.loadProject(testCsprojPath);
+
+    // Verify
+    expect(result.commands.test).toMatchObject({ command: 'dotnet', arguments: ['test'] });
+  })
 });

@@ -27,20 +27,11 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
       this.projectLoaders.map(loader => this.getLoaderProjects(loader))
     )).flat();
 
-    const projectProcessors = this.projectProcessors
-      .sort((a, b) => {
-        if (a.after?.find(t => b instanceof t)) {
-          return -1;
-        }
-        if (a.before?.find(t => b instanceof t)) {
-          return 1;
-        }
-        return (a.phase ?? ProjectProcessorPhase.middle) - (b.phase ?? ProjectProcessorPhase.middle);
-      });
-
-    const processedProjects = await projectProcessors.reduce(async (previous, processor) => {
-      return processor.processBatch(await previous);
-    }, Promise.resolve(Object.values(projectsByDir)));
+    const processedProjects = await this.getSortedProjectProcessors().reduce(
+      async (previous, processor) => {
+        return processor.processBatch(await previous);
+      }, Promise.resolve(projects)
+    );
 
     return processedProjects
       .sort((a, b) => a.dir.localeCompare(b.dir));
@@ -62,5 +53,17 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
     return await Promise.all(matches.map(match => loader.loadProject(match)));
   }
 
+  getSortedProjectProcessors() {
+    return this.projectProcessors
+      .sort((a, b) => {
+        if (a.after?.find(t => b instanceof t)) {
+          return -1;
+        }
+        if (a.before?.find(t => b instanceof t)) {
+          return 1;
+        }
+        return (a.phase ?? ProjectProcessorPhase.middle) - (b.phase ?? ProjectProcessorPhase.middle);
+      });
+  }
 
 }

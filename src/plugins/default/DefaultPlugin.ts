@@ -3,7 +3,7 @@ import { Plugin } from '../Plugin';
 import { PluginTypes } from '../PluginTypes';
 import { DefaultProjectLoader } from './DefaultProjectLoader';
 import { FinalizeDefinitionProjectProcessor } from './FinalizeDefinitionProjectProcessor';
-import { FlattenDependencies as FlattenDependenciesProjectProcessor } from './FlattenDependenciesProjectProcessor';
+import { FlattenDependenciesProjectProcessor } from './FlattenDependenciesProjectProcessor';
 import { ResolveDependencies as ResolveDependenciesProjectProcessor } from './ResolveDependenciesProjectProcessor';
 
 export class DefaultPlugin implements Plugin {

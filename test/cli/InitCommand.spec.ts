@@ -25,7 +25,7 @@ describe(InitCommand, () => {
 
   test('when no base dir, should exit with code 2',
     async () => {
-      command.baseDir = '';
+      command.baseDir = Promise.resolve('');
       return testHelper.testParseError([], 2, `Couldn't find git repository containing ${process.cwd()}`);
     }
   );

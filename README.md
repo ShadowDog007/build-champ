@@ -60,6 +60,7 @@ During exeuction, your command is provided with additional environment variables
 | -------------------------- | -------------------------------------------------------------------------- |
 | `REPOSITORY_DIR`           | The base directory of the running project                                  |
 | `PROJECT_NAME`             | The name of the project                                                    |
+| `PROJECT_DIR`              | The directory of the running project                                       |
 | `PROJECT_VERSION`          | The hash of the last commit to change this project or it's dependencies    |
 | `PROJECT_VERSION_SHORT`    | Same has PROJECT_VERSION, but only the first 8 characters                  |
 | `CONTEXT_${key.toUpper()}` | Every context parameter passed via CLI arguments, prefixed with `CONTEXT_` |

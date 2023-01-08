@@ -1,8 +1,8 @@
 import { interfaces } from 'inversify';
 import { ProjectLoader } from './ProjectLoader';
-import { ProjectProcessorBase } from './ProjectProcessor';
+import { ProjectProcessor } from './ProjectProcessor';
 
 export const PluginTypes = {
   ProjectLoader: Symbol.for('ProjectLoader') as interfaces.ServiceIdentifier<ProjectLoader>,
-  ProjectProcessor: Symbol.for('ProjectProcessor') as interfaces.ServiceIdentifier<ProjectProcessorBase>,
+  ProjectProcessor: Symbol.for('ProjectProcessor') as interfaces.ServiceIdentifier<ProjectProcessor>,
 } satisfies Record<string, interfaces.ServiceIdentifier<unknown>>;

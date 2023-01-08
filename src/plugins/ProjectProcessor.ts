@@ -5,7 +5,7 @@ import { Project } from '../models/Project';
 export abstract class ProjectProcessor {
   /**
    * Phase to execute this processor
-   * 
+   *
    * @default ProjectProcessorPhase.middle
    */
   phase?: ProjectProcessorPhase;
@@ -31,13 +31,13 @@ export abstract class ProjectProcessor {
 export abstract class SimpleProjectProcessor extends ProjectProcessor {
   /**
    * Check if this project is relevant to this processor
-   * @param project 
+   * @param project
    */
   canProcess?(project: Project): boolean;
 
   /**
    * Update the project
-   * @param project 
+   * @param project
    */
   abstract process(project: Project): Promise<Project>;
 
@@ -62,6 +62,6 @@ export enum ProjectProcessorPhase {
 export interface ProjectProcessorOrder {
   phase?: ProjectProcessorPhase;
 
-  before?: interfaces.Newable<ProjectProcessorBase>;
-  after?: interfaces.Newable<ProjectProcessorBase>;
+  before?: interfaces.Newable<ProjectProcessor>;
+  after?: interfaces.Newable<ProjectProcessor>;
 }

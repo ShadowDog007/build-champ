@@ -10,6 +10,7 @@ import { ProjectService } from './ProjectService';
 import { env } from 'process';
 import { GlobService } from './GlobService';
 import { FileService } from './FileService';
+import { join } from 'path';
 
 export interface ContextFixed {
   readonly env: NodeJS.ProcessEnv,
@@ -57,8 +58,8 @@ export interface ContextService {
 
   /**
    * Set current project status
-   * @param project 
-   * @param status 
+   * @param project
+   * @param status
    */
   setProjectStatus(project: Project, status: ProjectCommandStatus): void;
 
@@ -80,7 +81,7 @@ export class ContextServiceImpl implements ContextService {
   private readonly envVars: Record<string, Record<string, string>> = {};
 
   constructor(
-    @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.BaseDirProvider) private readonly baseDir: PromiseLike<string>,
     @inject(TYPES.FileService) private readonly fileService: FileService,
     @inject(TYPES.GlobService) private readonly globService: GlobService,
     @inject(TYPES.ProjectService) private readonly projectService: ProjectService,
@@ -194,14 +195,16 @@ export class ContextServiceImpl implements ContextService {
 
   /**
    * Same as `getEnvVarsForDir` but includes additional project environment variables as a base
-   * @param project 
-   * @param command 
-   * @returns 
+   * @param project
+   * @param command
+   * @returns
    */
   async getEnvVarsForProject(project: ProjectWithVersion, command?: string) {
+    const baseDir = await this.baseDir;
     return this.getEnvVarsForDir(project.dir, command, {
-      REPOSITORY_DIR: this.baseDir,
+      REPOSITORY_DIR: baseDir,
       PROJECT_NAME: project.name,
+      PROJECT_DIR: join(baseDir, project.dir),
       PROJECT_VERSION: project.version.hash,
       PROJECT_VERSION_SHORT: project.version.hashShort,
     });
@@ -252,8 +255,8 @@ export class ContextServiceImpl implements ContextService {
 
   /**
    * Creates a proxy to the target which is case insensitive
-   * @param target 
-   * @returns 
+   * @param target
+   * @returns
    */
   getCaseInsensitiveProxy<T>(target: Record<string, T>) {
     return new Proxy(target, {

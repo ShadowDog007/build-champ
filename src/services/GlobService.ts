@@ -13,12 +13,12 @@ export interface GlobService {
 @injectable()
 export class GlobServiceImpl implements GlobService {
 
-  constructor(@inject(TYPES.BaseDir) private readonly baseDir: string) { }
+  constructor(@inject(TYPES.BaseDirProvider) private readonly baseDir: PromiseLike<string>) { }
 
   async glob(pattern: string, options?: EnabledGlobOptions): Promise<string[]> {
     const matches = await GlobServiceImpl.globAsync(pattern, {
       ...options,
-      cwd: options?.cwd ? join(this.baseDir, options.cwd) : this.baseDir,
+      cwd: options?.cwd ? join(await this.baseDir, options.cwd) : await this.baseDir,
     });
 
     return options?.cwd

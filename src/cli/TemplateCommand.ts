@@ -32,7 +32,7 @@ export class TemplateCommand extends BaseProjectCommand<[TemplateCommandOptions]
   constructor(
     @inject(TYPES.ContextService) private readonly contextService: ContextService,
     @inject(TYPES.EvalService) private readonly evalService: EvalService,
-    @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.BaseDirProvider) private readonly baseDir: PromiseLike<string>,
   ) {
     super();
 
@@ -46,7 +46,7 @@ export class TemplateCommand extends BaseProjectCommand<[TemplateCommandOptions]
   }
 
   async action(options: TemplateCommandOptions) {
-    this.checkBaseDir(this.baseDir);
+    this.checkBaseDir(await this.baseDir);
 
     const template = await this.getTemplateContent(options);
 

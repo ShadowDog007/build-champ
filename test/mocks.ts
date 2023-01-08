@@ -42,6 +42,16 @@ export async function resetFs() {
   fs.mkdirSync('/.git');
 }
 
+export function createDefaultProject(dir: string): Project {
+  return {
+    name: '',
+    dir,
+    dependencies: [],
+    commands: {},
+    tags: [],
+  };
+}
+
 @injectable()
 export class MockProjectService implements ProjectService {
   private readonly projects: ProjectWithVersion[] = [];
