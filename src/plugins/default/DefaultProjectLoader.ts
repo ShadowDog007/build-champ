@@ -10,7 +10,7 @@ import { ProjectLoader } from '../ProjectLoader';
 
 @injectable()
 export class DefaultProjectLoader implements ProjectLoader {
-  include = '**/{module,project}.{json,yaml,yml}';
+  include = '**/.{module,project}.{json,yaml,yml}';
 
   private readonly projectFileCache = new PromisesCache(
     (file: string) => this.fileService.readFileYaml<Partial<Omit<Project, 'dir'>>>(file)

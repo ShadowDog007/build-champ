@@ -2,6 +2,7 @@ import glob, { IOptions } from 'glob';
 import { inject, injectable } from 'inversify';
 import { join } from 'path';
 import 'reflect-metadata';
+import { Provider } from '../providers';
 import { TYPES } from '../TYPES';
 
 export type EnabledGlobOptions = Pick<IOptions, 'cwd' | 'dot' | 'ignore' | 'nocase'>;
@@ -13,12 +14,13 @@ export interface GlobService {
 @injectable()
 export class GlobServiceImpl implements GlobService {
 
-  constructor(@inject(TYPES.BaseDirProvider) private readonly baseDir: PromiseLike<string>) { }
+  constructor(@inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>) { }
 
   async glob(pattern: string, options?: EnabledGlobOptions): Promise<string[]> {
+    const baseDir = await this.baseDir.get();
     const matches = await GlobServiceImpl.globAsync(pattern, {
       ...options,
-      cwd: options?.cwd ? join(await this.baseDir, options.cwd) : await this.baseDir,
+      cwd: options?.cwd ? join(baseDir, options.cwd) : baseDir,
     });
 
     return options?.cwd

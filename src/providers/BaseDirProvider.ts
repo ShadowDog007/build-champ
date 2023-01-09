@@ -2,10 +2,10 @@ import { statSync } from 'fs';
 import { injectable } from 'inversify';
 import { dirname, join } from 'path';
 import 'reflect-metadata';
-import { ValueProvider } from '.';
+import { Provider } from '.';
 
 @injectable()
-export class BaseDirProvider extends ValueProvider<string> {
+export class BaseDirProvider extends Provider<string> {
 
   // TODO - Should this just use the current CWD ?
   async provider() {

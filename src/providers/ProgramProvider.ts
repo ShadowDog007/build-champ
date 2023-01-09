@@ -1,13 +1,13 @@
 import { Command } from 'commander';
 import { injectable, multiInject } from 'inversify';
 import 'reflect-metadata';
-import { ValueProvider } from '.';
+import { Provider } from '.';
 import { version } from '../../package.json';
 import { BaseProjectCommand } from '../cli/BaseProjectCommand';
 import { TYPES } from '../TYPES';
 
 @injectable()
-export class ProgramProvider extends ValueProvider<Command> {
+export class ProgramProvider extends Provider<Command> {
   constructor(@multiInject(TYPES.Command) private readonly commands: BaseProjectCommand<unknown[]>[]) {
     super();
   }

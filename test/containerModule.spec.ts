@@ -9,9 +9,11 @@ describe('containerModule', () => {
 
   beforeAll(() => {
     container = new Container();
-    container.load(containerModule);
-    container.load(new DotnetPlugin().getContainerModule());
-    container.load(new DefaultPlugin().getContainerModule());
+    container.load(
+      containerModule,
+      new DotnetPlugin().getContainerModule({}),
+      new DefaultPlugin().getContainerModule()
+    );
   });
 
   test.each(Object.values(singleInjectTypes))('should have %p registered once', type => {

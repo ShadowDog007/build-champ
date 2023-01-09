@@ -11,6 +11,7 @@ import { env } from 'process';
 import { GlobService } from './GlobService';
 import { FileService } from './FileService';
 import { join } from 'path';
+import { Provider } from '../providers';
 
 export interface ContextFixed {
   readonly env: NodeJS.ProcessEnv,
@@ -81,7 +82,7 @@ export class ContextServiceImpl implements ContextService {
   private readonly envVars: Record<string, Record<string, string>> = {};
 
   constructor(
-    @inject(TYPES.BaseDirProvider) private readonly baseDir: PromiseLike<string>,
+    @inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>,
     @inject(TYPES.FileService) private readonly fileService: FileService,
     @inject(TYPES.GlobService) private readonly globService: GlobService,
     @inject(TYPES.ProjectService) private readonly projectService: ProjectService,
@@ -200,7 +201,7 @@ export class ContextServiceImpl implements ContextService {
    * @returns
    */
   async getEnvVarsForProject(project: ProjectWithVersion, command?: string) {
-    const baseDir = await this.baseDir;
+    const baseDir = await this.baseDir.get();
     return this.getEnvVarsForDir(project.dir, command, {
       REPOSITORY_DIR: baseDir,
       PROJECT_NAME: project.name,

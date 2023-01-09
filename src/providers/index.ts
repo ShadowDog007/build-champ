@@ -7,20 +7,20 @@ import { TypeRecord } from '../TYPES';
 import { PromiseCache } from '../util/PromiseCache';
 
 @injectable()
-export abstract class ValueProvider<T> implements PromiseLike<T> {
+export abstract class Provider<T> implements Provider<T> {
 
   private valueCache = new PromiseCache(() => this.provider());
 
   protected abstract provider(): Promise<T>;
 
-  then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | null | undefined, onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null | undefined): PromiseLike<TResult1 | TResult2> {
-    return this.valueCache.get().then(onfulfilled, onrejected);
+  get(): Promise<T> {
+    return this.valueCache.get();
   }
 }
 
 export const ProviderTypes = {
-  BaseDirProvider: Symbol.for('BaseDirProvider') as interfaces.ServiceIdentifier<ValueProvider<string>>,
-  GitProvider: Symbol.for('GitProvider') as interfaces.ServiceIdentifier<ValueProvider<SimpleGit>>,
-  ProgramProvider: Symbol.for('ProgramProvider') as interfaces.ServiceIdentifier<ValueProvider<Command>>,
-  WorkspaceConfigurationProvider: Symbol.for('WorkspaceConfigurationProvider') as interfaces.ServiceIdentifier<ValueProvider<WorkspaceConfiguration>>,
-}  satisfies TypeRecord<ValueProvider<unknown>>;
+  BaseDirProvider: Symbol.for('BaseDirProvider') as interfaces.ServiceIdentifier<Provider<string>>,
+  GitProvider: Symbol.for('GitProvider') as interfaces.ServiceIdentifier<Provider<SimpleGit>>,
+  ProgramProvider: Symbol.for('ProgramProvider') as interfaces.ServiceIdentifier<Provider<Command>>,
+  WorkspaceConfigurationProvider: Symbol.for('WorkspaceConfigurationProvider') as interfaces.ServiceIdentifier<Provider<WorkspaceConfiguration>>,
+}  satisfies TypeRecord<Provider<unknown>>;

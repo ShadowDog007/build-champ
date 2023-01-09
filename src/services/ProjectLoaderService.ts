@@ -1,10 +1,13 @@
 import { inject, injectable, multiInject } from 'inversify';
 import 'reflect-metadata';
+import { TargetDefaults } from '../config/TargetDefaults';
 import { WorkspaceConfiguration } from '../config/WorkspaceConfiguration';
 import { Project } from '../models/Project';
+import { ProjectCommand } from '../models/ProjectCommand';
 import { PluginTypes } from '../plugins/PluginTypes';
 import { ProjectLoader } from '../plugins/ProjectLoader';
 import { ProjectProcessor, ProjectProcessorPhase } from '../plugins/ProjectProcessor';
+import { Provider } from '../providers';
 import { TYPES } from '../TYPES';
 import { GlobService } from './GlobService';
 
@@ -17,7 +20,7 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
 
   constructor(
     @inject(TYPES.GlobService) private readonly globService: GlobService,
-    @inject(TYPES.WorkspaceConfigurationProvider) private readonly workspaceConfiguration: PromiseLike<WorkspaceConfiguration>,
+    @inject(TYPES.WorkspaceConfigurationProvider) private readonly workspaceConfiguration: Provider<WorkspaceConfiguration>,
     @multiInject(PluginTypes.ProjectLoader) private readonly projectLoaders: ProjectLoader[],
     @multiInject(PluginTypes.ProjectProcessor) private readonly projectProcessors: ProjectProcessor[],
   ) { }
@@ -38,7 +41,7 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
   }
 
   async getLoaderProjects(loader: ProjectLoader): Promise<Project[]> {
-    const workspaceConfig = await this.workspaceConfiguration;
+    const workspaceConfig = await this.workspaceConfiguration.get();
 
     const include = workspaceConfig.sources.filter(s => s[0] !== '!');
     const ignore = workspaceConfig.sources
@@ -50,7 +53,20 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
       include.map(pattern => this.globService.glob(pattern, { ignore }))
     )).flat();
 
-    return await Promise.all(matches.map(match => loader.loadProject(match)));
+    const projects = await Promise.all(matches.map(match => loader.loadProject(match)));
+
+    return projects.map(project => {
+      const targetDefaults: Record<string, TargetDefaults> = {}; // TODO -
+
+      const processedCommands = Object.entries(project.commands)
+        .filter(([k]) => targetDefaults[k]?.enabled ?? true)
+        .map(([k, v]) => [targetDefaults[k]?.targetName ?? k, v] satisfies [string, ProjectCommand | ProjectCommand[]]);
+
+      return {
+        ...project,
+        commands: Object.fromEntries(processedCommands),
+      };
+    });
   }
 
   getSortedProjectProcessors() {

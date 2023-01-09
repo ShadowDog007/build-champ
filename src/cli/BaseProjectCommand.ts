@@ -1,6 +1,7 @@
 import { Command, ErrorOptions } from 'commander';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
+import { Provider } from '../providers';
 
 @injectable()
 export abstract class BaseProjectCommand<TArgs extends unknown[]> {
@@ -16,8 +17,10 @@ export abstract class BaseProjectCommand<TArgs extends unknown[]> {
 
   abstract action(...args: TArgs): Promise<void>;
 
-  checkBaseDir(baseDir: string) {
-    if (!baseDir) {
+  async checkBaseDir(baseDir: Provider<string>) {
+    try {
+      await baseDir.get();
+    } catch {
       this.error(`Couldn't find git repository containing ${process.cwd()}`, { exitCode: 2 });
     }
   }

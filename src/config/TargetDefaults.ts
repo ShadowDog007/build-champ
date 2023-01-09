@@ -8,6 +8,11 @@ export interface TargetDefaults {
   enabled: string | false;
 
   /**
+   * Override target name
+   */
+  targetName: string;
+
+  /**
    * Regex matching targets which should be run before running this target
    */
   dependsOn: string[];

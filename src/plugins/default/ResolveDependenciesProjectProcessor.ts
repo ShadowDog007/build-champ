@@ -1,6 +1,7 @@
 import { inject, injectable } from 'inversify';
 import { isAbsolute, join, relative } from 'path';
 import { Project } from '../../models/Project';
+import { Provider } from '../../providers';
 import { TYPES } from '../../TYPES';
 import { SimpleProjectProcessor, ProjectProcessorPhase } from '../ProjectProcessor';
 
@@ -13,13 +14,13 @@ export class ResolveDependencies extends SimpleProjectProcessor {
   phase = ProjectProcessorPhase.first;
 
   constructor(
-    @inject(TYPES.BaseDirProvider) private readonly baseDir: PromiseLike<string>
+    @inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>
   ) {
     super();
   }
 
   async process(project: Project): Promise<Project> {
-    const baseDir = await this.baseDir;
+    const baseDir = await this.baseDir.get();
     return {
       ...project,
       dependencies: project.dependencies

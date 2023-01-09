@@ -5,7 +5,8 @@ import { mkdir, readFile, writeFile } from 'fs/promises';
 import { Container } from 'inversify';
 import { join, sep } from 'path';
 import { InitCommand } from '../../src/cli/InitCommand';
-import { createContainer, resetFs } from '../mocks';
+import { TYPES } from '../../src/TYPES';
+import { createContainer, MockProvider, resetFs } from '../mocks';
 import { CommandTestHelper } from './CommandTestHelper';
 
 describe(InitCommand, () => {
@@ -13,6 +14,7 @@ describe(InitCommand, () => {
 
   let command: InitCommand;
   let testHelper: CommandTestHelper;
+  let baseDirProvider: MockProvider<string>;
 
   beforeEach(async () => {
     await resetFs();
@@ -21,11 +23,13 @@ describe(InitCommand, () => {
 
     command = container.resolve(InitCommand);
     testHelper = new CommandTestHelper(command.command);
+
+    baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);
   });
 
   test('when no base dir, should exit with code 2',
     async () => {
-      command.baseDir = Promise.resolve('');
+      baseDirProvider.value = Promise.reject(new Error());
       return testHelper.testParseError([], 2, `Couldn't find git repository containing ${process.cwd()}`);
     }
   );

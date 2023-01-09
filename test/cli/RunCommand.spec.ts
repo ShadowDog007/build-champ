@@ -8,7 +8,7 @@ import { RunCommand } from '../../src/cli/RunCommand';
 import { ProjectService } from '../../src/services/ProjectService';
 import { SpawnService } from '../../src/services/SpawnService';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockProjectService, MockSpawnService, resetFs } from '../mocks';
+import { createContainer, MockProjectService, MockProvider, MockSpawnService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -16,6 +16,7 @@ describe('RunCommand', () => {
   let command: RunCommand;
   let testHelper: CommandTestHelper;
 
+  let baseDirProvider: MockProvider<string>;
   let projectService: MockProjectService;
 
   beforeEach(async () => {
@@ -27,6 +28,7 @@ describe('RunCommand', () => {
 
     command = container.resolve(RunCommand);
     testHelper = new CommandTestHelper(command.command);
+    baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);
     projectService = container.get(TYPES.ProjectService);
 
     projectService.addProjects(...Object.values(projectExamples));
@@ -36,7 +38,7 @@ describe('RunCommand', () => {
   describe('.parseAsync(args: string[])', () => {
     test('when no base dir, should exit with code 2',
       async () => {
-        command.baseDir = Promise.resolve('');
+        baseDirProvider.value = Promise.reject(new Error());
         return testHelper.testParseError(['dummy'], 2, `Couldn't find git repository containing ${cwd()}`);
       }
     );

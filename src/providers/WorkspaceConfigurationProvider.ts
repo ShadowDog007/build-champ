@@ -1,13 +1,13 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-import { ValueProvider } from '.';
+import { Provider } from '.';
 import { WorkspaceConfiguration } from '../config/WorkspaceConfiguration';
 import { ServiceTypes } from '../services';
 import { FileService } from '../services/FileService';
 import { GlobService } from '../services/GlobService';
 
 @injectable()
-export class WorkspaceConfigurationProvider extends ValueProvider<WorkspaceConfiguration> {
+export class WorkspaceConfigurationProvider extends Provider<WorkspaceConfiguration> {
 
   constructor(
     @inject(ServiceTypes.FileService) private readonly fileService: FileService,

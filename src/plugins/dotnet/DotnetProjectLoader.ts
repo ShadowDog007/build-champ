@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import { basename, dirname } from 'path';
+import { basename, dirname, extname } from 'path';
 import 'reflect-metadata';
 import { ProjectLoader } from '../ProjectLoader';
 import { DotnetProject } from './DotnetProject';
@@ -28,7 +28,7 @@ export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
     ]);
 
     return {
-      name: basename(match),
+      name: basename(match, extname(match)),
       dir: dirname(match),
       dependencies: [
         ...projectReferences,

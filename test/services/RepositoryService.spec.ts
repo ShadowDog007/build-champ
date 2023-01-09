@@ -13,7 +13,7 @@ describe(RepositoryServiceImpl, () => {
     container = new Container();
     container.load(containerModule);
     repositoryService = container.get(TYPES.RepositoryService);
-    git = await container.get(TYPES.GitProvider);
+    git = await container.get(TYPES.GitProvider).get();
   });
 
   describe('.getPathVersion', () => {

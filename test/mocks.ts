@@ -12,7 +12,7 @@ import { Project, ProjectWithVersion } from '../src/models/Project';
 import { ProjectVersion } from '../src/models/ProjectVersion';
 import { DefaultPlugin } from '../src/plugins/default/DefaultPlugin';
 import { DotnetPlugin } from '../src/plugins/dotnet/DotnetPlugin';
-import { ValueProvider } from '../src/providers';
+import { Provider } from '../src/providers';
 import { GlobServiceImpl } from '../src/services/GlobService';
 import { ProjectService } from '../src/services/ProjectService';
 import { RepositoryService } from '../src/services/RepositoryService';
@@ -21,10 +21,12 @@ import { TYPES } from '../src/TYPES';
 
 export function createContainer() {
   const container = new Container();
-  container.load(containerModule);
-  container.load(new DotnetPlugin().getContainerModule());
-  container.load(new DefaultPlugin().getContainerModule());
-  container.rebind(TYPES.BaseDirProvider).toConstantValue(new ValueProvider(() => Promise.resolve('/')));
+  container.load(
+    containerModule,
+    new DotnetPlugin().getContainerModule({}),
+    new DefaultPlugin().getContainerModule(),
+  );
+  container.rebind(TYPES.BaseDirProvider).toConstantValue(new MockProvider(Promise.resolve('/')));
   container.snapshot();
   return container;
 }
@@ -54,6 +56,22 @@ export function createDefaultProject(dir: string): Project {
     commands: {},
     tags: [],
   };
+}
+
+@injectable()
+export class MockProvider<T> extends Provider<T> {
+  constructor(public value: Promise<T>) {
+    super();
+  }
+
+  protected provider(): Promise<T> {
+    return this.value;
+  }
+
+  get(): Promise<T> {
+    return this.value;
+  }
+
 }
 
 @injectable()

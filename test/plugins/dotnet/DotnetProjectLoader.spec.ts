@@ -9,7 +9,6 @@ import { js2xml } from 'xml-js';
 import { DotnetProjectLoader } from '../../../src/plugins/dotnet/DotnetProjectLoader';
 import { DotnetSdkProjectFile } from '../../../src/plugins/dotnet/DotnetService';
 import { PluginTypes } from '../../../src/plugins/PluginTypes';
-import { TYPES } from '../../../src/TYPES';
 import { createContainer, resetFs } from '../../mocks';
 
 describe(DotnetProjectLoader, () => {
@@ -30,7 +29,7 @@ describe(DotnetProjectLoader, () => {
         ItemGroup: [{
           PackageReference: testProject ? [
             { _attributes: {
-
+              Include: 'Microsoft.NET.Test.Sdk'
             }
           }] : [],
           ProjectReference: dependencies?.map(dep => ({
@@ -54,7 +53,7 @@ describe(DotnetProjectLoader, () => {
 
     [csprojPath] = await addCsproj('Project1', { dependencies: ['Dependency1'] });
     [dependencyCsprojPath] = await addCsproj('Dependency1');
-    [testCsprojPath] = await addCsproj('Project1.Tests', { dependencies: ['Project1'] })
+    [testCsprojPath] = await addCsproj('Project1.Tests', { dependencies: ['Project1'], testProject: true });
   });
 
   test('should be registered in the container', () => {
@@ -71,7 +70,7 @@ describe(DotnetProjectLoader, () => {
       expect(result).not.toBeUndefined();
       expect(result.name).toBe(basename(csprojPath, '.csproj'));
       expect(result.dependencies).toMatchObject(['../Dependency1']);
-      expect(result.tags).toContain('project-type:dotnet');
+      expect(result.tags).toContain('plugin:dotnet');
     });
 
     test('when loading multiple dependencies should successfully load files', async () => {
@@ -83,17 +82,17 @@ describe(DotnetProjectLoader, () => {
       expect(dependencyResult).not.toBeUndefined();
       expect(dependencyResult.name).toBe(basename(dependencyCsprojPath, '.csproj'));
       expect(dependencyResult.dependencies).toMatchObject([]);
-      expect(dependencyResult.tags).toContain('project-type:dotnet');
+      expect(dependencyResult.tags).toContain('plugin:dotnet');
 
       expect(mainResult).not.toBeUndefined();
       expect(mainResult.name).toBe(basename(csprojPath, '.csproj'));
       expect(mainResult.dependencies).toMatchObject(['../Dependency1']);
-      expect(mainResult.tags).toContain('project-type:dotnet');
+      expect(mainResult.tags).toContain('plugin:dotnet');
     });
 
     test('when Directory.Build.props exists, should include as dependency', async () => {
       // Given
-      await writeFile('/Directory.Build.props', 'dummy');
+      await writeFile('/Directory.Build.props', '<Project />');
 
       // When
       const result = await loader.loadProject(csprojPath);
@@ -101,13 +100,13 @@ describe(DotnetProjectLoader, () => {
       // Verify
       expect(result.dependencies).toContain('/Directory.Build.props');
     });
+
+    test('when test project is loaded, should include test command', async () => {
+      // When
+      const result = await loader.loadProject(testCsprojPath);
+
+      // Verify
+      expect(result.commands.test).toMatchObject({ command: 'dotnet', arguments: ['test'] });
+    });
   });
-
-  test('when test project is loaded, should include test command', async () => {
-    // When
-    const result = await loader.loadProject(testCsprojPath);
-
-    // Verify
-    expect(result.commands.test).toMatchObject({ command: 'dotnet', arguments: ['test'] });
-  })
 });

@@ -1,6 +1,5 @@
 import { inject, injectable } from 'inversify';
-import { join } from 'lodash';
-import { dirname } from 'path';
+import { dirname, join } from 'path';
 import 'reflect-metadata';
 import { ElementCompact, xml2js } from 'xml-js';
 import { FileService } from '../../services/FileService';

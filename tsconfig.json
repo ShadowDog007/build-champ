@@ -11,10 +11,11 @@
     "noEmit": true
   },
 
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts",
+    "package.json",
+    "types.d.ts"
+  ],
   "exclude": ["node_modules"],
-
-  "references": [
-    { "path": "./tsconfig.lib.json" },
-    { "path": "./tsconfig.spec.json" }
-  ]
 }

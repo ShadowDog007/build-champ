@@ -19,7 +19,7 @@ describe('ProjectService', () => {
   let project: Omit<Project, 'dir'>;
 
   async function defineProject(dir: string, project: Omit<Project, 'dir'>) {
-    const fullDir = join(await container.get(TYPES.BaseDirProvider), dir);
+    const fullDir = join(await container.get(TYPES.BaseDirProvider).get(), dir);
     await mkdir(fullDir, { recursive: true });
     await writeFile(resolve(fullDir, '.project.yaml'), stringify(project));
   }

@@ -5,6 +5,7 @@ import { join } from 'path';
 import { Project, ProjectWithVersion } from '../models/Project';
 import { ProjectCommand } from '../models/ProjectCommand';
 import { ProjectCommandStatus } from '../models/ProjectCommandStatus';
+import { Provider } from '../providers';
 import { ContextService, ProjectContext } from '../services/ContextService';
 import { EvalService } from '../services/EvalService';
 import { ProjectService } from '../services/ProjectService';
@@ -55,7 +56,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
   constructor(
     @inject(TYPES.ProjectService) projectService: ProjectService,
     @inject(TYPES.RepositoryService) repositoryService: RepositoryService,
-    @inject(TYPES.BaseDirProvider) public baseDir: PromiseLike<string>,
+    @inject(TYPES.BaseDirProvider) public baseDir: Provider<string>,
     @inject(TYPES.ContextService) private readonly contextService: ContextService,
     @inject(TYPES.EvalService) private readonly evalService: EvalService,
     @inject(TYPES.SpawnService) private readonly spawnService: SpawnService,
@@ -74,7 +75,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
   }
 
   async action(command: string, options: RunCommandOptions): Promise<void> {
-    this.checkBaseDir(await this.baseDir);
+    await this.checkBaseDir(this.baseDir);
 
     const abortController = new AbortController();
     const projects = await this.listProjects(options);
@@ -200,7 +201,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
       return false;
     }
 
-    const baseDir = await this.baseDir;
+    const baseDir = await this.baseDir.get();
 
     return await new Promise<boolean>(resolve => {
       const commandName = projectCommand.name

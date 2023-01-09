@@ -13,7 +13,7 @@ async function start() {
 
   await loadPluginModules(container);
 
-  const program = await container.get(ProviderTypes.ProgramProvider);
+  const program = await container.get(ProviderTypes.ProgramProvider).get();
   await program.parseAsync();
 }
 
