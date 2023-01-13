@@ -27,10 +27,13 @@ export class WorkspaceConfigurationProvider extends Provider<WorkspaceConfigurat
 
     return {
       sources: ['**/*'],
-      plugins: {
-        'dotnet': {}
-      },
       ...config,
+      plugins: {
+        'default': {},
+        ...config?.plugins || {
+          dotnet: {}
+        },
+      }
     };
   }
 }

@@ -2,12 +2,15 @@ import { inject, injectable } from 'inversify';
 import { basename, dirname, extname } from 'path';
 import 'reflect-metadata';
 import { ProjectLoader } from '../ProjectLoader';
+import { DotnetPlugin } from './DotnetPlugin';
 import { DotnetProject } from './DotnetProject';
 import { DotnetService } from './DotnetService';
 import { DotnetTypes } from './DotnetTypes';
 
 @injectable()
 export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
+  get pluginIdentifier() { return DotnetPlugin.pluginIdentifier };
+
   readonly include = '**/*.csproj';
 
   constructor(

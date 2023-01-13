@@ -4,6 +4,8 @@ import { Project } from '../models/Project';
  * Loader registered from a plugin
  */
 export interface ProjectLoader<TProject extends Project = Project> {
+  readonly pluginIdentifier: symbol;
+
   /**
    * Pattern to match directories/projects to load as projects
    */

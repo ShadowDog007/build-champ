@@ -7,6 +7,12 @@ import { FlattenDependenciesProjectProcessor } from './FlattenDependenciesProjec
 import { ResolveDependencies as ResolveDependenciesProjectProcessor } from './ResolveDependenciesProjectProcessor';
 
 export class DefaultPlugin implements Plugin {
+
+  static pluginIdentifier = Symbol.for('DefaultPlugin');
+  get pluginIdentifier() {
+    return DefaultPlugin.pluginIdentifier;
+  }
+
   getContainerModule(): ContainerModule {
     return new ContainerModule(bind => {
       bind(PluginTypes.ProjectLoader).to(DefaultProjectLoader);

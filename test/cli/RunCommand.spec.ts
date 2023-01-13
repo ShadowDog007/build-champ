@@ -21,7 +21,7 @@ describe('RunCommand', () => {
 
   beforeEach(async () => {
     await resetFs();
-    const container = createContainer();
+    const container = await createContainer();
 
     container.rebind<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
     container.rebind<SpawnService>(TYPES.SpawnService).to(MockSpawnService);

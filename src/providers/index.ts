@@ -2,25 +2,34 @@ import { Command } from 'commander';
 import { injectable, interfaces } from 'inversify';
 import 'reflect-metadata';
 import { SimpleGit } from 'simple-git';
+import { PluginConfiguration } from '../config/PluginConfiguration';
 import { WorkspaceConfiguration } from '../config/WorkspaceConfiguration';
 import { TypeRecord } from '../TYPES';
 import { PromiseCache } from '../util/PromiseCache';
 
+export type ProviderFunction<T, K extends string | symbol | undefined = undefined>
+  = K extends string | symbol
+    ? (key: K) => Promise<T>
+    : () => Promise<T>;
+
 @injectable()
-export abstract class Provider<T> implements Provider<T> {
+export abstract class Provider<T, K extends string | symbol | undefined = undefined> {
 
-  private valueCache = new PromiseCache(() => this.provider());
+  private valueCache = new PromiseCache<T, K>(
+    ((key: K) => this.provider(key as never)) as ProviderFunction<T, K>
+  );
 
-  protected abstract provider(): Promise<T>;
+  protected abstract provider(key: K): Promise<T>;
 
-  get(): Promise<T> {
-    return this.valueCache.get();
+  get(key?: K): Promise<T> {
+    return this.valueCache.get(key as never);
   }
 }
 
 export const ProviderTypes = {
   BaseDirProvider: Symbol.for('BaseDirProvider') as interfaces.ServiceIdentifier<Provider<string>>,
   GitProvider: Symbol.for('GitProvider') as interfaces.ServiceIdentifier<Provider<SimpleGit>>,
+  PluginConfigurationProvider: Symbol.for('PluginConfigurationProvider') as interfaces.ServiceIdentifier<Provider<PluginConfiguration, symbol>>,
   ProgramProvider: Symbol.for('ProgramProvider') as interfaces.ServiceIdentifier<Provider<Command>>,
   WorkspaceConfigurationProvider: Symbol.for('WorkspaceConfigurationProvider') as interfaces.ServiceIdentifier<Provider<WorkspaceConfiguration>>,
-}  satisfies TypeRecord<Provider<unknown>>;
+} satisfies TypeRecord<Provider<unknown> | Provider<unknown, string> | Provider<unknown, symbol>>;

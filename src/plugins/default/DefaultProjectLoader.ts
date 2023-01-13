@@ -1,18 +1,21 @@
 import { inject, injectable } from 'inversify';
-import { mapValues } from 'lodash';
+import { mapValues, uniq } from 'lodash';
 import { dirname, join } from 'path';
 import 'reflect-metadata';
 import { Project } from '../../models/Project';
 import { ServiceTypes } from '../../services';
 import { FileService } from '../../services/FileService';
-import { PromisesCache } from '../../util/PromiseCache';
+import { PromiseCache } from '../../util/PromiseCache';
 import { ProjectLoader } from '../ProjectLoader';
+import { DefaultPlugin } from './DefaultPlugin';
 
 @injectable()
 export class DefaultProjectLoader implements ProjectLoader {
+  get pluginIdentifier() { return DefaultPlugin.pluginIdentifier };
+
   include = '**/.{module,project}.{json,yaml,yml}';
 
-  private readonly projectFileCache = new PromisesCache(
+  private readonly projectFileCache = new PromiseCache(
     (file: string) => this.fileService.readFileYaml<Partial<Omit<Project, 'dir'>>>(file)
   );
 
@@ -37,11 +40,11 @@ export class DefaultProjectLoader implements ProjectLoader {
         ...extension?.dependencies || [],
         ...yaml.dependencies || [],
       ],
-      tags: [
+      tags: uniq([
         'plugin:default',
-        ...extension?.dependencies || [],
+        ...extension?.tags || [],
         ...yaml.tags || [],
-      ],
+      ]),
       commands: {
         ...extension?.commands,
         ...yaml.commands,
@@ -54,7 +57,7 @@ export class DefaultProjectLoader implements ProjectLoader {
 
     return {
       ...extension,
-      dependencies: extension.dependencies.map(d => join(projectDir, extension.dir, d)),
+      dependencies: extension.dependencies.map(d => join(extension.dir, d)),
       commands: {
         ...mapValues(extension?.commands, commandPipeline => [commandPipeline]
           .flat()

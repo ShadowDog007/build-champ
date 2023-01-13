@@ -19,7 +19,7 @@ describe(InitCommand, () => {
   beforeEach(async () => {
     await resetFs();
 
-    container = createContainer();
+    container = await createContainer();
 
     command = container.resolve(InitCommand);
     testHelper = new CommandTestHelper(command.command);

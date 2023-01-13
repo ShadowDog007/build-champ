@@ -1,27 +1,19 @@
-export class PromiseCache<T> {
-  private promise?: Promise<T>;
+export type CacheProvider<T, K extends string | symbol | undefined = undefined>
+  = K extends string | symbol
+    ? ((key: K) => Promise<T>)
+    : (() => Promise<T>);
+
+export class PromiseCache<T, K extends string | symbol | undefined = undefined> {
+  private static readonly defaultKey = Symbol.for('$default');
+  private readonly promises: Partial<Record<string | symbol, Promise<T>>> = {};
 
   constructor(
-    private readonly provider: () => Promise<T>
+    private readonly provider: CacheProvider<T, K>
   ) { }
 
+  get(key?: K): Promise<T> {
+    const keyOrDefault = key ?? PromiseCache.defaultKey;
 
-  get() {
-    return this.promise ?? (this.promise = this.provider());
-  }
-}
-
-export class PromisesCache<T, TKey extends string | symbol> {
-  private readonly promises: Record<string | symbol, Promise<T>> = {};
-
-  constructor(
-    private readonly provider: (key: TKey) => Promise<T>
-  ) { }
-
-
-  get(key: TKey) {
-    const keyOrDefault = key ?? '$default';
-
-    return this.promises[keyOrDefault] ?? (this.promises[keyOrDefault] = this.provider(key as TKey));
+    return this.promises[keyOrDefault] ?? (this.promises[keyOrDefault] = this.provider(key as never));
   }
 }

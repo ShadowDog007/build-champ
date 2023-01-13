@@ -8,8 +8,8 @@ describe(FlattenDependenciesProjectProcessor, () => {
   let container: Container;
   let processor: FlattenDependenciesProjectProcessor;
 
-  beforeEach(() => {
-    container = createContainer();
+  beforeEach(async () => {
+    container = await createContainer();
     processor = container.resolve(FlattenDependenciesProjectProcessor);
   });
 

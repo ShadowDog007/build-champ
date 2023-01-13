@@ -6,6 +6,7 @@ import { Container } from 'inversify';
 import { basename } from 'path';
 import 'reflect-metadata';
 import { js2xml } from 'xml-js';
+import { DotnetPlugin } from '../../../src/plugins/dotnet/DotnetPlugin';
 import { DotnetProjectLoader } from '../../../src/plugins/dotnet/DotnetProjectLoader';
 import { DotnetSdkProjectFile } from '../../../src/plugins/dotnet/DotnetService';
 import { PluginTypes } from '../../../src/plugins/PluginTypes';
@@ -48,7 +49,7 @@ describe(DotnetProjectLoader, () => {
 
   beforeEach(async () => {
     await resetFs();
-    container = createContainer();
+    container = await createContainer();
     loader = container.resolve(DotnetProjectLoader);
 
     [csprojPath] = await addCsproj('Project1', { dependencies: ['Dependency1'] });
@@ -57,11 +58,11 @@ describe(DotnetProjectLoader, () => {
   });
 
   test('should be registered in the container', () => {
-    const registeredHandler = container.getAll(PluginTypes.ProjectLoader).find(h => h instanceof DotnetProjectLoader);
+    const registeredHandler = container.getAll(PluginTypes.ProjectLoader).find(h => h.pluginIdentifier === DotnetPlugin.pluginIdentifier);
     expect(registeredHandler).toBeInstanceOf(DotnetProjectLoader);
   });
 
-  describe('.loadMetadata(filePath: string)', () => {
+  describe('.loadProject(filePath: string)', () => {
     test('should successfully load file', async () => {
       // When
       const result = await loader.loadProject(csprojPath);

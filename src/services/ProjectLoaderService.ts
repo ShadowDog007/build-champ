@@ -1,5 +1,7 @@
 import { inject, injectable, multiInject } from 'inversify';
+import minimatch from 'minimatch';
 import 'reflect-metadata';
+import { PluginConfiguration } from '../config/PluginConfiguration';
 import { TargetDefaults } from '../config/TargetDefaults';
 import { WorkspaceConfiguration } from '../config/WorkspaceConfiguration';
 import { Project } from '../models/Project';
@@ -7,7 +9,8 @@ import { ProjectCommand } from '../models/ProjectCommand';
 import { PluginTypes } from '../plugins/PluginTypes';
 import { ProjectLoader } from '../plugins/ProjectLoader';
 import { ProjectProcessor, ProjectProcessorPhase } from '../plugins/ProjectProcessor';
-import { Provider } from '../providers';
+import { Provider, ProviderTypes } from '../providers';
+import { PluginConfigurationProvider } from '../providers/PluginConfigurationProvider';
 import { TYPES } from '../TYPES';
 import { GlobService } from './GlobService';
 
@@ -20,6 +23,7 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
 
   constructor(
     @inject(TYPES.GlobService) private readonly globService: GlobService,
+    @inject(ProviderTypes.PluginConfigurationProvider) private readonly pluginConfiguration: PluginConfigurationProvider,
     @inject(TYPES.WorkspaceConfigurationProvider) private readonly workspaceConfiguration: Provider<WorkspaceConfiguration>,
     @multiInject(PluginTypes.ProjectLoader) private readonly projectLoaders: ProjectLoader[],
     @multiInject(PluginTypes.ProjectProcessor) private readonly projectProcessors: ProjectProcessor[],
@@ -50,13 +54,14 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
       .concat(loader.exclude ? loader.exclude : [], `!${loader.include}`);
 
     const matches = (await Promise.all(
-      include.map(pattern => this.globService.glob(pattern, { ignore }))
+      include.map(pattern => this.globService.glob(pattern, { ignore, dot: loader.include.includes('/.') }))
     )).flat();
 
     const projects = await Promise.all(matches.map(match => loader.loadProject(match)));
+    const pluginConfiguration = await this.pluginConfiguration.get(loader.pluginIdentifier);
 
     return projects.map(project => {
-      const targetDefaults: Record<string, TargetDefaults> = {}; // TODO -
+      const targetDefaults = this.getTargetDefaultsForProject(pluginConfiguration, project);
 
       const processedCommands = Object.entries(project.commands)
         .filter(([k]) => targetDefaults[k]?.enabled ?? true)
@@ -80,6 +85,15 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
         }
         return (a.phase ?? ProjectProcessorPhase.middle) - (b.phase ?? ProjectProcessorPhase.middle);
       });
+  }
+
+  getTargetDefaultsForProject(pluginConfiguration: PluginConfiguration, project: Project): Record<string, TargetDefaults> {
+    return Object.fromEntries([
+      ...Object.entries(pluginConfiguration.targetDefaults ?? {}),
+      ...Object.entries(pluginConfiguration.sourceTargetDefaults ?? {})
+        .filter(([pattern]) => minimatch(project.dir, pattern))
+        .map(([,targetDefaults]) => Object.entries(targetDefaults))
+    ]);
   }
 
 }

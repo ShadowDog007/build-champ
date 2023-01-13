@@ -18,7 +18,7 @@ describe(TemplateCommand, () => {
 
   beforeEach(async () => {
     await resetFs();
-    const container = createContainer();
+    const container = await createContainer();
 
     baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);
     container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();

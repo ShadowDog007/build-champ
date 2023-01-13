@@ -67,7 +67,7 @@ describe(ListCommand, () => {
 
   beforeEach(async () => {
     await resetFs();
-    const container = createContainer();
+    const container = await createContainer();
 
     container.rebind<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
     container.rebind<RepositoryService>(TYPES.RepositoryService).to(MockRepositoryService).inSingletonScope();

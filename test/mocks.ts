@@ -10,8 +10,7 @@ import 'reflect-metadata';
 import { containerModule } from '../src/containerModule';
 import { Project, ProjectWithVersion } from '../src/models/Project';
 import { ProjectVersion } from '../src/models/ProjectVersion';
-import { DefaultPlugin } from '../src/plugins/default/DefaultPlugin';
-import { DotnetPlugin } from '../src/plugins/dotnet/DotnetPlugin';
+import { loadPluginModules } from '../src/plugins';
 import { Provider } from '../src/providers';
 import { GlobServiceImpl } from '../src/services/GlobService';
 import { ProjectService } from '../src/services/ProjectService';
@@ -19,14 +18,12 @@ import { RepositoryService } from '../src/services/RepositoryService';
 import { SpawnService } from '../src/services/SpawnService';
 import { TYPES } from '../src/TYPES';
 
-export function createContainer() {
+export async function createContainer() {
   const container = new Container();
-  container.load(
-    containerModule,
-    new DotnetPlugin().getContainerModule({}),
-    new DefaultPlugin().getContainerModule(),
-  );
+  container.load(containerModule);
   container.rebind(TYPES.BaseDirProvider).toConstantValue(new MockProvider(Promise.resolve('/')));
+
+  await loadPluginModules(container);
   container.snapshot();
   return container;
 }

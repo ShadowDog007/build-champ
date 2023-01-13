@@ -2,6 +2,7 @@ import { Container } from 'inversify';
 import { uniq } from 'lodash';
 import { ProviderTypes } from '../providers';
 import { Plugin } from './Plugin';
+import { PluginTypes } from './PluginTypes';
 
 export async function loadPluginModules(container: Container) {
   const workspaceConfiguration = await container.get(ProviderTypes.WorkspaceConfigurationProvider).get();
@@ -10,16 +11,19 @@ export async function loadPluginModules(container: Container) {
 
   for (const pluginName of plugins) {
     const plugin = await getPlugin(pluginName);
-    container.load(plugin.getContainerModule(workspaceConfiguration.plugins[pluginName]));
+    container.load(plugin.getContainerModule());
+    container.bind(PluginTypes.PluginIdentifierConfigMapping).toConstantValue([plugin.pluginIdentifier, pluginName]);
   }
 }
 
 async function getPlugin(plugin: string): Promise<Plugin> {
+  let module: { default: Plugin };
+
   try {
-    // Check if this is an internal plugin
-    return await import(`./${plugin}`);
+    module = await import(`./${plugin}`);
   } catch {
-    //
+    module = await import(plugin);
   }
-  return import(plugin);
+
+  return module.default;
 }

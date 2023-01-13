@@ -12,7 +12,7 @@ export const containerModule = new ContainerModule(bind => {
   forEach(commands, v => bind(TYPES.Command).to(v).inSingletonScope());
 
   forIn(ProviderTypes, (t, k) =>
-    bind(t as interfaces.ServiceIdentifier<Provider<unknown>>)
+    bind(t as interfaces.ServiceIdentifier<Provider<unknown> | Provider<unknown, string> | Provider<unknown, symbol>>)
       .to(providerTypeMappings[k as keyof typeof ProviderTypes])
       .inSingletonScope()
   );

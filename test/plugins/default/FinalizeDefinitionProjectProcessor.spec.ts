@@ -14,7 +14,7 @@ describe(FinalizeDefinitionProjectProcessor, () => {
   beforeEach(async () => {
     await resetFs();
 
-    container = createContainer();
+    container = await createContainer();
     processor = container.resolve(FinalizeDefinitionProjectProcessor);
   });
 

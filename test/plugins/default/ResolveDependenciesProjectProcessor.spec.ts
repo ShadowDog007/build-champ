@@ -8,8 +8,8 @@ describe(ResolveDependenciesProjectProcessor, () => {
   let container: Container;
   let processor: ResolveDependenciesProjectProcessor;
 
-  beforeEach(() => {
-    container = createContainer();
+  beforeEach(async () => {
+    container = await createContainer();
 
     processor = container.resolve(ResolveDependenciesProjectProcessor);
   });

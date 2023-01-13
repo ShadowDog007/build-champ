@@ -5,7 +5,7 @@ import { ElementCompact, xml2js } from 'xml-js';
 import { FileService } from '../../services/FileService';
 import { GlobService } from '../../services/GlobService';
 import { TYPES } from '../../TYPES';
-import { PromiseCache, PromisesCache } from '../../util/PromiseCache';
+import { PromiseCache } from '../../util/PromiseCache';
 
 export interface DotnetSdkProjectFile extends ElementCompact {
   Project: ElementCompact & {
@@ -32,11 +32,11 @@ export class DotnetService {
     () => this.globService.glob('**/Directory.*.props', { nocase: true })
   );
 
-  private readonly projectFileCache = new PromisesCache(
+  private readonly projectFileCache = new PromiseCache(
     (match: string) => this.loadProjectFile(match)
   );
 
-  private readonly projectReferenceCache = new PromisesCache(
+  private readonly projectReferenceCache = new PromiseCache(
     (match: string) => this.loadProjectReferences(match)
   );
 

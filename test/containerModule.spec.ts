@@ -1,19 +1,20 @@
+jest.mock('fs');
+jest.mock('fs/promises');
+
 import { Container } from 'inversify';
 import { containerModule } from '../src/containerModule';
-import { DefaultPlugin } from '../src/plugins/default/DefaultPlugin';
-import { DotnetPlugin } from '../src/plugins/dotnet/DotnetPlugin';
+import { loadPluginModules } from '../src/plugins';
 import { multiInjectTypes, singleInjectTypes } from '../src/TYPES';
+import { resetFs } from './mocks';
 
 describe('containerModule', () => {
   let container: Container;
 
-  beforeAll(() => {
+  beforeAll(async () => {
+    await resetFs();
     container = new Container();
-    container.load(
-      containerModule,
-      new DotnetPlugin().getContainerModule({}),
-      new DefaultPlugin().getContainerModule()
-    );
+    container.load(containerModule);
+    await loadPluginModules(container);
   });
 
   test.each(Object.values(singleInjectTypes))('should have %p registered once', type => {
