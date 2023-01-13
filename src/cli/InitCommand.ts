@@ -15,8 +15,7 @@ export class InitCommand extends BaseProjectCommand<[string?]> {
   ) {
     super();
 
-    this.command
-      .name('init')
+    this.command.name('init')
       .description('Initializes a directory with a default .project.yaml file')
       .argument('[projectDir]', 'Directory to initalize (default: current working directory)');
   }
