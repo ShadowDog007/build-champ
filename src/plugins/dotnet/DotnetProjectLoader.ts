@@ -19,16 +19,25 @@ export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
 
   async loadProject(match: string): Promise<DotnetProject> {
     const [
+      projectSdk,
       projectProperties,
       packageReferences,
       projectReferences,
       directoryPropFiles,
     ] = await Promise.all([
+      this.dotnetService.getProjectSdk(match),
       this.dotnetService.getProjectProperties(match),
       this.dotnetService.getPackageReferences(match),
       this.dotnetService.getProjectDependencies(match),
       this.dotnetService.getMatchingDirectoryPropFiles(match)
     ]);
+
+    const isTestProject = packageReferences.includes('Microsoft.NET.Test.Sdk');
+    const isPackable = projectProperties.IsPackable
+      ? projectProperties.IsPackable.localeCompare('false', undefined, { sensitivity: 'base' }) !== 0
+      : !isTestProject;
+
+    const projectFileName = basename(match);
 
     return {
       name: basename(match, extname(match)),
@@ -37,30 +46,39 @@ export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
         ...projectReferences,
         ...directoryPropFiles
       ],
-      commands: {
+      // Only use dotnet CLI commands with SDK style projects
+      commands: projectSdk ? {
         restore: {
-          command: 'dotnet',
-          arguments: ['restore'],
+          command: 'dotnet restore',
         },
         build: {
-          command: 'dotnet',
-          arguments: ['build']
+          command: 'dotnet build',
         },
-        test: packageReferences.includes('Microsoft.NET.Test.Sdk') ? {
-          command: 'dotnet',
-          arguments: ['test'],
+        test: isTestProject ? {
+          command: 'dotnet test',
         } : undefined,
-        package: projectProperties['IsPackable']?.localeCompare('false', undefined, { sensitivity: 'base' }) !== 0 ? {
-          command: 'dotnet',
-          arguments: ['package'],
+        package: isPackable ? {
+          command: 'dotnet pack'
         } : undefined,
         publish: {
-          command: 'dotnet',
-          arguments: ['publish'],
+          command: 'dotnet publish',
         }
+      } : {
+        restore: {
+          command: `msbuild ${projectFileName} -t:restore`
+        },
+        build: {
+          command: `msbuild ${projectFileName} -t:build`
+        },
+        publish: {
+          command: `msbuild ${projectFileName} -t:publish`
+        },
       },
       tags: [
         'plugin:dotnet',
+        ...projectSdk ? [
+          `dotnet-sdk:${projectSdk}`,
+        ] : []
       ]
     };
   }

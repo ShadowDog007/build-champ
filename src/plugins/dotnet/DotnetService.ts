@@ -8,10 +8,15 @@ import { TYPES } from '../../TYPES';
 import { PromiseCache } from '../../util/PromiseCache';
 
 export interface DotnetSdkProjectFile extends ElementCompact {
-  Project: ElementCompact & {
-    PropertyGroup?: ElementCompact | ElementCompact[];
-    ItemGroup?: ItemGroup | ItemGroup[];
-  };
+  Project: DotnetSdkProject;
+}
+
+export interface DotnetSdkProject extends ElementCompact {
+  _attributes?: {
+    Sdk?: string;
+  },
+  PropertyGroup?: ElementCompact | ElementCompact[];
+  ItemGroup?: ItemGroup | ItemGroup[];
 }
 
 export interface ItemGroup extends ElementCompact {
@@ -57,6 +62,11 @@ export class DotnetService {
     const directoryPropFiles = await this.getDirectoryPropFiles();
 
     return directoryPropFiles.filter(f => dirOrCsproj.startsWith(dirname(f)));
+  }
+
+  async getProjectSdk(csproj: string): Promise<string | undefined> {
+    const projectFile = await this.getProjectFile(csproj);
+    return projectFile.Project?._attributes?.Sdk;
   }
 
   async getProjectProperties(csproj: string): Promise<Record<string, string>> {
