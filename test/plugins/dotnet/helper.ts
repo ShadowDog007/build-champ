@@ -5,36 +5,37 @@ import { js2xml } from 'xml-js';
 import { DotnetSdkProjectFile } from '../../../src/plugins/dotnet/DotnetService';
 
 export function addCsproj(name: string, baseDir: string, { dependencies, testProject, properties }: {
-    dependencies?: string[],
-    testProject?: boolean,
-    properties?: Record<string, string>,
-  } = {}): [string, DotnetSdkProjectFile] {
-    const filePath = join(baseDir, name, `${name}.csproj`);
-    const content: DotnetSdkProjectFile = {
-      Project: {
-        _attributes: {
-          Sdk: 'Microsoft.NET.Sdk'
-        },
-        PropertyGroup: [{
-          ...mapValues(properties, v => ({ _text: v })),
-        }],
-        ItemGroup: [{
-          PackageReference: testProject ? [
-            { _attributes: {
+  dependencies?: string[],
+  testProject?: boolean,
+  properties?: Record<string, string>,
+} = {}): [string, DotnetSdkProjectFile] {
+  const filePath = join(baseDir, name, `${name}.csproj`);
+  const content: DotnetSdkProjectFile = {
+    Project: {
+      _attributes: {
+        Sdk: 'Microsoft.NET.Sdk'
+      },
+      PropertyGroup: [{
+        ...mapValues(properties, v => ({ _text: v })),
+      }],
+      ItemGroup: [{
+        PackageReference: testProject ? [
+          {
+            _attributes: {
               Include: 'Microsoft.NET.Test.Sdk'
             }
           }] : [],
-          ProjectReference: dependencies?.map(dep => ({
-            _attributes: {
-              Include: `../${dep}/${dep}.csproj`,
-            }
-          }))
-        }]
-      }
-    };
+        ProjectReference: dependencies?.map(dep => ({
+          _attributes: {
+            Include: `../${dep}/${dep}.csproj`,
+          }
+        }))
+      }]
+    }
+  };
 
-    saveCsproj(filePath, content);
-    return [filePath, content];
+  saveCsproj(filePath, content);
+  return [filePath, content];
 }
 
 export function saveCsproj(filePath: string, content: DotnetSdkProjectFile) {

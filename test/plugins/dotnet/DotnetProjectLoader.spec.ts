@@ -72,7 +72,7 @@ describe(DotnetProjectLoader, () => {
 
     test('when project is a test project, should include test command without pack', async () => {
       // Given
-      const [projectPath] = addCsproj('TestProject', baseDir, { testProject: true })
+      const [projectPath] = addCsproj('TestProject', baseDir, { testProject: true });
 
       // When
       const result = await loader.loadProject(projectPath);

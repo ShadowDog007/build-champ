@@ -8,7 +8,7 @@ import { DotnetService } from '../../../src/plugins/dotnet/DotnetService';
 import { DotnetTypes } from '../../../src/plugins/dotnet/DotnetTypes';
 import { ProviderTypes } from '../../../src/providers';
 import { createContainer, resetFs } from '../../mocks';
-import { addCsproj, saveCsproj } from './helper';
+import { saveCsproj } from './helper';
 
 describe(DotnetService, () => {
   let container: Container;
