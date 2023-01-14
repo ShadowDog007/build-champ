@@ -10,7 +10,6 @@ import { ProjectProcessor, ProjectProcessorPhase } from '../ProjectProcessor';
 @injectable()
 export class FlattenDependenciesProjectProcessor extends ProjectProcessor {
 
-  readonly batch = true;
   readonly phase = ProjectProcessorPhase.end;
 
   async processBatch(projects: Project[]): Promise<Project[]> {

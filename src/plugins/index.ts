@@ -17,7 +17,7 @@ export async function loadPluginModules(container: Container) {
 }
 
 async function getPlugin(plugin: string): Promise<Plugin> {
-  let module: { default: Plugin };
+  let module: { default: Plugin; };
 
   try {
     module = await import(`./${plugin}`);

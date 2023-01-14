@@ -11,7 +11,7 @@ import { DefaultPlugin } from './DefaultPlugin';
 
 @injectable()
 export class DefaultProjectLoader implements ProjectLoader {
-  get pluginIdentifier() { return DefaultPlugin.pluginIdentifier };
+  get pluginIdentifier() { return DefaultPlugin.pluginIdentifier; }
 
   include = '**/.{module,project}.{json,yaml,yml}';
 

@@ -14,4 +14,4 @@ export interface WorkspaceConfiguration {
 }
 
 export type PluginConfigurationRecord = Record<string, PluginConfiguration>
-  & { dotnet?: DotnetPluginConfiguration };
+  & { dotnet?: DotnetPluginConfiguration; };

@@ -65,7 +65,7 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
 
       const processedCommands = Object.entries(project.commands)
         .filter(([k]) => targetDefaults[k]?.enabled ?? true)
-        .map(([k, v]) => [targetDefaults[k]?.targetName ?? k, v] satisfies [string, ProjectCommand | ProjectCommand[]]);
+        .map(([k, v]) => [targetDefaults[k]?.targetName ?? k, v]satisfies[string, ProjectCommand | ProjectCommand[]]);
 
       return {
         ...project,
@@ -92,7 +92,7 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
       ...Object.entries(pluginConfiguration.targetDefaults ?? {}),
       ...Object.entries(pluginConfiguration.sourceTargetDefaults ?? {})
         .filter(([pattern]) => minimatch(project.dir, pattern))
-        .map(([,targetDefaults]) => Object.entries(targetDefaults))
+        .map(([, targetDefaults]) => Object.entries(targetDefaults))
     ]);
   }
 

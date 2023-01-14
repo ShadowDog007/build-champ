@@ -9,7 +9,7 @@ import { DotnetTypes } from './DotnetTypes';
 
 @injectable()
 export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
-  get pluginIdentifier() { return DotnetPlugin.pluginIdentifier };
+  get pluginIdentifier() { return DotnetPlugin.pluginIdentifier; }
 
   readonly include = '**/*.csproj';
 

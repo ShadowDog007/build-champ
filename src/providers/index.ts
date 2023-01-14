@@ -9,8 +9,8 @@ import { PromiseCache } from '../util/PromiseCache';
 
 export type ProviderFunction<T, K extends string | symbol | undefined = undefined>
   = K extends string | symbol
-    ? (key: K) => Promise<T>
-    : () => Promise<T>;
+  ? (key: K) => Promise<T>
+  : () => Promise<T>;
 
 @injectable()
 export abstract class Provider<T, K extends string | symbol | undefined = undefined> {
