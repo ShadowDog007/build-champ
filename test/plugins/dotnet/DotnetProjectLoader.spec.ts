@@ -56,16 +56,16 @@ describe(DotnetProjectLoader, () => {
 
       // Verify
       expect(result.commands.restore).toMatchObject({
-        command: 'dotnet restore',
+        command: 'dotnet restore ${{env.DOTNET_RESTORE_ARGS || ""}}',
       });
       expect(result.commands.build).toMatchObject({
-        command: 'dotnet build',
+        command: 'dotnet build -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}}',
       });
       expect(result.commands.publish).toMatchObject({
-        command: 'dotnet publish',
+        command: 'dotnet publish -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}} ${{env.DOTNET_PUBLISH_ARGS || ""}}',
       });
       expect(result.commands.package).toMatchObject({
-        command: 'dotnet pack',
+        command: 'dotnet pack -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}} ${{env.DOTNET_PACK_ARGS || ""}}',
       });
       expect(result.commands.test).toBe(undefined);
     });
@@ -79,7 +79,7 @@ describe(DotnetProjectLoader, () => {
 
       // Verify
       expect(result.commands.test).toMatchObject({
-        command: 'dotnet test',
+        command: 'dotnet test -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}} ${{env.DOTNET_TEST_ARGS || ""}}',
       });
       expect(result.commands.package).toBe(undefined);
     });
@@ -132,7 +132,7 @@ describe(DotnetProjectLoader, () => {
       const result = await loader.loadProject(testCsprojPath);
 
       // Verify
-      expect(result.commands.test).toMatchObject({ command: 'dotnet test' });
+      expect(result.commands.test).toMatchObject({ command: 'dotnet test -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}}' });
     });
   });
 });

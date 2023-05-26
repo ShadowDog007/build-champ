@@ -49,29 +49,29 @@ export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
       // Only use dotnet CLI commands with SDK style projects
       commands: projectSdk ? {
         restore: {
-          command: 'dotnet restore',
+          command: 'dotnet restore ${{env.DOTNET_RESTORE_ARGS || ""}}',
         },
         build: {
-          command: 'dotnet build',
+          command: 'dotnet build -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}}',
         },
         test: isTestProject ? {
-          command: 'dotnet test',
+          command: 'dotnet test -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}} ${{env.DOTNET_TEST_ARGS || ""}}',
         } : undefined,
         package: isPackable ? {
-          command: 'dotnet pack'
+          command: 'dotnet pack -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}} ${{env.DOTNET_PACK_ARGS || ""}}'
         } : undefined,
         publish: {
-          command: 'dotnet publish',
+          command: 'dotnet publish -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}} ${{env.DOTNET_PUBLISH_ARGS || ""}}',
         }
       } : {
         restore: {
           command: `msbuild ${projectFileName} -t:restore`
         },
         build: {
-          command: `msbuild ${projectFileName} -t:build`
+          command: `msbuild ${projectFileName} -t:build -c $\{{env.DOTNET_CONFIGURATION || "Release"}} $\{{env.DOTNET_BUILD_ARGS || ""}}`
         },
         publish: {
-          command: `msbuild ${projectFileName} -t:publish`
+          command: `msbuild ${projectFileName} -t:publish -c $\{{env.DOTNET_CONFIGURATION || "Release"}} $\{{env.DOTNET_PUBLISH_ARGS || ""}}`
         },
       },
       tags: [
