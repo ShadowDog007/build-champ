@@ -8,7 +8,7 @@ import { containerModule } from '../../src/containerModule';
 import { Provider } from '../../src/providers';
 import { BaseDirProvider } from '../../src/providers/BaseDirProvider';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, resetFs } from '../mocks';
+import { resetFs } from '../mocks';
 
 describe('BaseDirProvider', () => {
   let container: Container;

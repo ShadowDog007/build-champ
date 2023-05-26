@@ -1,5 +1,4 @@
 import { Container } from 'inversify';
-import { uniq } from 'lodash';
 import { ProviderTypes } from '../providers';
 import { Plugin } from './Plugin';
 import { PluginTypes } from './PluginTypes';
@@ -7,7 +6,9 @@ import { PluginTypes } from './PluginTypes';
 export async function loadPluginModules(container: Container) {
   const workspaceConfiguration = await container.get(ProviderTypes.WorkspaceConfigurationProvider).get();
 
-  const plugins = uniq([...Object.keys(workspaceConfiguration.plugins), 'default']);
+  const plugins = Object.entries(workspaceConfiguration.plugins)
+    .filter(([, config]) => config.enabled ?? true)
+    .map(([plugin]) => plugin);
 
   for (const pluginName of plugins) {
     const plugin = await getPlugin(pluginName);

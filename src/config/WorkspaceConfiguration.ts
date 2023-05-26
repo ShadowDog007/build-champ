@@ -8,7 +8,8 @@ export interface WorkspaceConfiguration {
   plugins: PluginConfigurationRecord;
 
   /**
-   * Glob patterns to match projects to be loaded
+   * Glob patterns to match projects to be loaded.
+   * Can use patterns prefixed with `!` to exclude projects`
    */
   sources: string[];
 }

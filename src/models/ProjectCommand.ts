@@ -11,11 +11,9 @@ export interface ProjectCommand {
   command: string;
 
   /**
-   * Directory to run this command from
-   * 
-   * @default Directory the project file is in
+   * Arguments to pass to the command
    */
-  workingDirectory?: string;
+  arguments?: string[];
 
   /**
    * Run the command in a specific or default shell
@@ -27,9 +25,11 @@ export interface ProjectCommand {
   shell?: boolean | string;
 
   /**
-   * Arguments to pass to the command
+   * Directory to run this command from
+   * 
+   * @default Directory the project file is in
    */
-  arguments?: string[];
+  workingDirectory?: string;
 
   /**
    * Condition expression evaluated before command runs
