@@ -54,4 +54,36 @@ commands:
 
 ## Extensions
 
-In cases where shared
+Extensions are files can be used to store shared project configuration in a central location.
+
+Using `extends` property of your project you can reference the relative path of an extension file.
+This will merge the content of the extension with your project file.
+
+Note that `extends` can also be used in extension files.
+
+| field                    | behaviour |
+| ------------------------ | --------- |
+| `dependencies`           | merge     |
+| `tags`                   | merge     |
+| `commands.{commandName}` | replace   |
+
+
+### Example
+
+```yaml
+## .npm.project-ex.yml
+tags:
+  - lang:typescript
+
+commands:
+  build:
+    - name: restore packages
+      command: npm install
+    - name: build
+      command: npm run build
+
+
+## src/project1/.project.yml
+extends: ../../.npm.project-ex.yml
+# Adds `lang:typescript` tag & `build` command
+```
