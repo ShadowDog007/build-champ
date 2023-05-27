@@ -1,15 +1,35 @@
-export interface ValueProvider<T> {
-  readonly value: T;
+import { Command } from 'commander';
+import { injectable, interfaces } from 'inversify';
+import 'reflect-metadata';
+import { SimpleGit } from 'simple-git';
+import { PluginConfiguration } from '../config/PluginConfiguration';
+import { WorkspaceConfiguration } from '../config/WorkspaceConfiguration';
+import { TypeRecord } from '../TYPES';
+import { PromiseCache } from '../util/PromiseCache';
+
+export type ProviderFunction<T, K extends string | symbol | undefined = undefined>
+  = K extends string | symbol
+  ? (key: K) => Promise<T>
+  : () => Promise<T>;
+
+@injectable()
+export abstract class Provider<T, K extends string | symbol | undefined = undefined> {
+
+  private valueCache = new PromiseCache<T, K>(
+    ((key: K) => this.provider(key as never)) as ProviderFunction<T, K>
+  );
+
+  protected abstract provider(key: K): Promise<T>;
+
+  get(key?: K): Promise<T> {
+    return this.valueCache.get(key as never);
+  }
 }
 
-export const ProviderValueTypes = {
-  BaseDir: Symbol.for('BaseDir'),
-  Git: Symbol.for('Git'),
-  Program: Symbol.for('Program'),
-};
-
 export const ProviderTypes = {
-  BaseDirProvider: Symbol.for('BaseDirProvider'),
-  GitProvider: Symbol.for('GitProvider'),
-  ProgramProvider: Symbol.for('ProgramProvider'),
-} satisfies Record<`${keyof typeof ProviderValueTypes}Provider`, symbol>;
+  BaseDirProvider: Symbol.for('BaseDirProvider') as interfaces.ServiceIdentifier<Provider<string>>,
+  GitProvider: Symbol.for('GitProvider') as interfaces.ServiceIdentifier<Provider<SimpleGit>>,
+  PluginConfigurationProvider: Symbol.for('PluginConfigurationProvider') as interfaces.ServiceIdentifier<Provider<PluginConfiguration, symbol>>,
+  ProgramProvider: Symbol.for('ProgramProvider') as interfaces.ServiceIdentifier<Provider<Command>>,
+  WorkspaceConfigurationProvider: Symbol.for('WorkspaceConfigurationProvider') as interfaces.ServiceIdentifier<Provider<WorkspaceConfiguration>>,
+} satisfies TypeRecord<Provider<unknown> | Provider<unknown, string> | Provider<unknown, symbol>>;

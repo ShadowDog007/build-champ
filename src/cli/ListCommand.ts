@@ -1,5 +1,6 @@
 import { inject, injectable } from 'inversify';
 import { EOL } from 'os';
+import { Provider } from '../providers';
 import { ContextService } from '../services/ContextService';
 import { EvalService } from '../services/EvalService';
 import { ProjectService } from '../services/ProjectService';
@@ -18,7 +19,7 @@ export const defaultTemplate = '=> ${{name}} (${{longVersion ? version.hash : ve
 @injectable()
 export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]> {
   constructor(
-    @inject(TYPES.BaseDir) public baseDir: string,
+    @inject(TYPES.BaseDirProvider) public baseDir: Provider<string>,
     @inject(TYPES.ProjectService) projectService: ProjectService,
     @inject(TYPES.RepositoryService) repositoryService: RepositoryService,
     @inject(TYPES.ContextService) private readonly contextService: ContextService,
@@ -35,9 +36,9 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
   }
 
   async action(options: ListCommandOptions) {
-    this.checkBaseDir(this.baseDir);
+    await this.checkBaseDir(this.baseDir);
 
-    this.verbose(`Listing projects within \`${this.baseDir}\``);
+    this.verbose(`Listing projects within \`${await this.baseDir.get()}\``);
 
     const projects = await this.listProjects(options);
 

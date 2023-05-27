@@ -11,6 +11,11 @@ export interface ProjectCommand {
   command: string;
 
   /**
+   * Arguments to pass to the command
+   */
+  arguments?: string[];
+
+  /**
    * Run the command in a specific or default shell
    * 
    * e.g. 'Powershell.exe', '/bin/bash'
@@ -20,9 +25,11 @@ export interface ProjectCommand {
   shell?: boolean | string;
 
   /**
-   * Arguments to pass to the command
+   * Directory to run this command from
+   * 
+   * @default Directory the project file is in
    */
-  arguments?: string[];
+  workingDirectory?: string;
 
   /**
    * Condition expression evaluated before command runs

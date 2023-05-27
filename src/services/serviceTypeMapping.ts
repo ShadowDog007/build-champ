@@ -1,8 +1,10 @@
 import { ServiceTypes } from '.';
+import { TypeMappingRecord } from '../TYPES';
 import { ContextServiceImpl } from './ContextService';
 import { EvalServiceImpl } from './EvalService';
 import { FileServiceImpl } from './FileService';
 import { GlobServiceImpl } from './GlobService';
+import { ProjectLoaderServiceImpl } from './ProjectLoaderService';
 import { ProjectServiceImpl } from './ProjectService';
 import { RepositoryServiceImpl } from './RepositoryService';
 import { SpawnServiceImpl } from './SpawnService';
@@ -13,6 +15,7 @@ export const serviceTypeMapping = {
   FileService: FileServiceImpl,
   GlobService: GlobServiceImpl,
   ProjectService: ProjectServiceImpl,
+  ProjectLoaderService: ProjectLoaderServiceImpl,
   RepositoryService: RepositoryServiceImpl,
   SpawnService: SpawnServiceImpl,
-} satisfies Record<keyof typeof ServiceTypes, new (...args: never[]) => unknown>;
+} satisfies TypeMappingRecord<typeof ServiceTypes>;

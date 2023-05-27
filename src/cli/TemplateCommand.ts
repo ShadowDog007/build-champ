@@ -1,5 +1,6 @@
 import { readFile } from 'fs/promises';
 import { inject, injectable } from 'inversify';
+import { Provider } from '../providers';
 import { ContextService } from '../services/ContextService';
 import { EvalService } from '../services/EvalService';
 import { TYPES } from '../TYPES';
@@ -32,7 +33,7 @@ export class TemplateCommand extends BaseProjectCommand<[TemplateCommandOptions]
   constructor(
     @inject(TYPES.ContextService) private readonly contextService: ContextService,
     @inject(TYPES.EvalService) private readonly evalService: EvalService,
-    @inject(TYPES.BaseDir) private readonly baseDir: string,
+    @inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>,
   ) {
     super();
 
@@ -46,7 +47,7 @@ export class TemplateCommand extends BaseProjectCommand<[TemplateCommandOptions]
   }
 
   async action(options: TemplateCommandOptions) {
-    this.checkBaseDir(this.baseDir);
+    await this.checkBaseDir(this.baseDir);
 
     const template = await this.getTemplateContent(options);
 

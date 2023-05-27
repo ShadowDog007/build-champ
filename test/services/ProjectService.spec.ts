@@ -1,8 +1,8 @@
 jest.mock('fs');
 jest.mock('fs/promises');
 
-import { mkdir, writeFile } from 'fs/promises';
 import { Container } from 'inversify';
+import { fs } from 'memfs';
 import { join, resolve } from 'path';
 import { stringify } from 'yaml';
 import { Project } from '../../src/models/Project';
@@ -19,14 +19,14 @@ describe('ProjectService', () => {
   let project: Omit<Project, 'dir'>;
 
   async function defineProject(dir: string, project: Omit<Project, 'dir'>) {
-    const fullDir = join(container.get(TYPES.BaseDir), dir);
-    await mkdir(fullDir, { recursive: true });
-    await writeFile(resolve(fullDir, '.project.yaml'), stringify(project));
+    const fullDir = join(await container.get(TYPES.BaseDirProvider).get(), dir);
+    fs.mkdirSync(fullDir, { recursive: true });
+    fs.writeFileSync(resolve(fullDir, '.project.yaml'), stringify(project));
   }
 
   beforeEach(async () => {
     await resetFs();
-    container = createContainer();
+    container = await createContainer();
 
     project = {
       name: 'Project1',
@@ -75,7 +75,7 @@ describe('ProjectService', () => {
       const extension = {
         dependencies: ['./src/shared-dependency']
       } satisfies Partial<Project>;
-      await writeFile('/.project.base.yaml', stringify(extension));
+      fs.writeFileSync('/.project.base.yaml', stringify(extension));
 
       // When
       const projects = await projectService.getProjects();
@@ -83,6 +83,10 @@ describe('ProjectService', () => {
       // Verify
       expect(projects).toMatchObject([{
         ...project,
+        tags: [
+          ...project.tags,
+          'plugin:default',
+        ],
         dependencies: [
           '/src/dependency2',
           '/src/shared-dependency'
@@ -135,6 +139,10 @@ describe('ProjectService', () => {
       // Verify
       expect(projects).toMatchObject([{
         ...project,
+        tags: [
+          ...project.tags,
+          'plugin:default',
+        ],
         dependencies: [
           '/dependency2',
         ],

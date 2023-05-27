@@ -6,7 +6,7 @@ import { ProjectWithVersion } from '../../src/models/Project';
 import { ProjectService } from '../../src/services/ProjectService';
 import { RepositoryService } from '../../src/services/RepositoryService';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockCommit, MockProjectService, MockRepositoryService, resetFs } from '../mocks';
+import { createContainer, MockCommit, MockProjectService, MockProvider, MockRepositoryService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -14,6 +14,7 @@ describe(ListCommand, () => {
   let command: ListCommand;
   let testHelper: CommandTestHelper;
 
+  let baseDirProvider: MockProvider<string>;
   let projectService: MockProjectService;
   let repositoryService: MockRepositoryService;
 
@@ -66,13 +67,14 @@ describe(ListCommand, () => {
 
   beforeEach(async () => {
     await resetFs();
-    const container = createContainer();
+    const container = await createContainer();
 
     container.rebind<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
     container.rebind<RepositoryService>(TYPES.RepositoryService).to(MockRepositoryService).inSingletonScope();
 
     command = container.resolve(ListCommand);
     testHelper = new CommandTestHelper(command.command);
+    baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);
     projectService = container.get(TYPES.ProjectService);
     repositoryService = container.get(TYPES.RepositoryService);
 
@@ -86,7 +88,7 @@ describe(ListCommand, () => {
   describe('.parseAsync(args: string[])', () => {
     test('when no base dir, should exit with code 2',
       async () => {
-        command.baseDir = '';
+        baseDirProvider.value = Promise.reject(new Error());
         return testHelper.testParseError([], 2, `Couldn't find git repository containing ${process.cwd()}`);
       }
     );

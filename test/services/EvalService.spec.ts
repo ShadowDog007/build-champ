@@ -17,7 +17,7 @@ describe('EvalService', () => {
 
   beforeEach(async () => {
     await resetFs();
-    container = createContainer();
+    container = await createContainer();
 
     container.rebind(TYPES.EvalService).to(EvalServiceImpl).inSingletonScope();
     container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();

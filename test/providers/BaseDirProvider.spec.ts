@@ -4,18 +4,20 @@ jest.mock('fs/promises');
 import { mkdirSync } from 'fs';
 import { Container } from 'inversify';
 import { join } from 'path';
-import { ValueProvider } from '../../src/providers';
+import { containerModule } from '../../src/containerModule';
+import { Provider } from '../../src/providers';
 import { BaseDirProvider } from '../../src/providers/BaseDirProvider';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, resetFs } from '../mocks';
+import { resetFs } from '../mocks';
 
 describe('BaseDirProvider', () => {
   let container: Container;
-  let baseDirProvider: ValueProvider<string>;
+  let baseDirProvider: Provider<string>;
 
   beforeEach(async () => {
     await resetFs();
-    container = createContainer();
+    container = new Container();
+    container.load(containerModule);
 
     baseDirProvider = container.get(TYPES.BaseDirProvider);
   });
@@ -26,12 +28,12 @@ describe('BaseDirProvider', () => {
     expect(container.get(TYPES.BaseDirProvider)).toBe(baseDirProvider);
   });
 
-  test.each(['/repo', '/projects/repo'])('when git repo exists in %s should find base dir', dir => {
+  test.each(['/repo', '/projects/repo'])('when git repo exists in %s should find base dir', async dir => {
     const spy = jest.spyOn(process, 'cwd');
     spy.mockReturnValue(join(dir, 'some-child-dir'));
 
     mkdirSync(join(dir, '.git'), { recursive: true });
 
-    expect(baseDirProvider.value.replaceAll(/\\/g, '/')).toBe(dir);
+    expect((await baseDirProvider.get()).replaceAll(/\\/g, '/')).toBe(dir);
   });
 });

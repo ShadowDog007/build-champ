@@ -16,7 +16,7 @@ describe(ContextServiceImpl, () => {
 
   beforeEach(async () => {
     await resetFs();
-    container = createContainer();
+    container = await createContainer();
 
     container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
 

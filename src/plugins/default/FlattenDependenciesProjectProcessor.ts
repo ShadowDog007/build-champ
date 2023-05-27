@@ -1,22 +1,18 @@
 import { injectable } from 'inversify';
 import { uniq } from 'lodash';
 import 'reflect-metadata';
-import { ProjectProcessor } from '.';
-import { Project } from '../models/Project';
+import { Project } from '../../models/Project';
+import { ProjectProcessor, ProjectProcessorPhase } from '../ProjectProcessor';
 
 /**
  * Flattens dependencies, copying all transitive dependencies
  */
 @injectable()
-export class FlattenDependencies implements ProjectProcessor {
-  async * processProjects(projectsIterator: AsyncGenerator<Project>): AsyncGenerator<Project> {
-    // Collect projects in same order they are processed
-    const projects: Project[] = [];
+export class FlattenDependenciesProjectProcessor extends ProjectProcessor {
 
-    for await (const project of projectsIterator) {
-      projects.push(project);
-    }
+  readonly phase = ProjectProcessorPhase.end;
 
+  async processBatch(projects: Project[]): Promise<Project[]> {
     const dependenciesByDir = Object.fromEntries(projects.map(p => [p.dir.toLocaleUpperCase(), p.dependencies]));
     const todo = Object.keys(dependenciesByDir);
 
@@ -26,16 +22,15 @@ export class FlattenDependencies implements ProjectProcessor {
         flattenDependenciesFor(dir);
     }
 
-    for (const project of projects) {
-      yield {
+    return projects
+      .map(project => ({
         ...project,
-        dependencies: uniq(dependenciesByDir[project.dir.toLocaleUpperCase()]).sort(),
-      };
-    }
+        dependencies: uniq(dependenciesByDir[project.dir.toLocaleUpperCase()]).sort()
+      }));
 
     /**
      * Recursively flatten dependencies
-     * @param dir 
+     * @param dir
      */
     function flattenDependenciesFor(dir: string) {
       const dependencies = dependenciesByDir[dir];

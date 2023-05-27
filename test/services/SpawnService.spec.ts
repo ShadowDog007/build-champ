@@ -11,8 +11,8 @@ describe(SpawnServiceImpl, () => {
   let container: Container;
   let service: SpawnServiceImpl;
 
-  beforeEach(() => {
-    container = createContainer();
+  beforeEach(async () => {
+    container = await createContainer();
     service = container.get(TYPES.SpawnService);
   });
 

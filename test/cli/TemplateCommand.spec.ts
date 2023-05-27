@@ -2,22 +2,25 @@ jest.mock('fs');
 jest.mock('fs/promises');
 
 import { writeFile } from 'fs/promises';
+import { cwd } from 'process';
 import { TemplateCommand } from '../../src/cli/TemplateCommand';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockProjectService, resetFs } from '../mocks';
+import { createContainer, MockProjectService, MockProvider, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
 describe(TemplateCommand, () => {
   let command: TemplateCommand;
+  let baseDirProvider: MockProvider<string>;
   let projectService: MockProjectService;
 
   let testHelper: CommandTestHelper;
 
   beforeEach(async () => {
     await resetFs();
-    const container = createContainer();
+    const container = await createContainer();
 
+    baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);
     container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
 
     projectService = container.get(TYPES.ProjectService);
@@ -28,6 +31,13 @@ describe(TemplateCommand, () => {
   });
 
   describe('.parseAsync', () => {
+    test('when no base dir, should exit with code 2',
+      async () => {
+        baseDirProvider.value = Promise.reject(new Error());
+        return testHelper.testParseError([], 2, `Couldn't find git repository containing ${cwd()}`);
+      }
+    );
+
     test('when two templates provided, should exit with code 31',
       () => testHelper.testParseError(['-f', '/test.txt', '-t', '${{1+1}}'], 31, 'Must only provide one of --template-file or --template')
     );

@@ -4,14 +4,14 @@ import { basename, join } from 'path';
 import { cwd } from 'process';
 import { stringify } from 'yaml';
 import { Project } from '../models/Project';
+import { Provider } from '../providers';
 import { TYPES } from '../TYPES';
 import { BaseProjectCommand } from './BaseProjectCommand';
 
 @injectable()
 export class InitCommand extends BaseProjectCommand<[string?]> {
-
   constructor(
-    @inject(TYPES.BaseDir) public baseDir: string
+    @inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>
   ) {
     super();
 
@@ -21,7 +21,7 @@ export class InitCommand extends BaseProjectCommand<[string?]> {
   }
 
   async action(projectDir?: string): Promise<void> {
-    this.checkBaseDir(this.baseDir);
+    await this.checkBaseDir(this.baseDir);
     const resolvedProjectDir = projectDir ?? '.';
 
     const dirStat = await stat(resolvedProjectDir).catch(() => undefined);

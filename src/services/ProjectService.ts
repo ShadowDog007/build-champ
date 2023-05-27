@@ -1,12 +1,11 @@
-import { inject, injectable, multiInject } from 'inversify';
-import { dirname } from 'path';
+import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
+import { ServiceTypes } from '.';
 import { Project, ProjectWithVersion } from '../models/Project';
 import { ProjectVersion } from '../models/ProjectVersion';
-import { ProjectProcessor } from '../processors';
 import { TYPES } from '../TYPES';
-import { FileService } from './FileService';
-import { GlobService } from './GlobService';
+import { PromiseCache } from '../util/PromiseCache';
+import { ProjectLoaderService } from './ProjectLoaderService';
 import { RepositoryService } from './RepositoryService';
 
 export interface ProjectService {
@@ -17,22 +16,18 @@ export interface ProjectService {
 
 @injectable()
 export class ProjectServiceImpl implements ProjectService {
-  private projects?: Promise<Project[]>;
+  private projects = new PromiseCache(
+    () => this.projectLoaderService.loadProjects()
+  );
 
   constructor(
-    @inject(TYPES.BaseDir) private readonly baseDir: string,
-    @inject(TYPES.FileService) private readonly fileService: FileService,
-    @inject(TYPES.GlobService) private readonly globService: GlobService,
     @inject(TYPES.RepositoryService) private readonly repositoryService: RepositoryService,
-    @multiInject(TYPES.ProjectProcessor) private readonly projectProcessors: ProjectProcessor[],
+    @inject(ServiceTypes.ProjectLoaderService) private readonly projectLoaderService: ProjectLoaderService,
   ) { }
 
   async getProjects() {
-    if (!this.projects) {
-      this.projects = this.loadProjects();
-    }
-
-    return [...await this.projects];
+    const projects = await this.projects.get();
+    return [...projects];
   }
 
   async getProjectsWithVersions() {
@@ -48,36 +43,5 @@ export class ProjectServiceImpl implements ProjectService {
 
   getProjectVersion(project: Project) {
     return this.repositoryService.getLatestPathVersion(project.dir, ...project.dependencies);
-  }
-
-  async loadProjects(): Promise<Project[]> {
-    const projects: Project[] = [];
-
-    const projectsIterator = this.projectProcessors.reduce(
-      (iterator, processor) => processor.processProjects(iterator),
-      this.loadProjectsBase()
-    );
-
-    for await (const project of projectsIterator) {
-      projects.push(project);
-    }
-
-    return projects.sort((a, b) => a.dir.localeCompare(b.dir));
-  }
-
-  static readonly projectFileGlob = '**/.{project,module}.{yaml,yml}';
-
-  async * loadProjectsBase(): AsyncGenerator<Project> {
-    for (const projectFile of await this.globService.glob(ProjectServiceImpl.projectFileGlob, { nocase: true })) {
-      const parsedYaml = await this.fileService.readFileYaml<Partial<Omit<Project, 'dir'>>>(projectFile);
-      yield {
-        name: '', // If not provided, should be loaded by meta-data or default to directory name
-        dir: dirname(projectFile),
-        dependencies: [],
-        commands: {},
-        tags: [],
-        ...parsedYaml,
-      };
-    }
   }
 }

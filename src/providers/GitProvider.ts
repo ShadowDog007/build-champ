@@ -1,14 +1,15 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
 import { simpleGit, SimpleGit } from 'simple-git';
-import { ValueProvider } from '.';
+import { Provider } from '.';
 import { TYPES } from '../TYPES';
 
 @injectable()
-export class GitProvider implements ValueProvider<SimpleGit> {
-  readonly value: SimpleGit;
-
-  constructor(@inject(TYPES.BaseDir) baseDir: string) {
-    this.value = simpleGit(baseDir);
+export class GitProvider extends Provider<SimpleGit> {
+  constructor(@inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>) {
+    super();
+  }
+  async provider() {
+    return simpleGit(await this.baseDir.get());
   }
 }

@@ -2,22 +2,20 @@ jest.mock('fs');
 jest.mock('fs/promises');
 
 import { Container } from 'inversify';
-import { Project } from '../../src/models/Project';
-import { FinalizeDefinition } from '../../src/processors/FinalizeDefinition';
-import { ProjectExtension } from '../../src/processors/ProjectExtension';
-import { TYPES } from '../../src/TYPES';
-import { createContainer, resetFs } from '../mocks';
-import { createDefaultProject, testProcessor } from './testProcessor';
+import { Project } from '../../../src/models/Project';
+import { FinalizeDefinitionProjectProcessor } from '../../../src/plugins/default/FinalizeDefinitionProjectProcessor';
+import { TYPES } from '../../../src/TYPES';
+import { createContainer, createDefaultProject, resetFs } from '../../mocks';
 
-describe(ProjectExtension, () => {
-  let processor: FinalizeDefinition;
+describe(FinalizeDefinitionProjectProcessor, () => {
+  let processor: FinalizeDefinitionProjectProcessor;
   let container: Container;
 
   beforeEach(async () => {
     await resetFs();
 
-    container = createContainer();
-    processor = container.resolve(FinalizeDefinition);
+    container = await createContainer();
+    processor = container.resolve(FinalizeDefinitionProjectProcessor);
   });
 
   test('should be resolved last in container', () => {
@@ -25,7 +23,7 @@ describe(ProjectExtension, () => {
     const processors = container.getAll(TYPES.ProjectProcessor);
 
     // Verify
-    expect(processors.at(-1)).toBeInstanceOf(FinalizeDefinition);
+    expect(processors.at(-1)).toBeInstanceOf(FinalizeDefinitionProjectProcessor);
   });
 
   test('should not override any project properties', async () => {
@@ -44,11 +42,10 @@ describe(ProjectExtension, () => {
     };
 
     // When
-    const result = await testProcessor(processor, project);
+    const result = await processor.process(project);
 
     // Verify
-    expect(result.length).toBe(1);
-    expect(result[0]).toMatchObject(project);
+    expect(result).toMatchObject(project);
   });
 
   test('should default name to project directory name', async () => {
@@ -56,11 +53,10 @@ describe(ProjectExtension, () => {
     const project = createDefaultProject('/src/Project1');
 
     // When
-    const result = await testProcessor(processor, project);
+    const result = await processor.process(project);
 
     // Verify
-    expect(result.length).toBe(1);
-    expect(result[0].name).toBe('Project1');
+    expect(result.name).toBe('Project1');
   });
 
   test('should default name to project directory name', async () => {
@@ -68,11 +64,10 @@ describe(ProjectExtension, () => {
     const project = createDefaultProject('/src/Project1');
 
     // When
-    const result = await testProcessor(processor, project);
+    const result = await processor.process(project);
 
     // Verify
-    expect(result.length).toBe(1);
-    expect(result[0].name).toBe('Project1');
+    expect(result.name).toBe('Project1');
   });
 
   test('should remove duplicate dependencies and sort', async () => {
@@ -83,11 +78,10 @@ describe(ProjectExtension, () => {
     };
 
     // When
-    const result = await testProcessor(processor, project);
+    const result = await processor.process(project);
 
     // Verify
-    expect(result.length).toBe(1);
-    expect(result[0].dependencies).toMatchObject(['src/Project2', 'src/zee']);
+    expect(result.dependencies).toMatchObject(['src/Project2', 'src/zee']);
   });
 
   test('should remove duplicate tags and sort', async () => {
@@ -98,10 +92,9 @@ describe(ProjectExtension, () => {
     };
 
     // When
-    const result = await testProcessor(processor, project);
+    const result = await processor.process(project);
 
     // Verify
-    expect(result.length).toBe(1);
-    expect(result[0].tags).toMatchObject(['component:api', 'tag:dupe']);
+    expect(result.tags).toMatchObject(['component:api', 'tag:dupe']);
   });
 });

@@ -2,27 +2,19 @@ import { statSync } from 'fs';
 import { injectable } from 'inversify';
 import { dirname, join } from 'path';
 import 'reflect-metadata';
-import { ValueProvider } from '.';
+import { Provider } from '.';
 
 @injectable()
-export class BaseDirProvider implements ValueProvider<string> {
-  private _baseDir: string | null = null;
+export class BaseDirProvider extends Provider<string> {
 
-  get value(): string {
-    if (this._baseDir === null) {
-      this._baseDir = this.findBaseDir();
-    }
-    return this._baseDir;
-  }
-
-  findBaseDir() {
+  // TODO - Should this just use the current CWD ?
+  async provider() {
     let dir = process.cwd();
 
     while (!this.exists(join(dir, '.git'))) {
       const parentDir = dirname(dir);
       if (dir === parentDir) {
-        // Can't find base dir
-        return '';
+        throw new Error(`Can't find base dir in ${process.cwd()}`);
       }
       dir = parentDir;
     }

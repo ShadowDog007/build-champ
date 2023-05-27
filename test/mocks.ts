@@ -10,16 +10,20 @@ import 'reflect-metadata';
 import { containerModule } from '../src/containerModule';
 import { Project, ProjectWithVersion } from '../src/models/Project';
 import { ProjectVersion } from '../src/models/ProjectVersion';
+import { loadPluginModules } from '../src/plugins';
+import { Provider } from '../src/providers';
 import { GlobServiceImpl } from '../src/services/GlobService';
 import { ProjectService } from '../src/services/ProjectService';
 import { RepositoryService } from '../src/services/RepositoryService';
 import { SpawnService } from '../src/services/SpawnService';
 import { TYPES } from '../src/TYPES';
 
-export function createContainer() {
+export async function createContainer() {
   const container = new Container();
   container.load(containerModule);
-  container.rebind(TYPES.BaseDir).toConstantValue('/');
+  container.rebind(TYPES.BaseDirProvider).toConstantValue(new MockProvider(Promise.resolve('/')));
+
+  await loadPluginModules(container);
   container.snapshot();
   return container;
 }
@@ -39,6 +43,32 @@ export async function resetFs() {
     fs.rmdirSync(dir);
   }
   fs.mkdirSync('/.git');
+}
+
+export function createDefaultProject(dir: string): Project {
+  return {
+    name: '',
+    dir,
+    dependencies: [],
+    commands: {},
+    tags: [],
+  };
+}
+
+@injectable()
+export class MockProvider<T> extends Provider<T> {
+  constructor(public value: Promise<T>) {
+    super();
+  }
+
+  protected provider(): Promise<T> {
+    return this.value;
+  }
+
+  get(): Promise<T> {
+    return this.value;
+  }
+
 }
 
 @injectable()
