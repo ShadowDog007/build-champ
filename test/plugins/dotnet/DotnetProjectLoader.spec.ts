@@ -132,7 +132,7 @@ describe(DotnetProjectLoader, () => {
       const result = await loader.loadProject(testCsprojPath);
 
       // Verify
-      expect(result.commands.test).toMatchObject({ command: 'dotnet test -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}}' });
+      expect(result.commands.test).toMatchObject({ command: 'dotnet test -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}} ${{env.DOTNET_TEST_ARGS || ""}}' });
     });
   });
 });

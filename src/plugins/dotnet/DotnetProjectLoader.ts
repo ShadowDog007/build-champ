@@ -65,7 +65,7 @@ export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
         }
       } : {
         restore: {
-          command: `msbuild ${projectFileName} -t:restore`
+          command: `msbuild ${projectFileName} -t:restore  $\{{env.DOTNET_RESTORE_ARGS || ""}}`
         },
         build: {
           command: `msbuild ${projectFileName} -t:build -c $\{{env.DOTNET_CONFIGURATION || "Release"}} $\{{env.DOTNET_BUILD_ARGS || ""}}`
