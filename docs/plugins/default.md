@@ -9,7 +9,7 @@ To define a project, create a file which matches the pattern `.{project,module}.
 The schema of this file is as below. All fields are optional unless otherwise specified.
 
 ```yaml
-extends: string # Path to a project definition extension  relative to this file
+extends: string # Path to a project definition extension relative to this file
 name: string # Name of this project (default: name of directory)
 dependencies: [ string ] # List of files/directories this project depends on outside of this directory
 tags: [ string ] # Tags for this project
@@ -58,6 +58,7 @@ Extensions are files can be used to store shared project configuration in a cent
 
 Using `extends` property of your project you can reference the relative path of an extension file.
 This will merge the content of the extension with your project file.
+`dependencies` and `tags` are combined, whereas `commands.{commandName}` present in your project file will replace commands from extensions.
 
 Note that `extends` can also be used in extension files.
 

@@ -1,5 +1,23 @@
 # build-champ
 
+## Table of Contents
+
+- [Terminology](#terminology)
+- [Install](#install)
+- [Plugins](#plugins)
+  - [Features](#features)
+  - [Configuration](#configuration)
+  - [Built-In](#built-in)
+  - [Custom Plugins](#custom-plugins)
+- [Templating and Expressions](#templating-and-expressions)
+- [CLI Commands](#cli-commands)
+  - [Project Filtering Options](#project-filtering-options)
+  - [`list` Command](#list-options)
+  - [`run` Command](#run-options-command)
+  - [`template` Command](#template-options)
+  - [`init` Command](#init-options-projectdir)
+- [Project Commands](#project-commands)
+
 ## Terminology
 
 | Term       | Description                                                                |

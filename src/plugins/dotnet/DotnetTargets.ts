@@ -1,8 +1,9 @@
 /**
  * Defined dotnet targets
  */
-export type DotnetTargets = 'restore' |
-  'build' |
-  'test' |
-  'package' |
-  'publish';
+export type DotnetTargets
+  = 'restore'
+  | 'build'
+  | 'test'
+  | 'package'
+  | 'publish';
