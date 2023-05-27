@@ -30,6 +30,7 @@ export class EvalServiceImpl implements EvalService {
   safeEval<T extends Context>(code: string, context: T): unknown {
     const vm = new VM({
       sandbox: context,
+      eval: false,
     });
 
     return vm.run(code);
