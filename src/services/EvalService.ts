@@ -1,6 +1,6 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
-import safeEval from 'safe-eval';
+import { VM } from 'vm2';
 import { Context } from './ContextService';
 
 export interface EvalService {
@@ -28,6 +28,11 @@ export class EvalServiceImpl implements EvalService {
   }
 
   safeEval<T extends Context>(code: string, context: T): unknown {
-    return safeEval(code, context);
+    const vm = new VM({
+      sandbox: context,
+      eval: false,
+    });
+
+    return vm.run(code);
   }
 }

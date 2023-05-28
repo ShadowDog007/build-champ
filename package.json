@@ -49,8 +49,8 @@
     "minimatch": "^5.1.6",
     "p-queue": "^6.6.2",
     "reflect-metadata": "^0.1.13",
-    "safe-eval": "^0.4.1",
     "simple-git": "^3.19.0",
+    "vm2": "^3.9.19",
     "xml-js": "^1.6.11",
     "yaml": "^2.3.1"
   }
