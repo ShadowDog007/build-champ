@@ -1,7 +1,7 @@
 import { parse } from 'dotenv';
 import { expand } from 'dotenv-expand';
 import { inject, injectable } from 'inversify';
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 import 'reflect-metadata';
 import { TYPES } from '../TYPES';
 import { Project, ProjectWithVersion } from '../models/Project';
@@ -12,6 +12,7 @@ import { GlobService } from './GlobService';
 import { FileService } from './FileService';
 import { join } from 'path';
 import { Provider } from '../providers';
+import { PromiseCache } from '../util/PromiseCache';
 
 export interface ContextFixed {
   readonly env: NodeJS.ProcessEnv,
@@ -73,12 +74,14 @@ export interface ContextService {
 
 @injectable()
 export class ContextServiceImpl implements ContextService {
-  private context?: ContextFixed;
+  private readonly envFiles = new PromiseCache(
+    () => this.loadEnvFiles());
+  private readonly context = new PromiseCache(
+    () => this.buildContext());
 
   private readonly projectStatuses: Record<string, ProjectCommandStatus> = this.getCaseInsensitiveProxy({});
   private readonly contextParameters: Record<string, string> = this.getCaseInsensitiveProxy({});
 
-  private envFiles?: string[];
   private readonly envVars: Record<string, Record<string, string>> = {};
 
   constructor(
@@ -89,12 +92,8 @@ export class ContextServiceImpl implements ContextService {
   ) { }
 
   async getContext(): Promise<Context> {
-    if (!this.context) {
-      this.context = await this.buildContext();
-    }
-
     return {
-      ...this.context,
+      ...await this.context.get(),
       status: this.projectStatuses,
       context: this.contextParameters,
     };
@@ -133,17 +132,23 @@ export class ContextServiceImpl implements ContextService {
    * @returns Array of all environment variable files in the repository
    */
   async getEnvFiles(): Promise<string[]> {
-    if (!this.envFiles) {
-      this.envFiles = await this.globService.glob('**/.{*.env,env}', { nocase: true });
-      const fileDepth = (f: string) => Array.from(f.matchAll(/[/\\]/g)).length;
-      // Sort by hierarchy count, then target
-      this.envFiles.sort((a, b) => {
-        const depth = fileDepth(a) - fileDepth(b);
-        return depth === 0 ? a.length - b.length : depth;
-      });
+    return this.envFiles.get();
+  }
+
+  async loadEnvFiles(): Promise<string[]> {
+    const envFiles: string[] = [];
+
+    for await (const envFile of this.globService.glob('**/.{*.env,env}', { nocase: true })) {
+      envFiles.push(envFile);
     }
 
-    return this.envFiles;
+    const fileDepth = (f: string) => Array.from(f.matchAll(/[/\\]/g)).length;
+    // Sort by hierarchy count, then target
+    envFiles.sort((a, b) => {
+      const depth = fileDepth(a) - fileDepth(b);
+      return depth === 0 ? a.length - b.length : depth;
+    });
+    return envFiles;
   }
 
   /**
@@ -187,7 +192,7 @@ export class ContextServiceImpl implements ContextService {
       )
     });
 
-    const expandResult = expand({ parsed: envVars, ignoreProcessEnv: true });
+    const expandResult = expand({ parsed: envVars, processEnv: {} });
     if (expandResult.error) {
       throw expandResult.error;
     }

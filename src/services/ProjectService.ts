@@ -19,6 +19,7 @@ export class ProjectServiceImpl implements ProjectService {
   private projects = new PromiseCache(
     () => this.projectLoaderService.loadProjects()
   );
+  private projectVersions: Partial<Record<string, Promise<ProjectVersion>>> = {};
 
   constructor(
     @inject(TYPES.RepositoryService) private readonly repositoryService: RepositoryService,
@@ -42,6 +43,6 @@ export class ProjectServiceImpl implements ProjectService {
   }
 
   getProjectVersion(project: Project) {
-    return this.repositoryService.getLatestPathVersion(project.dir, ...project.dependencies);
+    return this.projectVersions[project.dir] ?? (this.projectVersions[project.dir] = this.repositoryService.getLatestPathVersion(project.dir, ...project.dependencies));
   }
 }

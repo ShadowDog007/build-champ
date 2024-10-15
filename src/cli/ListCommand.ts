@@ -14,7 +14,7 @@ export interface ListCommandOptions extends ProjectFilterOptions {
   readonly join: string;
 }
 
-export const defaultTemplate = '=> ${{name}} (${{longVersion ? version.hash : version.hashShort}} @ ${{version.timestamp.toISOString()}})';
+export const defaultTemplate = '=> ${{name}} (${{longVersion ? version.hash : version.hashShort}} @ ${{version.ago}})';
 
 @injectable()
 export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]> {
@@ -46,17 +46,15 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
       this.error('No matching projects');
     }
 
-    const templated: string[] = [];
+    this.verbose(`Matched ${projects.length} projects`);
 
-    for (const project of projects) {
+    const templated = await Promise.all(projects.map(async project => {
       const context = await this.contextService.getProjectContext(project);
-      templated.push(
-        this.evalService.safeEvalTemplate(options.template, {
-          ...context,
-          longVersion: options.longVersion,
-        })
-      );
-    }
+      return this.evalService.safeEvalTemplate(options.template, {
+        ...context,
+        longVersion: options.longVersion,
+      });
+    }));
 
     this.log(templated.join(options.join));
   }

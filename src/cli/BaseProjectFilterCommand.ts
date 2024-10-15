@@ -1,5 +1,5 @@
 import { inject, injectable } from 'inversify';
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 import { ProjectWithVersion } from '../models/Project';
 import { ProjectService } from '../services/ProjectService';
 import { RepositoryService } from '../services/RepositoryService';

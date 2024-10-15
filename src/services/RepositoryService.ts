@@ -1,17 +1,13 @@
 import { inject, injectable } from 'inversify';
 import 'reflect-metadata';
-import { SimpleGit } from 'simple-git';
+import { DateTime, Duration } from 'luxon';
 import { ProjectVersion } from '../models/ProjectVersion';
 import { Provider } from '../providers';
 import { TYPES } from '../TYPES';
+import { SpawnService } from './SpawnService';
+import { SimpleGit } from 'simple-git';
 
 export interface RepositoryService {
-  /**
-   * Gets the version of the provided path
-   * @param path The path to check
-   */
-  getPathVersion(path: string): Promise<ProjectVersion>;
-
   /**
    * Gets the most recent version from the provided paths
    * @param paths The paths to check
@@ -34,37 +30,59 @@ export interface RepositoryService {
 
 @injectable()
 export class RepositoryServiceImpl implements RepositoryService {
-  private readonly pathVersions: Record<string, ProjectVersion> = {};
 
   constructor(
+    @inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>,
     @inject(TYPES.GitProvider) private readonly git: Provider<SimpleGit>,
+    @inject(TYPES.SpawnService) private readonly spawnService: SpawnService
   ) { }
 
-  async getPathVersion(path: string) {
-    const version = this.pathVersions[path];
-
-    if (version) {
-      return version;
-    }
-
-    const git = await this.git.get();
-
-    const log = await git.log({
-      file: path.startsWith('/') ? path.slice(1) || '.' : path,
-      maxCount: 1,
+  async getLatestPathVersion(...paths: string[]): Promise<ProjectVersion> {
+    // TODO - need to consider any uncommitted changes
+    const gitLog = this.spawnService.spawn('git', [
+      'log',
+      '-n', '1',
+      `--format=format:{'hash':'%H', 'hashShort':'%h', 'timestamp':'%cI'}`,
+      '--',
+      ...paths.map(path => path.startsWith('/') ? path.slice(1) || '.' : path)
+    ], {
+      cwd: await this.baseDir.get(),
+      stdio: 'pipe',
     });
 
-    return this.pathVersions[path] = {
-      hash: log.latest?.hash || 'uncommitted',
-      hashShort: log.latest?.hash.substring(0, 8) || 'uncommitted',
-      timestamp: new Date(log.latest?.date || new Date()),
+    let log: Omit<ProjectVersion, 'ago'> = {
+      hash: 'uncommitted',
+      hashShort: 'uncommitted',
+      timestamp: new Date(),
     };
-  }
 
-  async getLatestPathVersion(...paths: string[]): Promise<ProjectVersion> {
-    const versions = await Promise.all(paths.map((p) => this.getPathVersion(p)));
+    let gotLine = false;
+    gitLog.stdout.setEncoding('utf8');
+    gitLog.stdout.on('data', (line: string) => {
+      gotLine = true;
+      log = JSON.parse(line.split('\n')[0].replaceAll('\'', '"'));
+    });
 
-    return versions.sort((a, b) => b.timestamp.getDate() - a.timestamp.getDate())[0];
+    await new Promise((resolve, reject) => gitLog.on('close', code => {
+      if (code === 0) {
+        resolve(undefined);
+      } else {
+        reject(new Error('Failed executing git log, exited with code ' + code));
+      }
+    }));
+
+    if (!gotLine) {
+      console.log('No logs for ' + paths[0]);
+    }
+
+    const timestamp = new Date(log.timestamp || new Date());
+    const ago = !log ? 'now' : this.calculateAgo(timestamp);
+    return {
+      hash: log.hash,
+      hashShort: log.hashShort,
+      timestamp,
+      ago,
+    };
   }
 
   async getChanges(objectish: string): Promise<string[]>;
@@ -75,5 +93,22 @@ export class RepositoryServiceImpl implements RepositoryService {
     const diff = await git.diffSummary(args);
 
     return diff.files.map(f => `/${f.file}`);
+  }
+
+  calculateAgo(timestamp: Date) {
+    let duration = DateTime.fromJSDate(timestamp)
+      .diffNow()
+      .mapUnits(x => Math.abs(x))
+      .rescale();
+
+    const durationObj = duration.toObject();
+
+    for (const [unit, value] of Object.entries(durationObj)) {
+      // Get the highest order time
+      duration = Duration.fromObject({ [unit]: value });
+      break;
+    }
+
+    return `${duration.toHuman()} ago`;
   }
 }

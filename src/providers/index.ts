@@ -6,6 +6,8 @@ import { PluginConfiguration } from '../config/PluginConfiguration';
 import { WorkspaceConfiguration } from '../config/WorkspaceConfiguration';
 import { TypeRecord } from '../TYPES';
 import { PromiseCache } from '../util/PromiseCache';
+import { PathScurry } from 'path-scurry';
+import { GitIgnore } from './GitIgnoreProvider';
 
 export type ProviderFunction<T, K extends string | symbol | undefined = undefined>
   = K extends string | symbol
@@ -28,7 +30,9 @@ export abstract class Provider<T, K extends string | symbol | undefined = undefi
 
 export const ProviderTypes = {
   BaseDirProvider: Symbol.for('BaseDirProvider') as interfaces.ServiceIdentifier<Provider<string>>,
+  GitIgnoreProvider: Symbol.for('GitIgnoreProvider') as interfaces.ServiceIdentifier<Provider<GitIgnore>>,
   GitProvider: Symbol.for('GitProvider') as interfaces.ServiceIdentifier<Provider<SimpleGit>>,
+  PathScurryProvider: Symbol.for('PathScurryProvider') as interfaces.ServiceIdentifier<Provider<PathScurry>>,
   PluginConfigurationProvider: Symbol.for('PluginConfigurationProvider') as interfaces.ServiceIdentifier<Provider<PluginConfiguration, symbol>>,
   ProgramProvider: Symbol.for('ProgramProvider') as interfaces.ServiceIdentifier<Provider<Command>>,
   WorkspaceConfigurationProvider: Symbol.for('WorkspaceConfigurationProvider') as interfaces.ServiceIdentifier<Provider<WorkspaceConfiguration>>,

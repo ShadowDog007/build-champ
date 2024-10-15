@@ -16,4 +16,9 @@ export interface ProjectVersion {
    * Time of the git commit
    */
   timestamp: Date;
+
+  /**
+   * Pretty string displaying how old this commit is
+   */
+  ago: string;
 }

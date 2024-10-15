@@ -17,11 +17,12 @@ export class WorkspaceConfigurationProvider extends Provider<WorkspaceConfigurat
   }
 
   async provider(): Promise<WorkspaceConfiguration> {
-    const configFiles = await this.globService.glob('.{build-champ,workspace}.{json,yaml,yml}');
+    const configFiles = this.globService.glob('.{build-champ,workspace}.{json,yaml,yml}');
 
-    const config: WorkspaceConfiguration | undefined = configFiles.length > 0
-      ? await this.fileService.readFileYaml(configFiles[0])
-      : undefined;
+    let config: WorkspaceConfiguration | undefined;
+    for await (const configFile of configFiles) {
+      config = await this.fileService.readFileYaml(configFile);
+    }
 
     // TODO - Validate config
 

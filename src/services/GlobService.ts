@@ -1,37 +1,84 @@
-import glob, { IOptions } from 'glob';
+import { globIterate, GlobOptions } from 'glob';
 import { inject, injectable } from 'inversify';
-import { join } from 'path';
 import 'reflect-metadata';
 import { Provider } from '../providers';
 import { TYPES } from '../TYPES';
+import { Minimatch } from 'minimatch';
+import { PathScurry } from 'path-scurry';
+import { GitIgnore } from '../providers/GitIgnoreProvider';
 
-export type EnabledGlobOptions = Pick<IOptions, 'cwd' | 'dot' | 'ignore' | 'nocase'>;
+export type EnabledGlobOptions = Pick<GlobOptions, 'dot' | 'nocase'> & { ignore?: string[]; };
 
 export interface GlobService {
-  glob(pattern: string, options?: EnabledGlobOptions): Promise<string[]>;
+  glob(pattern: string | string[], options?: EnabledGlobOptions): AsyncGenerator<string>;
+  globList(pattern: string | string[], options?: EnabledGlobOptions): Promise<string[]>;
 }
 
 @injectable()
 export class GlobServiceImpl implements GlobService {
+  constructor(
+    @inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>,
+    @inject(TYPES.PathScurryProvider) private readonly pathScurry: Provider<PathScurry>,
+    @inject(TYPES.GitIgnoreProvider) private readonly gitIgnore: Provider<GitIgnore>
+  ) { }
 
-  constructor(@inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>) { }
-
-  async glob(pattern: string, options?: EnabledGlobOptions): Promise<string[]> {
+  async *glob(pattern: string, options?: EnabledGlobOptions): AsyncGenerator<string> {
     const baseDir = await this.baseDir.get();
-    const matches = await GlobServiceImpl.globAsync(pattern, {
+
+    const ignore = options?.ignore?.map(l => new Minimatch(l, { optimizationLevel: 2 })) ?? [];
+    const gitIgnore = await this.gitIgnore.get();
+
+    function childChecks(pattern: string): boolean {
+      return !pattern.startsWith('!') && pattern.endsWith('/**');
+    }
+
+    const ignoreFile = ignore.filter(i => !childChecks(i.pattern));
+    const ignoreChildren = ignore.filter(i => childChecks(i.pattern));
+
+    const matchesIterator = globIterate(pattern, {
       ...options,
-      cwd: options?.cwd ? join(baseDir, options.cwd) : baseDir,
+      ignore: {
+        ignored(p) {
+          const relative = p.relative();
+          if (gitIgnore.matchIgnore(relative))
+            return true;
+
+          for (const i of ignoreFile) {
+            if (i.match(relative)) {
+              return true;
+            }
+          }
+          return false;
+        },
+        childrenIgnored(p) {
+          const relative = (p.relative() || '.') + '/';
+          if (gitIgnore.matchIgnoreChildren(relative))
+            return true;
+
+          for (const i of ignoreChildren) {
+            if (i.match(relative)) {
+              return true;
+            }
+          }
+          return false;
+        }
+      },
+      scurry: (await this.pathScurry.get()) as unknown as undefined,
+      cwd: baseDir,
     });
 
-    return options?.cwd
-      ? matches
-      : matches.map(m => `/${m}`);
+    for await (const match of matchesIterator) {
+      yield match;
+    }
   }
 
-  static globAsync(pattern: string, options: EnabledGlobOptions) {
-    return new Promise<string[]>((resolve, error) => {
-      glob(pattern, options,
-        (err, matches) => err ? error(err) : resolve(matches));
-    });
+  async globList(pattern: string, options?: EnabledGlobOptions) {
+    const matches: string[] = [];
+
+    for await (const match of this.glob(pattern, options)) {
+      matches.push(match);
+    }
+
+    return matches;
   }
 }

@@ -18,13 +18,13 @@ export async function loadPluginModules(container: Container) {
 }
 
 async function getPlugin(plugin: string): Promise<Plugin> {
-  let module: { default: Plugin; };
+  let module: { default: { default: Plugin; }; };
 
   try {
-    module = await import(`./${plugin}`);
+    module = await import(`./${plugin}/index.js`);
   } catch {
-    module = await import(plugin);
+    module = await import(`./${plugin}/index.js`);
   }
 
-  return module.default;
+  return module.default.default;
 }

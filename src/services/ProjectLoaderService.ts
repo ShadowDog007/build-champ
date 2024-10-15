@@ -1,5 +1,5 @@
 import { inject, injectable, multiInject } from 'inversify';
-import minimatch from 'minimatch';
+import { minimatch } from 'minimatch';
 import 'reflect-metadata';
 import { PluginConfiguration } from '../config/PluginConfiguration';
 import { TargetDefaults } from '../config/TargetDefaults';
@@ -53,25 +53,26 @@ export class ProjectLoaderServiceImpl implements ProjectLoaderService {
       .map(s => s.substring(1))
       .concat(loader.exclude ? loader.exclude : [], `!${loader.include}`);
 
-    const matches = (await Promise.all(
-      include.map(pattern => this.globService.glob(pattern, { ignore, dot: loader.include.includes('/.') }))
-    )).flat();
+    const loadedProjects: Promise<Project>[] = [];
 
-    const projects = await Promise.all(matches.map(match => loader.loadProject(match)));
+    for await (const match of this.globService.glob(include, { ignore, dot: loader.include.includes('/.') })) {
+      loadedProjects.push(this.loadProjectDir(match, loader));
+    }
+    return await Promise.all(loadedProjects);
+  }
+
+  async loadProjectDir(projectDir: string, loader: ProjectLoader): Promise<Project> {
     const pluginConfiguration = await this.pluginConfiguration.get(loader.pluginIdentifier);
+    const project = await loader.loadProject(projectDir);
+    const targetDefaults = this.getTargetDefaultsForProject(pluginConfiguration, project);
+    const processedCommands = Object.entries(project.commands)
+      .filter(([k]) => targetDefaults[k]?.enabled ?? true)
+      .map(([k, v]) => [targetDefaults[k]?.targetName ?? k, v] satisfies [string, ProjectCommand | ProjectCommand[]]);
 
-    return projects.map(project => {
-      const targetDefaults = this.getTargetDefaultsForProject(pluginConfiguration, project);
-
-      const processedCommands = Object.entries(project.commands)
-        .filter(([k]) => targetDefaults[k]?.enabled ?? true)
-        .map(([k, v]) => [targetDefaults[k]?.targetName ?? k, v]satisfies[string, ProjectCommand | ProjectCommand[]]);
-
-      return {
-        ...project,
-        commands: Object.fromEntries(processedCommands),
-      };
-    });
+    return {
+      ...project,
+      commands: Object.fromEntries(processedCommands),
+    };
   }
 
   getSortedProjectProcessors() {

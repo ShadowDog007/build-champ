@@ -23,6 +23,7 @@ export class ResolveDependencies extends SimpleProjectProcessor {
     const baseDir = await this.baseDir.get();
     return {
       ...project,
+      dir: this.resolveDirRelativeToBase(baseDir, project, '.').replaceAll('\\', '/'),
       dependencies: project.dependencies
         .map(d => this.resolveDirRelativeToBase(baseDir, project, d).replaceAll('\\', '/'))
     };
