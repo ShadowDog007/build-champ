@@ -34,7 +34,7 @@ export interface DotnetSdkReference {
 export class DotnetService {
 
   private readonly directoryPropFiles = new PromiseCache(
-    () => this.globService.globList('**/Directory.*.props', { nocase: true })
+    () => this.globService.globList('**/Directory.*.{props,targets}', { nocase: true })
   );
 
   private readonly projectFileCache = new PromiseCache(
@@ -123,7 +123,8 @@ export class DotnetService {
       // Map project references to project dir relative to base dir
       .map(ref => ref._attributes.Include)
       // Ignore any refs with expressions, we can't resolve expressions or wildcards
-      .filter(project => !project.match(/[$@]\(.+?\)|\*/));
+      .filter(project => !project.match(/[$@]\(.+?\)|\*/))
+      .map(project => project.replaceAll('\\', '/'));
 
     const transitiveDependencies = await Promise.all(
       relativeCsprojPaths.map(dep => this.projectReferenceCache.get(join(dirname(match), dep)))

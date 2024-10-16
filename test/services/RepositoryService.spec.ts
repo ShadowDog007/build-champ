@@ -22,12 +22,12 @@ describe(RepositoryServiceImpl, () => {
       const expectedHash = (await git.log({ maxCount: 1 })).latest?.hash;
 
       // When
-      const version = await repositoryService.getPathVersion('/');
+      const version = await repositoryService.getLatestPathVersion('/');
 
       // Verify
       expect(version).toMatchObject({
         hash: expectedHash,
-        hashShort: expectedHash?.substring(0, 8),
+        hashShort: expectedHash?.substring(0, 7),
       });
       expect(version).not.toMatchObject({
         hash: 'uncommitted',
@@ -47,7 +47,7 @@ describe(RepositoryServiceImpl, () => {
       // Verify
       expect(version).toMatchObject({
         hash: expectedHash,
-        hashShort: expectedHash?.substring(0, 8),
+        hashShort: expectedHash?.substring(0, 7),
       });
     });
   });

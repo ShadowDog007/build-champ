@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { inject, injectable } from 'inversify';
 import { Provider } from '.';
 import { TYPES } from '../TYPES';
@@ -17,7 +18,9 @@ export class PathScurryProvider extends Provider<PathScurry> {
             : PathScurry;
 
     return new Scurry(baseDir, {
-      childrenCacheSize: 32 * 1024
+      childrenCacheSize: 32 * 1024,
+      // Required to wire up mocks properly
+      fs: fs
     });
   }
 

@@ -3,7 +3,6 @@ jest.mock('fs/promises');
 
 import { Container } from 'inversify';
 import { mapValues } from 'lodash';
-import { join } from 'path';
 import { DotnetService } from '../../../src/plugins/dotnet/DotnetService';
 import { DotnetTypes } from '../../../src/plugins/dotnet/DotnetTypes';
 import { ProviderTypes } from '../../../src/providers';
@@ -54,7 +53,7 @@ describe(DotnetService, () => {
     test('when no item groups, should return no references', async () => {
       // Given
       const projectPath = '/Project1/Project1.csproj';
-      saveCsproj(join(baseDir, projectPath), {
+      saveCsproj(projectPath, {
         Project: {}
       });
 

@@ -46,8 +46,6 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
       this.error('No matching projects');
     }
 
-    this.verbose(`Matched ${projects.length} projects`);
-
     const templated = await Promise.all(projects.map(async project => {
       const context = await this.contextService.getProjectContext(project);
       return this.evalService.safeEvalTemplate(options.template, {

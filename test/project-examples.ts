@@ -77,6 +77,7 @@ export const projectExamples = {
       hash: 'a-long',
       hashShort: 'a-short',
       timestamp: new Date('2022-12-10T00:00:00.000Z'),
+      ago: '2 years ago',
     },
   } satisfies ProjectWithVersion,
   project2: {
@@ -101,6 +102,7 @@ export const projectExamples = {
       hash: 'b-long',
       hashShort: 'b-short',
       timestamp: new Date('2022-12-11T00:00:00.000Z'),
+      ago: '2 years ago',
     },
   } satisfies ProjectWithVersion,
   project3: {
@@ -121,7 +123,8 @@ export const projectExamples = {
     version: {
       hash: 'c-long',
       hashShort: 'c-short',
-      timestamp: new Date('2022-12-11T00:00:00.000Z')
+      timestamp: new Date('2022-12-11T00:00:00.000Z'),
+      ago: '2 years ago',
     }
   } satisfies ProjectWithVersion,
 };

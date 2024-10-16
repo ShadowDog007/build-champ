@@ -3,13 +3,14 @@ import { injectable } from 'inversify';
 import { dirname, join } from 'path';
 import 'reflect-metadata';
 import { Provider } from '.';
+import { cwd } from 'process';
 
 @injectable()
 export class BaseDirProvider extends Provider<string> {
 
   // TODO - Should this just use the current CWD ?
   async provider() {
-    let dir = process.cwd();
+    let dir = cwd();
 
     while (!this.exists(join(dir, '.git'))) {
       const parentDir = dirname(dir);

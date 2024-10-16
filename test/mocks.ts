@@ -10,31 +10,40 @@ import 'reflect-metadata';
 import { containerModule } from '../src/containerModule';
 import { Project, ProjectWithVersion } from '../src/models/Project';
 import { ProjectVersion } from '../src/models/ProjectVersion';
-import { loadPluginModules } from '../src/plugins';
+import { loadPluginModule } from '../src/plugins';
 import { Provider } from '../src/providers';
-import { GlobServiceImpl } from '../src/services/GlobService';
 import { ProjectService } from '../src/services/ProjectService';
 import { RepositoryService } from '../src/services/RepositoryService';
 import { SpawnService } from '../src/services/SpawnService';
 import { TYPES } from '../src/TYPES';
+import { globIterate } from 'glob';
+import { PathScurryProvider } from '../src/providers/PathScurryProvider';
+
+export const baseDir = '/build-champ';
 
 export async function createContainer() {
   const container = new Container();
   container.load(containerModule);
-  container.rebind(TYPES.BaseDirProvider).toConstantValue(new MockProvider(Promise.resolve('/')));
+  container.rebind(TYPES.BaseDirProvider).toConstantValue(new MockProvider(Promise.resolve(baseDir)));
+  container.rebind(TYPES.PathScurryProvider).to(MockPathScurryProvider);
 
-  await loadPluginModules(container);
+  for (const pluginName of ['default', 'dotnet']) {
+    await loadPluginModule(container, pluginName);
+  }
   container.snapshot();
   return container;
 }
 
 export async function resetFs() {
-  const toDelete = (await GlobServiceImpl.globAsync('**/*', { cwd: '/', dot: true }))
-    .map(p => resolve('/', p))
-    .map(p => [p, fs.statSync(p).isDirectory()] as [string, boolean]);
+  const files: string[] = [];
+  const dirs: string[] = [];
 
-  const files = toDelete.filter(f => !f[1]).map(f => f[0]);
-  const dirs = toDelete.filter(f => f[1]).map(f => f[0]);
+  for await (const path of await globIterate('**/*', { cwd: '/', dot: true })) {
+    const resolvedPath = resolve(baseDir, path);
+    if (fs.statSync(resolvedPath).isDirectory())
+      dirs.push(resolvedPath);
+    else files.push(resolvedPath);
+  }
 
   for (const file of files) {
     fs.unlinkSync(file);
@@ -42,7 +51,7 @@ export async function resetFs() {
   for (const dir of dirs.reverse()) {
     fs.rmdirSync(dir);
   }
-  fs.mkdirSync('/.git');
+  fs.mkdirSync(`${baseDir}/.git`, { recursive: true });
 }
 
 export function createDefaultProject(dir: string): Project {
@@ -53,6 +62,13 @@ export function createDefaultProject(dir: string): Project {
     commands: {},
     tags: [],
   };
+}
+
+@injectable()
+class MockPathScurryProvider extends PathScurryProvider {
+  get() {
+    return this.provider();
+  }
 }
 
 @injectable()
@@ -99,6 +115,7 @@ export interface MockCommit {
   hash: string;
   hashShort: string;
   timestamp: Date;
+  ago: string;
   files: string[];
 }
 
@@ -113,7 +130,7 @@ export class MockRepositoryService implements RepositoryService {
 
   async getPathVersion(path: string): Promise<ProjectVersion> {
     const commit = this.commits.find(c => c.files.some(f => f.startsWith(path)));
-    return commit || { hash: 'uncommitted', hashShort: 'uncommitted', timestamp: new Date() };
+    return commit || { hash: 'uncommitted', hashShort: 'uncommitted', timestamp: new Date(), ago: 'now' };
   }
   async getLatestPathVersion(...paths: string[]): Promise<ProjectVersion> {
     const versions = await Promise.all(paths.map((p) => this.getPathVersion(p)));

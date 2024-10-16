@@ -3,13 +3,14 @@ import { fs } from 'memfs';
 import { dirname, join } from 'path';
 import { js2xml } from 'xml-js';
 import { DotnetSdkProjectFile } from '../../../src/plugins/dotnet/DotnetService';
+import { baseDir } from '../../mocks';
 
-export function addCsproj(name: string, baseDir: string, { dependencies, testProject, properties }: {
+export function addCsproj(name: string, projectBaseDir: string, { dependencies, testProject, properties }: {
   dependencies?: string[],
   testProject?: boolean,
   properties?: Record<string, string>,
 } = {}): [string, DotnetSdkProjectFile] {
-  const filePath = join(baseDir, name, `${name}.csproj`);
+  const filePath = join(projectBaseDir, name, `${name}.csproj`);
   const content: DotnetSdkProjectFile = {
     Project: {
       _attributes: {
@@ -35,10 +36,11 @@ export function addCsproj(name: string, baseDir: string, { dependencies, testPro
   };
 
   saveCsproj(filePath, content);
-  return [filePath, content];
+  return [filePath.replaceAll('\\', '/'), content];
 }
 
 export function saveCsproj(filePath: string, content: DotnetSdkProjectFile) {
-  fs.mkdirSync(dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, js2xml(content, { compact: true }));
+  const fullDir = join(baseDir, filePath);
+  fs.mkdirSync(dirname(fullDir), { recursive: true });
+  fs.writeFileSync(fullDir, js2xml(content, { compact: true }));
 }

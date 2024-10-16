@@ -56,10 +56,8 @@ export class RepositoryServiceImpl implements RepositoryService {
       timestamp: new Date(),
     };
 
-    let gotLine = false;
     gitLog.stdout.setEncoding('utf8');
     gitLog.stdout.on('data', (line: string) => {
-      gotLine = true;
       log = JSON.parse(line.split('\n')[0].replaceAll('\'', '"'));
     });
 
@@ -70,10 +68,6 @@ export class RepositoryServiceImpl implements RepositoryService {
         reject(new Error('Failed executing git log, exited with code ' + code));
       }
     }));
-
-    if (!gotLine) {
-      console.log('No logs for ' + paths[0]);
-    }
 
     const timestamp = new Date(log.timestamp || new Date());
     const ago = !log ? 'now' : this.calculateAgo(timestamp);

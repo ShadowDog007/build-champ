@@ -8,7 +8,7 @@ import { RunCommand } from '../../src/cli/RunCommand';
 import { ProjectService } from '../../src/services/ProjectService';
 import { SpawnService } from '../../src/services/SpawnService';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockProjectService, MockProvider, MockSpawnService, resetFs } from '../mocks';
+import { baseDir, createContainer, MockProjectService, MockProvider, MockSpawnService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -178,7 +178,7 @@ describe('RunCommand', () => {
 
     test('when .env file exists, should add environment variable', async () => {
       // Given
-      const projectDir = join('/', projectExamples.project1.dir);
+      const projectDir = join(baseDir, projectExamples.project1.dir);
       await mkdir(projectDir, { recursive: true });
       await writeFile(join(projectDir, '.env'), 'DOTENV_VAR=from-dot-env');
 
@@ -192,10 +192,10 @@ describe('RunCommand', () => {
 
     test('when multiple .env file exists, should use value from closest scope', async () => {
       // Given
-      const projectDir = join('/', projectExamples.project1.dir);
+      const projectDir = join(baseDir, projectExamples.project1.dir);
       await mkdir(projectDir, { recursive: true });
-      await writeFile('/.env', 'DOTENV_VAR=parentScope');
-      await writeFile('/src/.env', 'DOTENV_VAR=from-dot-env');
+      await writeFile(join(baseDir, '/.env'), 'DOTENV_VAR=parentScope');
+      await writeFile(join(baseDir, '/src/.env'), 'DOTENV_VAR=from-dot-env');
 
       // When/Verify
       await testHelper.testParse(['dotEnvCommand'], [

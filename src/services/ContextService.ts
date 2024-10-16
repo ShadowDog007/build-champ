@@ -138,17 +138,16 @@ export class ContextServiceImpl implements ContextService {
   async loadEnvFiles(): Promise<string[]> {
     const envFiles: string[] = [];
 
-    for await (const envFile of this.globService.glob('**/.{*.env,env}', { nocase: true })) {
+    for await (const envFile of this.globService.glob('**/.{*.env,env}')) {
       envFiles.push(envFile);
     }
 
     const fileDepth = (f: string) => Array.from(f.matchAll(/[/\\]/g)).length;
     // Sort by hierarchy count, then target
-    envFiles.sort((a, b) => {
+    return envFiles.sort((a, b) => {
       const depth = fileDepth(a) - fileDepth(b);
       return depth === 0 ? a.length - b.length : depth;
     });
-    return envFiles;
   }
 
   /**

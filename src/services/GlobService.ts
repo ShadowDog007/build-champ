@@ -22,7 +22,7 @@ export class GlobServiceImpl implements GlobService {
     @inject(TYPES.GitIgnoreProvider) private readonly gitIgnore: Provider<GitIgnore>
   ) { }
 
-  async *glob(pattern: string, options?: EnabledGlobOptions): AsyncGenerator<string> {
+  async *glob(pattern: string | string[], options?: EnabledGlobOptions): AsyncGenerator<string> {
     const baseDir = await this.baseDir.get();
 
     const ignore = options?.ignore?.map(l => new Minimatch(l, { optimizationLevel: 2 })) ?? [];
@@ -37,6 +37,9 @@ export class GlobServiceImpl implements GlobService {
 
     const matchesIterator = globIterate(pattern, {
       ...options,
+      scurry: (await this.pathScurry.get()) as unknown as undefined,
+      cwd: baseDir,
+      nodir: true,
       ignore: {
         ignored(p) {
           const relative = p.relative();
@@ -63,11 +66,12 @@ export class GlobServiceImpl implements GlobService {
           return false;
         }
       },
-      scurry: (await this.pathScurry.get()) as unknown as undefined,
-      cwd: baseDir,
     });
 
-    for await (const match of matchesIterator) {
+    for await (let match of matchesIterator) {
+      match = match.replaceAll('\\', '/');
+      if (match[0] !== '/')
+        match = `/${match}`;
       yield match;
     }
   }
