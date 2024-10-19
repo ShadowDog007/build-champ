@@ -61,17 +61,17 @@ export class GitIgnoreImpl implements GitIgnore {
 
   async addGitIgnore(gitIgnorePath: string) {
     const relativePath = dirname(gitIgnorePath);
-    // TODO read lines one at a time
-    const file = await this.fileService.readFileUtf8(gitIgnorePath);
 
-    const patterns = file.split(/\r?\n/)
-      .filter(l => l[0] !== '#')
-      .map(l => l.trim())
-      .filter(l => l !== '')
-      .map(l => l.replace(/^(!?)(.+)$/, `$1${relativePath === '.' ? '' : relativePath + '/'}**/$2`))
-      .map(l => l.endsWith('/') ? `${l}**` : l);
+    for await (let line of this.fileService.readFileUtf8Lines(gitIgnorePath)) {
+      if (line[0] === '#') continue;
+      line = line.trim();
+      if (line === '') continue;
 
-    for (const pattern of patterns) {
+      let pattern = line.replace(/^(!?)(.+)$/, `$1${relativePath === '.' ? '' : relativePath + '/'}**/$2`);
+      if (pattern.endsWith('/')) {
+        pattern = `${pattern}**`;
+      }
+
       const not = pattern.startsWith('!');
       const children = pattern.endsWith('/**');
 

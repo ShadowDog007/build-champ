@@ -92,6 +92,7 @@ describe('GlobService', () => {
       { ignore: 'folder/*.txt', expected: ['/file1.txt'] },
       { ignore: '*.txt', expected: [] },
       { ignore: '*.txt\n!*2.txt', expected: ['/folder/file2.txt'] },
+      { ignore: '*.txt\r\n!*2.txt', expected: ['/folder/file2.txt'] },
     ])
       ('should ignore matches present in .gitignore files ($ignore)', async ({ ignore, expected }) => {
         // Given
