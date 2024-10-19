@@ -54,7 +54,7 @@ describe(RepositoryServiceImpl, () => {
     test('when base path provided should return latest version', async () => {
       // Given
       mockSpawnService.addRunOutput();
-      mockSpawnService.addRunOutput(`{'hash':'long-hash', 'hashShort': 'short-hash', 'timestamp': '2024-10-19T00:00:00Z'}`);
+      mockSpawnService.addRunOutput(`{'hash':'long-hash','hashShort':'short-hash','timestamp':'2024-10-19T00:00:00Z'}`);
 
       // When
       const version = await repositoryService.getLatestPathVersion('/');
@@ -72,7 +72,7 @@ describe(RepositoryServiceImpl, () => {
     ])('should format paths in command correctly ($path => $expected)', async ({ path, expected }) => {
       // Given
       mockSpawnService.addRunOutput();
-      mockSpawnService.addRunOutput(`{'hash':'long-hash', 'hashShort': 'short-hash', 'timestamp': '2024-10-19T00:00:00Z'}`);
+      mockSpawnService.addRunOutput(`{'hash':'long-hash','hashShort':'short-hash','timestamp':'2024-10-19T00:00:00Z'}`);
 
       // When
       await repositoryService.getLatestPathVersion(path);
@@ -93,10 +93,10 @@ describe(RepositoryServiceImpl, () => {
       { status: ' M', expected: PathStatus.Unstaged },
       { status: 'MM', expected: PathStatus.Unstaged },
       { status: '??', expected: PathStatus.Untracked },
-    ])('when base path has any uncommited changed with status $status', async ({ status, expected }) => {
+    ])('when base path has any uncommitted changed with status $status', async ({ status, expected }) => {
       // Given
       mockSpawnService.addRunOutput(`${status} file.txt`);
-      mockSpawnService.addRunOutput(`{'hash':'long-hash', 'hashShort': 'short-hash', 'timestamp': '2024-10-19T00:00:00Z'}`);
+      mockSpawnService.addRunOutput(`{'hash':'long-hash','hashShort':'short-hash','timestamp':'2024-10-19T00:00:00Z'}`);
 
       // When
       const version = await repositoryService.getLatestPathVersion('/');
@@ -108,10 +108,10 @@ describe(RepositoryServiceImpl, () => {
       });
     });
 
-    test('when file does not match uncommited change, should use hash', async () => {
+    test('when file does not match uncommitted change, should use hash', async () => {
       // Given
       mockSpawnService.addRunOutput(`?? file.txt`);
-      mockSpawnService.addRunOutput(`{'hash':'long-hash', 'hashShort': 'short-hash', 'timestamp': '2024-10-19T00:00:00Z'}`);
+      mockSpawnService.addRunOutput(`{'hash':'long-hash','hashShort':'short-hash','timestamp':'2024-10-19T00:00:00Z'}`);
 
       // When
       const version = await repositoryService.getLatestPathVersion('/other.txt');
@@ -123,10 +123,10 @@ describe(RepositoryServiceImpl, () => {
       });
     });
 
-    test('when path is a child of uncommited change, should use use uncommitted status', async () => {
+    test('when path is a child of uncommitted change, should use use uncommitted status', async () => {
       // Given
       mockSpawnService.addRunOutput(`?? some/folder/`);
-      mockSpawnService.addRunOutput(`{'hash':'long-hash', 'hashShort': 'short-hash', 'timestamp': '2024-10-19T00:00:00Z'}`);
+      mockSpawnService.addRunOutput(`{'hash':'long-hash','hashShort':'short-hash','timestamp':'2024-10-19T00:00:00Z'}`);
 
       // When
       const version = await repositoryService.getLatestPathVersion('/some/folder/structure/here');
@@ -138,10 +138,10 @@ describe(RepositoryServiceImpl, () => {
       });
     });
 
-    test('when path parent of uncommited change, should use use uncommitted status', async () => {
+    test('when path parent of uncommitted change, should use use uncommitted status', async () => {
       // Given
       mockSpawnService.addRunOutput(`?? some/folder/file.txt`);
-      mockSpawnService.addRunOutput(`{'hash':'long-hash', 'hashShort': 'short-hash', 'timestamp': '2024-10-19T00:00:00Z'}`);
+      mockSpawnService.addRunOutput(`{'hash':'long-hash','hashShort':'short-hash','timestamp':'2024-10-19T00:00:00Z'}`);
 
       // When
       const version = await repositoryService.getLatestPathVersion('/some/folder');

@@ -93,7 +93,7 @@ export class RepositoryServiceImpl implements RepositoryService {
     const gitLog = this.spawnService.spawn('git', [
       'log',
       '-n', '1',
-      `--format=format:{'hash':'%H', 'hashShort':'%h', 'timestamp':'%cI'}`,
+      `--format=format:{'hash':'%H','hashShort':'%h','timestamp':'%cI'}`,
       '--',
       ...paths.map(path => path.startsWith('/') ? path.slice(1) || '.' : path)
     ], {
@@ -108,7 +108,12 @@ export class RepositoryServiceImpl implements RepositoryService {
     };
 
     for await (const line of this.spawnService.readLines(gitLog.stdout)) {
-      log = JSON.parse(line.replaceAll('\'', '"'));
+      try {
+        log = JSON.parse(line.replaceAll('\'', '"'));
+      } catch (error) {
+        console.log(`Failed processing line: '${line}'`);
+        throw error;
+      }
       break;
     }
 
