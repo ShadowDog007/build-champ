@@ -130,7 +130,7 @@ export class RepositoryServiceImpl implements RepositoryService {
     const args = objectishTo === undefined ? [objectishFrom] : [objectishFrom, objectishTo];
     const gitDiff = this.spawnService.spawn('git', [
       'diff-tree', '--no-commit-id', '--name-only', '-r',
-      '--', ...args
+      ...args
     ], {
       cwd: await this.baseDir.get(),
       stdio: 'pipe'

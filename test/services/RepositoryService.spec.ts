@@ -179,7 +179,7 @@ describe(RepositoryServiceImpl, () => {
       // Verify
       expect(mockSpawnService.spawns[0].args).toMatchObject([
         'diff-tree', '--no-commit-id', '--name-only', '-r',
-        '--', 'HEAD'
+        'HEAD'
       ]);
     });
 
@@ -193,7 +193,7 @@ describe(RepositoryServiceImpl, () => {
       // Verify
       expect(mockSpawnService.spawns[0].args).toMatchObject([
         'diff-tree', '--no-commit-id', '--name-only', '-r',
-        '--', 'HEAD~1', 'HEAD'
+        'HEAD~1', 'HEAD'
       ]);
     });
   });

@@ -40,8 +40,7 @@ export abstract class BaseProjectFilterCommand<TArgs extends [...unknown[], Proj
 
     projects = this.filterProjectPatterns(projects, options.projects);
     projects = this.filterTags(projects, options.tags);
-    projects = await this.filterChangedFromTo(projects, options.changedIn, options.changedIn);
-    projects = await this.filterChangedFromTo(projects, options.changedFrom, options.changedTo);
+    projects = await this.filterChangedFromTo(projects, options.changedIn, options.changedFrom, options.changedTo);
     projects = this.filterChangesUncommitted(projects, options.changesUncommitted);
 
     this.verbose(`Matched ${projects.length} of ${initialProjectCount} projects`);
@@ -61,11 +60,18 @@ export abstract class BaseProjectFilterCommand<TArgs extends [...unknown[], Proj
       : projects;
   }
 
-  async filterChangedFromTo(projects: ProjectWithVersion[], changedFrom: ProjectFilterOptions['changedFrom'], changedTo: ProjectFilterOptions['changedTo']) {
-    if (changedFrom) {
-      const directoryChanges = changedTo
-        ? await this.repositoryService.getChanges(changedFrom, changedTo)
-        : await this.repositoryService.getChanges(changedFrom);
+  async filterChangedFromTo(projects: ProjectWithVersion[],
+    changedIn?: string, changedFrom?: string, changedTo?: string) {
+
+    if (changedIn || changedFrom) {
+      let directoryChanges: string[];
+      if (changedIn) {
+        directoryChanges = await this.repositoryService.getChanges(changedIn);
+      } else if (changedFrom) {
+        directoryChanges = changedTo
+          ? await this.repositoryService.getChanges(changedFrom, changedTo)
+          : await this.repositoryService.getChanges(changedFrom, 'HEAD');
+      }
 
       return projects.filter(p =>
         // If there is no upper limit, include projects with local changes
