@@ -129,8 +129,8 @@ export class RepositoryServiceImpl implements RepositoryService {
   async getChanges(objectishFrom: string, objectishTo?: string): Promise<string[]> {
     const args = objectishTo === undefined ? [objectishFrom] : [objectishFrom, objectishTo];
     const gitDiff = this.spawnService.spawn('git', [
-      'diff', '--name-only',
-      ...args
+      'diff-tree', '--no-commit-id', '--name-only', '-r',
+      '--', ...args
     ], {
       cwd: await this.baseDir.get(),
       stdio: 'pipe'
@@ -141,7 +141,7 @@ export class RepositoryServiceImpl implements RepositoryService {
       files.push(`/${file.trim()}`);
     }
 
-    await this.spawnService.waitForCompletion(gitDiff, 'git diff');
+    await this.spawnService.waitForCompletion(gitDiff, 'git diff-tree');
 
     return files;
   }

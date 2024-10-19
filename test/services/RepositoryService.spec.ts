@@ -178,8 +178,8 @@ describe(RepositoryServiceImpl, () => {
 
       // Verify
       expect(mockSpawnService.spawns[0].args).toMatchObject([
-        'diff', '--name-only',
-        'HEAD'
+        'diff-tree', '--no-commit-id', '--name-only', '-r',
+        '--', 'HEAD'
       ]);
     });
 
@@ -188,12 +188,12 @@ describe(RepositoryServiceImpl, () => {
       mockSpawnService.addRunOutput();
 
       // When
-      await repositoryService.getChanges('HEAD', 'HEAD~1');
+      await repositoryService.getChanges('HEAD~1', 'HEAD');
 
       // Verify
       expect(mockSpawnService.spawns[0].args).toMatchObject([
-        'diff', '--name-only',
-        'HEAD', 'HEAD~1'
+        'diff-tree', '--no-commit-id', '--name-only', '-r',
+        '--', 'HEAD~1', 'HEAD'
       ]);
     });
   });
