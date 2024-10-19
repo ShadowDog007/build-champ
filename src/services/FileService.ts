@@ -4,10 +4,13 @@ import { join } from 'path';
 import 'reflect-metadata';
 import { parse } from 'yaml';
 import { Provider, ProviderTypes } from '../providers';
+import { createReadStream } from 'fs';
+import { createInterface } from 'readline/promises';
 
 export interface FileService {
   readFileBuffer(repositoryPath: string): Promise<Buffer>;
   readFileUtf8(repositoryPath: string): Promise<string>;
+  readFileUtf8Lines(repositoryPath: string): AsyncGenerator<string>;
   readFileYaml<T>(repositoryPath: string): Promise<T>;
 }
 
@@ -24,6 +27,18 @@ export class FileServiceImpl implements FileService {
 
   async readFileUtf8(repositoryPath: string) {
     return readFile(join(await this.baseDir.get(), repositoryPath), 'utf8');
+  }
+
+  async *readFileUtf8Lines(repositoryPath: string): AsyncGenerator<string> {
+    const fileStream = createReadStream(join(await this.baseDir.get(), repositoryPath), 'utf8');
+
+    const rl = createInterface({
+      input: fileStream,
+    });
+
+    for await (const line of rl) {
+      yield line;
+    }
   }
 
   async readFileYaml<T>(repositoryPath: string): Promise<T> {
