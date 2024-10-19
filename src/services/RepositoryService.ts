@@ -6,6 +6,9 @@ import { Provider } from '../providers';
 import { TYPES } from '../TYPES';
 import { SpawnService } from './SpawnService';
 import { SimpleGit } from 'simple-git';
+import { PromiseCache } from '../util/PromiseCache';
+import { createInterface } from 'readline/promises';
+import { PathStatus, pathStatusPriority } from '../models/PathStatus';
 
 export interface RepositoryService {
   /**
@@ -30,6 +33,7 @@ export interface RepositoryService {
 
 @injectable()
 export class RepositoryServiceImpl implements RepositoryService {
+  private readonly uncommitedChanges = new PromiseCache(() => this.loadUncommitedChanges());
 
   constructor(
     @inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>,
@@ -37,8 +41,72 @@ export class RepositoryServiceImpl implements RepositoryService {
     @inject(TYPES.SpawnService) private readonly spawnService: SpawnService
   ) { }
 
+  async loadUncommitedChanges(): Promise<readonly UncommitedPath[]> {
+    const gitStatus = this.spawnService.spawn('git', [
+      'status', '-s', '-unormal'
+    ], {
+      cwd: await this.baseDir.get(),
+      stdio: 'pipe',
+    });
+
+    const changes: UncommitedPath[] = [];
+
+    gitStatus.stdout.setEncoding('utf8');
+    const rl = createInterface(gitStatus.stdout);
+
+    for await (const line of rl) {
+      let status: PathStatus | undefined = undefined;
+      switch (line.slice(0, 2)) {
+        case 'M ':
+          status = PathStatus.Staged;
+          break;
+        case ' M':
+          status = PathStatus.Unstaged;
+          break;
+        case '??':
+          status = PathStatus.Untracked;
+          break;
+      }
+
+      if (!status) {
+        continue;
+      }
+
+      changes.push({
+        path: `/${line.slice(3)}`,
+        status,
+      });
+    }
+
+    await new Promise((resolve, reject) => gitStatus.on('close', code => {
+      if (code === 0) {
+        resolve(undefined);
+      } else {
+        reject(new Error('Failed executing git status, exited with code ' + code));
+      }
+    }));
+
+    return changes;
+  }
+
   async getLatestPathVersion(...paths: string[]): Promise<ProjectVersion> {
-    // TODO - need to consider any uncommitted changes
+    const uncommitedChanges = await this.uncommitedChanges.get();
+
+    const matchingUncommitedChanges = uncommitedChanges
+      .filter(uc => !!paths.find(p => uc.path.startsWith(p)));
+
+    if (matchingUncommitedChanges.length) {
+      const status = pathStatusPriority(...matchingUncommitedChanges.map(c => c.status));
+
+      return {
+        hash: status,
+        hashShort: status,
+        timestamp: new Date(),
+        ago: 'now',
+        localChanges: matchingUncommitedChanges.map(c => c.path),
+      };
+    }
+
     const gitLog = this.spawnService.spawn('git', [
       'log',
       '-n', '1',
@@ -57,9 +125,11 @@ export class RepositoryServiceImpl implements RepositoryService {
     };
 
     gitLog.stdout.setEncoding('utf8');
-    gitLog.stdout.on('data', (line: string) => {
-      log = JSON.parse(line.split('\n')[0].replaceAll('\'', '"'));
-    });
+    const rl = createInterface(gitLog.stdout);
+    for await (const line of rl) {
+      log = JSON.parse(line.replaceAll('\'', '"'));
+      break;
+    }
 
     await new Promise((resolve, reject) => gitLog.on('close', code => {
       if (code === 0) {
@@ -105,4 +175,9 @@ export class RepositoryServiceImpl implements RepositoryService {
 
     return `${duration.toHuman()} ago`;
   }
+}
+
+export interface UncommitedPath {
+  path: `/${string}`;
+  status: PathStatus;
 }
