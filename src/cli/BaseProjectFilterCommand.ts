@@ -78,7 +78,7 @@ export abstract class BaseProjectFilterCommand<TArgs extends [...unknown[], Proj
 
   filterChangesUncommitted(projects: ProjectWithVersion[], changesUncommitted: boolean) {
     return changesUncommitted
-      ? projects.filter(p => p.version.localChanges)
+      ? projects.filter(p => p.version.localChanges?.length)
       : projects;
   }
 }
