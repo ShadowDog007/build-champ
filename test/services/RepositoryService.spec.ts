@@ -30,7 +30,9 @@ describe(RepositoryServiceImpl, () => {
         throw new Error('Define output via \.addRunOutput');
       }
 
-      const echoCmd = output.map(l => `echo ${l}`).join(' && ');
+      const echoCmd = output
+        .map(l => process.platform === 'win32' ? l : `"${l}"`)
+        .map(l => `echo ${l}`).join(' && ');
 
       const [shellCommand, shellOptions]: [string, string[]] = process.platform === 'win32'
         ? ['cmd', ['/c']]
