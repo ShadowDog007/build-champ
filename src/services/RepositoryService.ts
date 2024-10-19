@@ -60,6 +60,7 @@ export class RepositoryServiceImpl implements RepositoryService {
         case 'M ':
           status = PathStatus.Staged;
           break;
+        case 'MM':
         case ' M':
           status = PathStatus.Unstaged;
           break;
@@ -93,7 +94,9 @@ export class RepositoryServiceImpl implements RepositoryService {
     const uncommitedChanges = await this.uncommitedChanges.get();
 
     const matchingUncommitedChanges = uncommitedChanges
-      .filter(uc => !!paths.find(p => uc.path.startsWith(p)));
+      .filter(uc => !!paths.find(p =>
+        uc.path.startsWith(p) || p.startsWith(uc.path))
+      );
 
     if (matchingUncommitedChanges.length) {
       const status = pathStatusPriority(...matchingUncommitedChanges.map(c => c.status));
