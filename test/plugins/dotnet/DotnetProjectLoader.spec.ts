@@ -3,7 +3,7 @@ jest.mock('fs/promises');
 
 import { Container } from 'inversify';
 import { fs } from 'memfs';
-import { basename } from 'path';
+import { basename, join } from 'path';
 import 'reflect-metadata';
 import { DotnetPlugin } from '../../../src/plugins/dotnet/DotnetPlugin';
 import { DotnetProjectLoader } from '../../../src/plugins/dotnet/DotnetProjectLoader';
@@ -11,10 +11,13 @@ import { PluginTypes } from '../../../src/plugins/PluginTypes';
 import { ProviderTypes } from '../../../src/providers';
 import { createContainer, resetFs } from '../../mocks';
 import { addCsproj } from './helper';
+import { ProjectLoaderService, ProjectLoaderServiceImpl } from '../../../src/services/ProjectLoaderService';
+import { writeFile } from 'fs/promises';
 
 describe(DotnetProjectLoader, () => {
   let container: Container;
   let loader: DotnetProjectLoader;
+  let projectLoaderService: ProjectLoaderService;
   let baseDir: string;
 
   let csprojPath: string;
@@ -25,12 +28,13 @@ describe(DotnetProjectLoader, () => {
     await resetFs();
     container = await createContainer();
     loader = container.resolve(DotnetProjectLoader);
+    projectLoaderService = container.resolve(ProjectLoaderServiceImpl);
 
     baseDir = await container.get(ProviderTypes.BaseDirProvider).get();
 
-    [csprojPath] = addCsproj('Project1', baseDir, { dependencies: ['Dependency1'] });
-    [dependencyCsprojPath] = addCsproj('Dependency1', baseDir);
-    [testCsprojPath] = addCsproj('Project1.Tests', baseDir, { dependencies: ['Project1'], testProject: true });
+    [csprojPath] = addCsproj('Project1', '/', { dependencies: ['Dependency1'] });
+    [dependencyCsprojPath] = addCsproj('Dependency1', '/');
+    [testCsprojPath] = addCsproj('Project1.Tests', '/', { dependencies: ['Project1'], testProject: true });
   });
 
   test('should be registered in the container', () => {
@@ -72,7 +76,7 @@ describe(DotnetProjectLoader, () => {
 
     test('when project is a test project, should include test command without pack', async () => {
       // Given
-      const [projectPath] = addCsproj('TestProject', baseDir, { testProject: true });
+      const [projectPath] = addCsproj('TestProject', '/', { testProject: true });
 
       // When
       const result = await loader.loadProject(projectPath);
@@ -86,7 +90,7 @@ describe(DotnetProjectLoader, () => {
 
     test('when IsPackable = false, should not include pack command', async () => {
       // Given
-      const [projectPath] = addCsproj('NotPackable', baseDir, {
+      const [projectPath] = addCsproj('NotPackable', '/', {
         properties: {
           IsPackable: 'false'
         }
@@ -118,7 +122,7 @@ describe(DotnetProjectLoader, () => {
 
     test('when Directory.Build.props exists, should include as dependency', async () => {
       // Given
-      fs.writeFileSync('/Directory.Build.props', '<Project />');
+      fs.writeFileSync(join(baseDir, '/Directory.Build.props'), '<Project />');
 
       // When
       const result = await loader.loadProject(csprojPath);
@@ -133,6 +137,31 @@ describe(DotnetProjectLoader, () => {
 
       // Verify
       expect(result.commands.test).toMatchObject({ command: 'dotnet test -c ${{env.DOTNET_CONFIGURATION || "Release"}} ${{env.DOTNET_BUILD_ARGS || ""}} ${{env.DOTNET_TEST_ARGS || ""}}' });
+    });
+
+    test('should successfully load file via projectLoader', async () => {
+      // Given
+      await writeFile(join(baseDir, 'Directory.Build.props'), '<Project />');
+
+      // When
+      const results = await projectLoaderService.loadProjects();
+
+      // Verify
+      expect(results).toHaveLength(3);
+      results.sort((a, b) => a.name.localeCompare(b.name));
+
+      for (const result of results) {
+        // all projects should match these
+        expect(result.tags).toContain('plugin:dotnet');
+      }
+
+      const [dependency, project, tests] = results;
+      expect(dependency.name).toBe('Dependency1');
+      expect(dependency.dependencies).toMatchObject(['/Directory.Build.props']);
+      expect(project.name).toBe('Project1');
+      expect(project.dependencies).toMatchObject(['/Dependency1', '/Directory.Build.props']);
+      expect(tests.name).toBe('Project1.Tests');
+      expect(tests.dependencies).toMatchObject(['/Dependency1', '/Directory.Build.props', '/Project1']);
     });
   });
 });

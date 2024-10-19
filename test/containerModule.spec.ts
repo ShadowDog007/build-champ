@@ -1,5 +1,6 @@
 jest.mock('fs');
 jest.mock('fs/promises');
+jest.mock('process');
 
 import { Container } from 'inversify';
 import { containerModule } from '../src/containerModule';

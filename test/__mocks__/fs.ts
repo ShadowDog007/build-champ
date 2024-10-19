@@ -1,6 +1,8 @@
 import { fs } from 'memfs';
 import { dirname, join } from 'path';
 
+import * as promises from './fs/promises';
+
 const fsReal = jest.requireActual('fs') as typeof fs;
 const copyFiles = [
   'node_modules/vm2/lib/bridge.js',
@@ -14,4 +16,7 @@ for (const file of copyFiles) {
   fs.writeFileSync(path, content);
 }
 
-module.exports = fs;
+module.exports = {
+  ...fs,
+  promises
+};

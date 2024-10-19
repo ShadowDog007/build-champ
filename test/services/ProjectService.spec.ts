@@ -9,7 +9,7 @@ import { Project } from '../../src/models/Project';
 import { ProjectVersion } from '../../src/models/ProjectVersion';
 import { ProjectServiceImpl } from '../../src/services/ProjectService';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockCommit, MockRepositoryService, resetFs } from '../mocks';
+import { baseDir, createContainer, MockCommit, MockRepositoryService, resetFs } from '../mocks';
 
 describe('ProjectService', () => {
   let container: Container;
@@ -75,7 +75,7 @@ describe('ProjectService', () => {
       const extension = {
         dependencies: ['./src/shared-dependency']
       } satisfies Partial<Project>;
-      fs.writeFileSync('/.project.base.yaml', stringify(extension));
+      fs.writeFileSync(join(baseDir, '.project.base.yaml'), stringify(extension));
 
       // When
       const projects = await projectService.getProjects();
@@ -125,6 +125,7 @@ describe('ProjectService', () => {
         hash: '1234567890',
         hashShort: '12345678',
         timestamp: new Date('2022-12-23'),
+        ago: '2 years ago',
       };
       const commit: MockCommit = {
         ...version,
@@ -156,16 +157,19 @@ describe('ProjectService', () => {
         hash: '1234567890',
         hashShort: '12345678',
         timestamp: new Date('2022-12-23'),
+        ago: '2 years ago',
       };
       const middleVersion: ProjectVersion = {
         hash: '1111111111',
         hashShort: '11111111',
         timestamp: new Date('2022-11-05'),
+        ago: '2 years ago',
       };
       const earlierVersion: ProjectVersion = {
         hash: '0000000000',
         hashShort: '00000000',
         timestamp: new Date('2022-11-01'),
+        ago: '2 years ago',
       };
       repositoryService.addCommitChanges({ ...latestVersion, files: ['/project1/test.txt'] });
       repositoryService.addCommitChanges({ ...middleVersion, files: ['/dependency2/file.json'] });

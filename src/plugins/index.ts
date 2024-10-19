@@ -11,10 +11,14 @@ export async function loadPluginModules(container: Container) {
     .map(([plugin]) => plugin);
 
   for (const pluginName of plugins) {
-    const plugin = await getPlugin(pluginName);
-    container.load(plugin.getContainerModule());
-    container.bind(PluginTypes.PluginIdentifierConfigMapping).toConstantValue([plugin.pluginIdentifier, pluginName]);
+    await loadPluginModule(container, pluginName);
   }
+}
+
+export async function loadPluginModule(container: Container, pluginName: string) {
+  const plugin = await getPlugin(pluginName);
+  container.load(plugin.getContainerModule());
+  container.bind(PluginTypes.PluginIdentifierConfigMapping).toConstantValue([plugin.pluginIdentifier, pluginName]);
 }
 
 async function getPlugin(plugin: string): Promise<Plugin> {

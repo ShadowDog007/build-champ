@@ -6,7 +6,7 @@ import { ProjectWithVersion } from '../../src/models/Project';
 import { ProjectService } from '../../src/services/ProjectService';
 import { RepositoryService } from '../../src/services/RepositoryService';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockCommit, MockProjectService, MockProvider, MockRepositoryService, resetFs } from '../mocks';
+import { baseDir, createContainer, MockCommit, MockProjectService, MockProvider, MockRepositoryService, resetFs } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -27,24 +27,28 @@ describe(ListCommand, () => {
       hash: 'initial commit',
       hashShort: 'initial ',
       timestamp: new Date('2022-12-20'),
+      ago: '2 years ago',
       files: [project1Dir, dependency1Dir],
     },
     newProject: {
       hash: 'new project',
       hashShort: 'new proj',
       timestamp: new Date('2022-12-23'),
+      ago: '2 years ago',
       files: [project2Dir],
     },
     unrelated: {
       hash: 'Updated unrelated dir',
       hashShort: 'unrelate',
       timestamp: new Date('2022-12-28'),
+      ago: '2 years ago',
       files: ['README.md'],
     },
     update: {
       hash: 'Updated dependency dir',
       hashShort: 'updated ',
       timestamp: new Date('2023-01-01'),
+      ago: '2 years ago',
       files: [dependency1Dir],
     }
   } satisfies Record<string, MockCommit>;
@@ -95,13 +99,13 @@ describe(ListCommand, () => {
 
     test('when no arguments, should use default format',
       () => testHelper.testParse([], [
-        `=> Project1 (${project1.version.hashShort} @ ${project1.version.timestamp.toISOString()})`,
-        `=> Project2 (${project2.version.hashShort} @ ${project2.version.timestamp.toISOString()})`
+        `=> Project1 (${project1.version.hashShort} @ ${project1.version.ago})`,
+        `=> Project2 (${project2.version.hashShort} @ ${project2.version.ago})`
       ]));
     test('when set to use long version, should use long hash',
       () => testHelper.testParse(['--long-version'], [
-        `=> Project1 (${project1.version.hash} @ ${project1.version.timestamp.toISOString()})`,
-        `=> Project2 (${project2.version.hash} @ ${project2.version.timestamp.toISOString()})`
+        `=> Project1 (${project1.version.hash} @ ${project1.version.ago})`,
+        `=> Project2 (${project2.version.hash} @ ${project2.version.ago})`
       ]));
 
     test('when static template passed, should output using template',
@@ -140,10 +144,10 @@ describe(ListCommand, () => {
 
     test('when verbose, should write matched count',
       () => testHelper.testParse(['-v'], [
-        'Listing projects within `/`',
+        `Listing projects within \`${baseDir}\``,
         'Matched 2 of 2 projects',
-        `=> Project1 (${project1.version.hashShort} @ ${project1.version.timestamp.toISOString()})`,
-        `=> Project2 (${project2.version.hashShort} @ ${project2.version.timestamp.toISOString()})`
+        `=> Project1 (${project1.version.hashShort} @ ${project1.version.ago})`,
+        `=> Project2 (${project2.version.hashShort} @ ${project2.version.ago})`
       ]));
   });
 });

@@ -27,7 +27,14 @@ export class FileServiceImpl implements FileService {
   }
 
   async readFileYaml<T>(repositoryPath: string): Promise<T> {
-    const yaml = await this.readFileUtf8(repositoryPath);
-    return parse(yaml);
+    try {
+      const yaml = await this.readFileUtf8(repositoryPath);
+      return parse(yaml);
+    } catch (error) {
+      if (error instanceof Error) {
+        error.message = `Error reading yaml from '${repositoryPath}': ` + error.message;
+      }
+      throw error;
+    }
   }
 }

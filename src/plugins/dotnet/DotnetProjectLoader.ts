@@ -12,6 +12,7 @@ export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
   get pluginIdentifier() { return DotnetPlugin.pluginIdentifier; }
 
   readonly include = '**/*.csproj';
+  readonly exclude = '**/{bin,obj,packages}/**';
 
   constructor(
     @inject(DotnetTypes.DotnetService) private readonly dotnetService: DotnetService,
