@@ -5,9 +5,7 @@ import { ProjectVersion } from '../models/ProjectVersion';
 import { Provider } from '../providers';
 import { TYPES } from '../TYPES';
 import { SpawnService } from './SpawnService';
-import { SimpleGit } from 'simple-git';
 import { PromiseCache } from '../util/PromiseCache';
-import { createInterface } from 'readline/promises';
 import { PathStatus, pathStatusPriority } from '../models/PathStatus';
 
 export interface RepositoryService {
@@ -37,7 +35,6 @@ export class RepositoryServiceImpl implements RepositoryService {
 
   constructor(
     @inject(TYPES.BaseDirProvider) private readonly baseDir: Provider<string>,
-    @inject(TYPES.GitProvider) private readonly git: Provider<SimpleGit>,
     @inject(TYPES.SpawnService) private readonly spawnService: SpawnService
   ) { }
 
@@ -51,23 +48,12 @@ export class RepositoryServiceImpl implements RepositoryService {
 
     const changes: UncommitedPath[] = [];
 
-    gitStatus.stdout.setEncoding('utf8');
-    const rl = createInterface(gitStatus.stdout);
-
-    for await (const line of rl) {
-      let status: PathStatus | undefined = undefined;
-      switch (line.slice(0, 2)) {
-        case 'M ':
-          status = PathStatus.Staged;
-          break;
-        case 'MM':
-        case ' M':
-          status = PathStatus.Unstaged;
-          break;
-        case '??':
-          status = PathStatus.Untracked;
-          break;
-      }
+    for await (const line of this.spawnService.readLines(gitStatus.stdout)) {
+      const statusSlice = line.slice(0, 2);
+      let status: PathStatus | undefined;
+      if (statusSlice === 'M ') status = PathStatus.Staged;
+      if (statusSlice === 'MM' || statusSlice == ' M') status = PathStatus.Unstaged;
+      if (statusSlice === '??') status = PathStatus.Untracked;
 
       if (!status) {
         continue;
@@ -79,13 +65,7 @@ export class RepositoryServiceImpl implements RepositoryService {
       });
     }
 
-    await new Promise((resolve, reject) => gitStatus.on('close', code => {
-      if (code === 0) {
-        resolve(undefined);
-      } else {
-        reject(new Error('Failed executing git status, exited with code ' + code));
-      }
-    }));
+    await this.spawnService.waitForCompletion(gitStatus);
 
     return changes;
   }
@@ -127,20 +107,12 @@ export class RepositoryServiceImpl implements RepositoryService {
       timestamp: new Date(),
     };
 
-    gitLog.stdout.setEncoding('utf8');
-    const rl = createInterface(gitLog.stdout);
-    for await (const line of rl) {
+    for await (const line of this.spawnService.readLines(gitLog.stdout)) {
       log = JSON.parse(line.replaceAll('\'', '"'));
       break;
     }
 
-    await new Promise((resolve, reject) => gitLog.on('close', code => {
-      if (code === 0) {
-        resolve(undefined);
-      } else {
-        reject(new Error('Failed executing git log, exited with code ' + code));
-      }
-    }));
+    await this.spawnService.waitForCompletion(gitLog, 'git log');
 
     const timestamp = new Date(log.timestamp || new Date());
     const ago = !log ? 'now' : this.calculateAgo(timestamp);
@@ -155,11 +127,23 @@ export class RepositoryServiceImpl implements RepositoryService {
   async getChanges(objectish: string): Promise<string[]>;
   async getChanges(objectishFrom: string, objectishTo: string): Promise<string[]>;
   async getChanges(objectishFrom: string, objectishTo?: string): Promise<string[]> {
-    const git = await this.git.get();
     const args = objectishTo === undefined ? [objectishFrom] : [objectishFrom, objectishTo];
-    const diff = await git.diffSummary(args);
+    const gitDiff = this.spawnService.spawn('git', [
+      'diff', '--name-only',
+      ...args
+    ], {
+      cwd: await this.baseDir.get(),
+      stdio: 'pipe'
+    });
 
-    return diff.files.map(f => `/${f.file}`);
+    const files: `/${string}`[] = [];
+    for await (const file of this.spawnService.readLines(gitDiff.stdout)) {
+      files.push(`/${file.trim()}`);
+    }
+
+    await this.spawnService.waitForCompletion(gitDiff, 'git diff');
+
+    return files;
   }
 
   calculateAgo(timestamp: Date) {

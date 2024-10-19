@@ -1,20 +1,18 @@
 import { Container, injectable } from 'inversify';
-import { SimpleGit } from 'simple-git';
 import { containerModule } from '../../src/containerModule';
-import { RepositoryService, RepositoryServiceImpl, UncommitedPath } from '../../src/services/RepositoryService';
+import { RepositoryService, RepositoryServiceImpl } from '../../src/services/RepositoryService';
 import { TYPES } from '../../src/TYPES';
-import { SpawnService } from '../../src/services/SpawnService';
-import { SpawnOptionsWithoutStdio, ChildProcessWithoutNullStreams, ChildProcess, spawn } from 'child_process'; import { PathStatus } from '../../src/models/PathStatus';
-;
+import { SpawnServiceImpl } from '../../src/services/SpawnService';
+import { SpawnOptionsWithoutStdio, ChildProcessWithoutNullStreams, spawn } from 'child_process';
+import { PathStatus } from '../../src/models/PathStatus';
 
 describe(RepositoryServiceImpl, () => {
   let container: Container;
   let mockSpawnService: MockSpawnService;
   let repositoryService: RepositoryService;
-  let git: SimpleGit;
 
   @injectable()
-  class MockSpawnService implements SpawnService {
+  class MockSpawnService extends SpawnServiceImpl {
     readonly spawns: { command: string, args: ReadonlyArray<string>, options: SpawnOptionsWithoutStdio; }[] = [];
 
     private readonly outputs: ReadonlyArray<string>[] = [];
@@ -50,10 +48,9 @@ describe(RepositoryServiceImpl, () => {
     container.rebind(TYPES.SpawnService).to(MockSpawnService).inSingletonScope();
     mockSpawnService = container.get(TYPES.SpawnService);
     repositoryService = container.get(TYPES.RepositoryService);
-    git = await container.get(TYPES.GitProvider).get();
   });
 
-  describe('.getLatestPathVersion', () => {
+  describe(RepositoryServiceImpl.prototype.getLatestPathVersion, () => {
     test('when base path provided should return latest version', async () => {
       // Given
       mockSpawnService.addRunOutput();
@@ -154,6 +151,50 @@ describe(RepositoryServiceImpl, () => {
         hash: PathStatus.Untracked,
         hashShort: PathStatus.Untracked,
       });
+    });
+  });
+
+  describe(RepositoryServiceImpl.prototype.getChanges, () => {
+    test('should map all files correctly', async () => {
+      // Given
+      mockSpawnService.addRunOutput('file.txt', 'folder/file.txt');
+
+      // When
+      const changes = await repositoryService.getChanges('HEAD');
+
+      // Verify
+      expect(changes).toMatchObject([
+        '/file.txt',
+        '/folder/file.txt'
+      ]);
+    });
+
+    test('should pass object parameter correctly', async () => {
+      // Given
+      mockSpawnService.addRunOutput();
+
+      // When
+      await repositoryService.getChanges('HEAD');
+
+      // Verify
+      expect(mockSpawnService.spawns[0].args).toMatchObject([
+        'diff', '--name-only',
+        'HEAD'
+      ]);
+    });
+
+    test('should pass object parameters correctly', async () => {
+      // Given
+      mockSpawnService.addRunOutput();
+
+      // When
+      await repositoryService.getChanges('HEAD', 'HEAD~1');
+
+      // Verify
+      expect(mockSpawnService.spawns[0].args).toMatchObject([
+        'diff', '--name-only',
+        'HEAD', 'HEAD~1'
+      ]);
     });
   });
 });

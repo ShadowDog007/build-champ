@@ -15,6 +15,7 @@ export interface ProjectFilterOptions {
   readonly changedIn?: string;
   readonly changedFrom?: string;
   readonly changedTo?: string;
+  readonly changesUncommitted: boolean;
 }
 
 @injectable()
@@ -28,7 +29,8 @@ export abstract class BaseProjectFilterCommand<TArgs extends [...unknown[], Proj
       .option('-t, --tags <tags...>', 'Filter only projects with provided tags')
       .option('--changed-in <objectIsh>', 'Filter only projects which were changed in a specific version')
       .option('--changed-from <objectIsh>', 'Filter only projects which were changed after specific version')
-      .option('--changed-to <objectIsh>', 'Filter only projects which were changed before specific version (Use with --changed-from)');
+      .option('--changed-to <objectIsh>', 'Filter only projects which were changed before specific version (Use with --changed-from)')
+      .option('--changes-uncommitted', 'Filter only projects which have any uncommitted changes');
   }
 
   async listProjects(options: ProjectFilterOptions) {
@@ -40,6 +42,7 @@ export abstract class BaseProjectFilterCommand<TArgs extends [...unknown[], Proj
     projects = this.filterTags(projects, options.tags);
     projects = await this.filterChangedFromTo(projects, options.changedIn, options.changedIn);
     projects = await this.filterChangedFromTo(projects, options.changedFrom, options.changedTo);
+    projects = this.filterChangesUncommitted(projects, options.changesUncommitted);
 
     this.verbose(`Matched ${projects.length} of ${initialProjectCount} projects`);
 
@@ -64,10 +67,18 @@ export abstract class BaseProjectFilterCommand<TArgs extends [...unknown[], Proj
         ? await this.repositoryService.getChanges(changedFrom, changedTo)
         : await this.repositoryService.getChanges(changedFrom);
 
-      return projects.filter(p => [p.dir, ...p.dependencies]
+      return projects.filter(p =>
+        // If there is no upper limit, include projects with local changes
+        !changedTo && p.version.localChanges
         // Filter any projects which have any directory changes
-        .some(d => directoryChanges.some(c => c.startsWith(d))));
+        || [p.dir, ...p.dependencies].some(d => directoryChanges.some(c => c.startsWith(d))));
     }
     return projects;
+  }
+
+  filterChangesUncommitted(projects: ProjectWithVersion[], changesUncommitted: boolean) {
+    return changesUncommitted
+      ? projects.filter(p => p.version.localChanges)
+      : projects;
   }
 }

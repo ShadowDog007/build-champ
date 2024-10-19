@@ -14,7 +14,7 @@ import { loadPluginModule } from '../src/plugins';
 import { Provider } from '../src/providers';
 import { ProjectService } from '../src/services/ProjectService';
 import { RepositoryService } from '../src/services/RepositoryService';
-import { SpawnService } from '../src/services/SpawnService';
+import { SpawnServiceImpl } from '../src/services/SpawnService';
 import { TYPES } from '../src/TYPES';
 import { globIterate } from 'glob';
 import { PathScurryProvider } from '../src/providers/PathScurryProvider';
@@ -150,7 +150,7 @@ export class MockRepositoryService implements RepositoryService {
 }
 
 @injectable()
-export class MockSpawnService implements SpawnService {
+export class MockSpawnService extends SpawnServiceImpl {
   spawn(command: string, args: readonly string[], options: SpawnOptionsWithoutStdio): ChildProcessWithoutNullStreams {
     return spawn(command, args, {
       ...options,

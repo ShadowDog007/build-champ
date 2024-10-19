@@ -1,7 +1,6 @@
 import { Command } from 'commander';
 import { injectable, interfaces } from 'inversify';
 import 'reflect-metadata';
-import { SimpleGit } from 'simple-git';
 import { PluginConfiguration } from '../config/PluginConfiguration';
 import { WorkspaceConfiguration } from '../config/WorkspaceConfiguration';
 import { TypeRecord } from '../TYPES';
@@ -31,7 +30,6 @@ export abstract class Provider<T, K extends string | symbol | undefined = undefi
 export const ProviderTypes = {
   BaseDirProvider: Symbol.for('BaseDirProvider') as interfaces.ServiceIdentifier<Provider<string>>,
   GitIgnoreProvider: Symbol.for('GitIgnoreProvider') as interfaces.ServiceIdentifier<Provider<GitIgnore>>,
-  GitProvider: Symbol.for('GitProvider') as interfaces.ServiceIdentifier<Provider<SimpleGit>>,
   PathScurryProvider: Symbol.for('PathScurryProvider') as interfaces.ServiceIdentifier<Provider<PathScurry>>,
   PluginConfigurationProvider: Symbol.for('PluginConfigurationProvider') as interfaces.ServiceIdentifier<Provider<PluginConfiguration, symbol>>,
   ProgramProvider: Symbol.for('ProgramProvider') as interfaces.ServiceIdentifier<Provider<Command>>,
