@@ -34,7 +34,7 @@ export interface DotnetSdkReference {
 export class DotnetService {
 
   private readonly directoryPropFiles = new PromiseCache(
-    () => this.globService.globList('**/Directory.*.{props,targets}', { nocase: true })
+    () => this.globService.globList('**/Directory.*.{props,targets}')
   );
 
   private readonly projectFileCache = new PromiseCache(

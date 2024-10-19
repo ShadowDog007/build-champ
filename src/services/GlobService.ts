@@ -7,7 +7,7 @@ import { Minimatch } from 'minimatch';
 import { PathScurry } from 'path-scurry';
 import { GitIgnore } from '../providers/GitIgnoreProvider';
 
-export type EnabledGlobOptions = Pick<GlobOptions, 'dot' | 'nocase'> & { ignore?: string[]; };
+export type EnabledGlobOptions = Pick<GlobOptions, 'dot'> & { ignore?: string[]; };
 
 export interface GlobService {
   glob(pattern: string | string[], options?: EnabledGlobOptions): AsyncGenerator<string>;
@@ -40,6 +40,7 @@ export class GlobServiceImpl implements GlobService {
       scurry: (await this.pathScurry.get()) as unknown as undefined,
       cwd: baseDir,
       nodir: true,
+      nocase: true,
       ignore: {
         ignored(p) {
           const relative = p.relative();

@@ -106,4 +106,20 @@ describe('GlobService', () => {
         expect(results).toEqual(expected);
       });
   });
+
+  test('should consider more specific .gitignore files', async () => {
+    // Given
+    await writeFile(join(baseDir, '.gitignore'), '*.txt');
+    await writeFile(join(baseDir, 'folder', '.gitignore'), '!*.txt');
+
+    // When
+    const results: string[] = [];
+    for await (const result of globService.glob('**/*'))
+      results.push(result);
+
+    // Verify
+    expect(results).toEqual([
+      '/folder/file2.txt'
+    ]);
+  });
 });

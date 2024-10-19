@@ -19,6 +19,8 @@ export class PathScurryProvider extends Provider<PathScurry> {
 
     return new Scurry(baseDir, {
       childrenCacheSize: 32 * 1024,
+      // TODO - Consider potential impacts of using this on case sensitive file systems
+      nocase: true,
       // Required to wire up mocks properly
       fs: fs
     });
