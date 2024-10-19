@@ -44,33 +44,33 @@ describe('EvalService', () => {
     test('should be able to eval simple arithmetic', async () => {
       const context = await contextService.getContext();
 
-      expect(evalService.safeEval('1 + 1', context)).toBe(2);
+      expect(await evalService.safeEvalAsync('1 + 1', context)).toBe(2);
     });
 
     test('should be able to eval context os property', async () => {
       const context = await contextService.getContext();
 
-      expect(evalService.safeEval('os', context)).toBe(process.platform);
+      expect(await evalService.safeEvalAsync('os', context)).toBe(process.platform);
     });
 
     test('should be able to eval context projects property', async () => {
       const context = await contextService.getContext();
 
-      expect(evalService.safeEval('projects', context)).toEqual(context.projects);
+      expect(await evalService.safeEvalAsync('projects', context)).toEqual(context.projects);
     });
 
     test('should be able to eval context projects nested property', async () => {
       projectService.addProject(projectExamples.project1);
       const context = await contextService.getContext();
 
-      expect(evalService.safeEval('projects.Project1.dir', context)).toEqual(projectExamples.project1.dir);
+      expect(await evalService.safeEvalAsync('projects.Project1.dir', context)).toEqual(projectExamples.project1.dir);
     });
 
     test('should be able to eval project command status', async () => {
       contextService.setProjectStatus(projectExamples.project1, ProjectCommandStatus.failed);
       const context = await contextService.getContext();
 
-      expect(evalService.safeEval('status.Project1', context)).toBe(ProjectCommandStatus.failed);
+      expect(await evalService.safeEvalAsync('status.Project1', context)).toBe(ProjectCommandStatus.failed);
     });
   });
 
@@ -78,39 +78,39 @@ describe('EvalService', () => {
     test('should be able to eval simple arithmetic', async () => {
       const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{1 + 1}}', context)).toBe('2');
+      expect(await evalService.safeEvalTemplateAsync('${{1 + 1}}', context)).toBe('2');
     });
 
     test('should be able to eval context os property', async () => {
       const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{os}}', context)).toBe(process.platform);
+      expect(await evalService.safeEvalTemplateAsync('${{os}}', context)).toBe(process.platform);
     });
 
     test('should be able to eval context projects property', async () => {
       const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{Object.keys(projects)}}', context)).toEqual(`${Object.keys(context.projects)}`);
+      expect(await evalService.safeEvalTemplateAsync('${{Object.keys(projects)}}', context)).toEqual(`${Object.keys(context.projects)}`);
     });
 
     test('should be able to eval context projects nested property', async () => {
       projectService.addProject(projectExamples.project1);
       const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{projects.Project1.dir}}', context)).toEqual(projectExamples.project1.dir);
+      expect(await evalService.safeEvalTemplateAsync('${{projects.Project1.dir}}', context)).toEqual(projectExamples.project1.dir);
     });
 
     test('should be able to eval project command status', async () => {
       contextService.setProjectStatus(projectExamples.project1, ProjectCommandStatus.failed);
       const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('${{status.Project1}}', context)).toBe(ProjectCommandStatus.failed);
+      expect(await evalService.safeEvalTemplateAsync('${{status.Project1}}', context)).toBe(ProjectCommandStatus.failed);
     });
 
     test('should be able to eval multiple replacements', async () => {
       const context = await contextService.getContext();
 
-      expect(evalService.safeEvalTemplate('`${{1}} + ${{2}} = ${{1+2}}`', context)).toBe('`1 + 2 = 3`');
+      expect(await evalService.safeEvalTemplateAsync('`${{1}} + ${{2}} = ${{1+2}}`', context)).toBe('`1 + 2 = 3`');
     });
   });
 });

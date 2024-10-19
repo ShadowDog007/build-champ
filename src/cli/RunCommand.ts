@@ -160,14 +160,14 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
     const evalContext = await this.contextService.getProjectContext(project, command);
 
     for (const next of pipeline) {
-      if (!this.checkCommandCondition(project, next, evalContext, abortController)
+      if (!await this.checkCommandCondition(project, next, evalContext, abortController)
         || !await this.executeProjectCommand(project, next, evalContext, abortController)) {
         return;
       }
     }
   }
 
-  checkCommandCondition(project: Project, projectCommand: ProjectCommand, context: ProjectContext, abortController?: AbortController) {
+  async checkCommandCondition(project: Project, projectCommand: ProjectCommand, context: ProjectContext, abortController?: AbortController) {
     if (!projectCommand.condition) {
       return true;
     }
@@ -176,7 +176,7 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
     let reason = 'evaluated to false';
 
     try {
-      result = !!this.evalService.safeEval(projectCommand.condition, context);
+      result = !!await this.evalService.safeEvalAsync(projectCommand.condition, context);
     } catch (err) {
       result = false;
       reason = `failed to evaluate '${err}'`;
@@ -203,14 +203,14 @@ export class RunCommand extends BaseProjectFilterCommand<[string, RunCommandOpti
 
     const baseDir = await this.baseDir.get();
 
-    return await new Promise<boolean>(resolve => {
+    return await new Promise<boolean>(async resolve => {
       const commandName = projectCommand.name
         || `\`${projectCommand.command}${projectCommand.arguments?.map(a => ` "${a.replaceAll('"', '\\"')}"`).join('') ?? ''}\``;
 
       this.updateProjectStatus(project, ProjectCommandStatus.running, commandName);
 
-      const command = this.evalService.safeEvalTemplate(projectCommand.command, context);
-      const commandArguments = projectCommand.arguments?.map(arg => this.evalService.safeEvalTemplate(arg, context));
+      const command = await this.evalService.safeEvalTemplateAsync(projectCommand.command, context);
+      const commandArguments = await Promise.all(projectCommand.arguments?.map(arg => this.evalService.safeEvalTemplateAsync(arg, context)) ?? []);
 
       const commandProcess = this.spawnService.spawn(command, commandArguments ?? [], {
         cwd: join(baseDir, project.dir),

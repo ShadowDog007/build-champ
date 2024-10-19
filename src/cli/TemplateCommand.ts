@@ -55,7 +55,7 @@ export class TemplateCommand extends BaseProjectCommand<[TemplateCommandOptions]
     const context = await this.contextService.getContext();
 
     this.command.configureOutput()
-      .writeOut?.(this.evalService.safeEvalTemplate(template, context));
+      .writeOut?.(await this.evalService.safeEvalTemplateAsync(template, context));
   }
 
   async getTemplateContent(options: TemplateCommandOptions) {

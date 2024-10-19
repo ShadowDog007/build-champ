@@ -48,7 +48,7 @@ export class ListCommand extends BaseProjectFilterCommand<[ProjectFilterOptions]
 
     const templated = await Promise.all(projects.map(async project => {
       const context = await this.contextService.getProjectContext(project);
-      return this.evalService.safeEvalTemplate(options.template, {
+      return this.evalService.safeEvalTemplateAsync(options.template, {
         ...context,
         longVersion: options.longVersion,
       });

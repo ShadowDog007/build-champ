@@ -46,6 +46,7 @@
     "dotenv-expand": "^11.0.6",
     "glob": "^10.4",
     "inversify": "^6.0.2",
+    "isolated-vm": "^5.0.1",
     "lodash": "^4.17.21",
     "luxon": "^3.5.0",
     "minimatch": "^9.0.0",
@@ -53,7 +54,6 @@
     "path-scurry": "^2.0.0",
     "reflect-metadata": "^0.2.2",
     "simple-git": "^3.27.0",
-    "vm2": "^3.9.19",
     "xml-js": "^1.6.11",
     "yaml": "^2.5.1"
   }
