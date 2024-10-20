@@ -5,6 +5,7 @@ import { DefaultProjectLoader } from './DefaultProjectLoader';
 import { FinalizeDefinitionProjectProcessor } from './FinalizeDefinitionProjectProcessor';
 import { FlattenDependenciesProjectProcessor } from './FlattenDependenciesProjectProcessor';
 import { ResolveDependencies as ResolveDependenciesProjectProcessor } from './ResolveDependenciesProjectProcessor';
+import { MergeProjectProcessor } from './MergeProjectProcessor';
 
 export class DefaultPlugin implements Plugin {
 
@@ -18,6 +19,7 @@ export class DefaultPlugin implements Plugin {
       bind(PluginTypes.ProjectLoader).to(DefaultProjectLoader);
 
       bind(PluginTypes.ProjectProcessor).to(ResolveDependenciesProjectProcessor);
+      bind(PluginTypes.ProjectProcessor).to(MergeProjectProcessor);
       bind(PluginTypes.ProjectProcessor).to(FlattenDependenciesProjectProcessor);
       bind(PluginTypes.ProjectProcessor).to(FinalizeDefinitionProjectProcessor);
     });
