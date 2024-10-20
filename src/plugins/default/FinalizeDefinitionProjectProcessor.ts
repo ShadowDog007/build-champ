@@ -12,6 +12,7 @@ export class FinalizeDefinitionProjectProcessor extends SimpleProjectProcessor {
 
   process(project: Project): Promise<Project> {
     return Promise.resolve({
+      ...project,
       extends: project.extends,
       name: project.name || basename(project.dir),
       dir: project.dir,

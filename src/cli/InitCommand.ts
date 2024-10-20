@@ -7,6 +7,7 @@ import { Project } from '../models/Project';
 import { Provider } from '../providers';
 import { TYPES } from '../TYPES';
 import { BaseProjectCommand } from './BaseProjectCommand';
+import { nullProjectGraph } from '../models/ProjectGraph';
 
 @injectable()
 export class InitCommand extends BaseProjectCommand<[string?]> {
@@ -37,6 +38,7 @@ export class InitCommand extends BaseProjectCommand<[string?]> {
     const project: Omit<Project, 'dir'> = {
       name: basename(resolvedProjectDir === '.' ? cwd() : resolvedProjectDir),
       dependencies: [],
+      graph: nullProjectGraph,
       tags: [],
       commands: {
         example: [

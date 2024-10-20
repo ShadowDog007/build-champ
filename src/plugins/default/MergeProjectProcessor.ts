@@ -1,4 +1,5 @@
 import { Project } from '../../models/Project';
+import { nullProjectGraph } from '../../models/ProjectGraph';
 import { ProjectProcessor, ProjectProcessorPhase } from '../ProjectProcessor';
 
 export class MergeProjectProcessor extends ProjectProcessor {
@@ -6,7 +7,7 @@ export class MergeProjectProcessor extends ProjectProcessor {
 
   processBatch(projects: Project[]): Promise<Project[]> {
 
-    const mergedProjects = new Map<string, Project>;
+    const mergedProjects = new Map<string, Project>();
     for (const project of projects) {
       if (!mergedProjects.has(project.dir)) {
         mergedProjects.set(project.dir, project);
@@ -28,6 +29,8 @@ export class MergeProjectProcessor extends ProjectProcessor {
       name: project1.name || project2.name,
       dir: project1.dir,
       dependencies: [...project1.dependencies, ...project2.dependencies],
+      // We shouldn't have a graph at this point
+      graph: nullProjectGraph,
       commands: {
         ...project1.commands,
         ...project2.commands,

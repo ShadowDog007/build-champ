@@ -1,5 +1,6 @@
 import { platform } from 'os';
 import { ProjectWithVersion } from '../src/models/Project';
+import { ProjectGraph } from '../src/models/ProjectGraph';
 
 export const projectExamples = {
   project1: {
@@ -8,6 +9,12 @@ export const projectExamples = {
     dependencies: [
       '/src/Project2'
     ],
+    graph: {
+      name: 'Project1',
+      dir: '/src/Project1',
+      dependencies: [] as ProjectGraph[],
+      dependants: [] as ProjectGraph[],
+    },
     tags: [
       'project:project1',
       'project-type:dotnet'
@@ -86,6 +93,12 @@ export const projectExamples = {
     dependencies: [
       '/src/Project3'
     ],
+    graph: {
+      name: 'Project2',
+      dir: '/src/Project2',
+      dependencies: [] as ProjectGraph[],
+      dependants: [] as ProjectGraph[],
+    },
     tags: [
       'project:project2',
       'project-type:node'
@@ -104,11 +117,17 @@ export const projectExamples = {
       timestamp: new Date('2022-12-11T00:00:00.000Z'),
       ago: '2 years ago',
     },
-  } satisfies ProjectWithVersion,
+  } as ProjectWithVersion,
   project3: {
     name: 'Project3',
     dir: '/src/Project3',
     dependencies: [],
+    graph: {
+      name: 'Project3',
+      dir: '/src/Project3',
+      dependencies: [] as ProjectGraph[],
+      dependants: [] as ProjectGraph[],
+    },
     tags: [
       'project:project3',
       'project-type:node'
@@ -126,5 +145,10 @@ export const projectExamples = {
       timestamp: new Date('2022-12-11T00:00:00.000Z'),
       ago: '2 years ago',
     }
-  } satisfies ProjectWithVersion,
+  } as ProjectWithVersion,
 };
+
+projectExamples.project1.graph.dependencies.push(projectExamples.project2.graph);
+projectExamples.project2.graph.dependants.push(projectExamples.project1.graph);
+projectExamples.project2.graph.dependencies.push(projectExamples.project3.graph);
+projectExamples.project3.graph.dependants.push(projectExamples.project2.graph);

@@ -8,6 +8,7 @@ import { FileService } from '../../services/FileService';
 import { PromiseCache } from '../../util/PromiseCache';
 import { ProjectLoader } from '../ProjectLoader';
 import { DefaultPlugin } from './DefaultPlugin';
+import { nullProjectGraph } from '../../models/ProjectGraph';
 
 @injectable()
 export class DefaultProjectLoader implements ProjectLoader {
@@ -40,6 +41,7 @@ export class DefaultProjectLoader implements ProjectLoader {
         ...extension?.dependencies || [],
         ...yaml.dependencies || [],
       ],
+      graph: nullProjectGraph,
       tags: uniq([
         'plugin:default',
         ...extension?.tags || [],

@@ -33,6 +33,12 @@ describe(FinalizeDefinitionProjectProcessor, () => {
       name: 'ProjectApi',
       dir: '/src/project1',
       dependencies: ['dep1'],
+      graph: {
+        name: 'ProjectApi',
+        dir: '/src/project1',
+        dependencies: [],
+        dependants: [],
+      },
       tags: ['project-type:final'],
       commands: {
         cmd1: {

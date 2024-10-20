@@ -126,13 +126,14 @@ export class DotnetService {
       .filter(project => !project.match(/[$@]\(.+?\)|\*/))
       .map(project => project.replaceAll('\\', '/'));
 
-    const transitiveDependencies = await Promise.all(
-      relativeCsprojPaths.map(dep => this.projectReferenceCache.get(join(dirname(match), dep)))
-    );
+    // TODO is this really needed?
+    // const transitiveDependencies = await Promise.all(
+    //   relativeCsprojPaths.map(dep => this.projectReferenceCache.get(join(dirname(match), dep)))
+    // );
 
     return [
       ...relativeCsprojPaths.map(dirname),
-      ...transitiveDependencies.flat(),
+      // ...transitiveDependencies.flat(),
     ];
   }
 }

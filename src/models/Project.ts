@@ -1,4 +1,5 @@
 import { ProjectCommand } from './ProjectCommand';
+import { ProjectGraph } from './ProjectGraph';
 import { ProjectVersion } from './ProjectVersion';
 
 /**
@@ -24,6 +25,11 @@ export interface Project {
    * List of files/directories this project depends on
    */
   readonly dependencies: string[];
+
+  /**
+   * Graph of project dependencies
+   */
+  readonly graph: ProjectGraph;
 
   /**
    * Collection of commands relevant to this project

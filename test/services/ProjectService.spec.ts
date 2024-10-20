@@ -33,6 +33,12 @@ describe('ProjectService', () => {
       dependencies: [
         '../dependency2',
       ],
+      graph: {
+        name: 'Project1',
+        dir: '',
+        dependencies: [],
+        dependants: [],
+      },
       commands: {
         test: {
           command: 'echo test'

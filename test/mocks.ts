@@ -59,6 +59,12 @@ export function createDefaultProject(dir: string): Project {
     name: '',
     dir,
     dependencies: [],
+    graph: {
+      name: '',
+      dir,
+      dependencies: [],
+      dependants: [],
+    },
     commands: {},
     tags: [],
   };

@@ -6,6 +6,7 @@ import { DotnetPlugin } from './DotnetPlugin';
 import { DotnetProject } from './DotnetProject';
 import { DotnetService } from './DotnetService';
 import { DotnetTypes } from './DotnetTypes';
+import { nullProjectGraph } from '../../models/ProjectGraph';
 
 @injectable()
 export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
@@ -39,14 +40,17 @@ export class DotnetProjectLoader implements ProjectLoader<DotnetProject> {
       : !isTestProject;
 
     const projectFileName = basename(match);
+    const name = basename(match, extname(match));
+    const dir = dirname(match);
 
     return {
-      name: basename(match, extname(match)),
-      dir: dirname(match),
+      name,
+      dir,
       dependencies: [
         ...projectReferences,
         ...directoryPropFiles
       ],
+      graph: nullProjectGraph,
       // Only use dotnet CLI commands with SDK style projects
       commands: projectSdk ? {
         restore: {
