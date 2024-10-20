@@ -9,6 +9,16 @@ export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
 
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    // Prevent compiled JS from running duplicate tests
+    ".+?\\.js"
+  ],
+  modulePathIgnorePatterns: [
+    // Prevent jest from looking at .js files. (prevents duplicate mocks error)
+    ".+?\\.js"
+  ],
+
   clearMocks: true,
   collectCoverage: true,
   coverageDirectory: "coverage",
