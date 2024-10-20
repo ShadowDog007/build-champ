@@ -7,6 +7,7 @@ import { TYPES } from '../TYPES';
 import { SpawnService } from './SpawnService';
 import { PromiseCache } from '../util/PromiseCache';
 import { PathStatus, pathStatusPriority } from '../models/PathStatus';
+import { StreamHelpers } from '../util/StreamHelpers';
 
 export interface RepositoryService {
   /**
@@ -48,7 +49,7 @@ export class RepositoryServiceImpl implements RepositoryService {
 
     const changes: UncommitedPath[] = [];
 
-    for await (const line of this.spawnService.readLines(gitStatus.stdout)) {
+    for await (const line of StreamHelpers.readLines(gitStatus.stdout)) {
       const statusSlice = line.slice(0, 2);
       let status: PathStatus | undefined;
       if (statusSlice === 'M ') status = PathStatus.Staged;
@@ -107,7 +108,7 @@ export class RepositoryServiceImpl implements RepositoryService {
       timestamp: new Date(),
     };
 
-    for await (const line of this.spawnService.readLines(gitLog.stdout)) {
+    for await (const line of StreamHelpers.readLines(gitLog.stdout)) {
       try {
         log = JSON.parse(line.replaceAll('\'', '"'));
       } catch (error) {
@@ -142,7 +143,7 @@ export class RepositoryServiceImpl implements RepositoryService {
     });
 
     const files: `/${string}`[] = [];
-    for await (const file of this.spawnService.readLines(gitDiff.stdout)) {
+    for await (const file of StreamHelpers.readLines(gitDiff.stdout)) {
       files.push(`/${file.trim()}`);
     }
 
