@@ -1,12 +1,13 @@
 import { Command } from 'commander';
 
 export class CommandTestHelper {
-
-  readonly output = this.captureCommandOutput();
+  readonly output: string[];
 
   constructor(
     private readonly command: Command
-  ) { }
+  ) {
+    this.output = this.captureCommandOutput(this.command);
+  }
 
   async testParse(args: string[], expectedOutput: string[], {
     stripColor = true,
@@ -44,19 +45,19 @@ export class CommandTestHelper {
     expect(this.output).toContain(expectedErrorMessage);
   }
 
-  private captureCommandOutput() {
+  private captureCommandOutput(command: Command) {
     const output: string[] = [];
 
     function write(message: string) {
       output.push(...message.split(/[\r\n]/).filter(m => !!m));
     }
 
-    this.command.configureOutput({
+    command.configureOutput({
       writeOut: write,
       writeErr: write,
     });
 
-    this.command.exitOverride((err) => { throw new Error(`Command exited with code ${err.exitCode}`); });
+    command.exitOverride((err) => { throw new Error(`Command exited with code ${err.exitCode}`); });
 
     return output;
   }
