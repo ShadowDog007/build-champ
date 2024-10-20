@@ -1,5 +1,6 @@
 jest.mock('fs');
 jest.mock('fs/promises');
+jest.unmock('chalk');
 
 import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';

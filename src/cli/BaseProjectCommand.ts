@@ -2,6 +2,7 @@ import { Command, ErrorOptions } from 'commander';
 import { injectable } from 'inversify';
 import 'reflect-metadata';
 import { Provider } from '../providers';
+import { BuildChampError } from '../util/BuildChampError';
 
 @injectable()
 export abstract class BaseProjectCommand<TArgs extends unknown[]> {
@@ -10,7 +11,17 @@ export abstract class BaseProjectCommand<TArgs extends unknown[]> {
 
   constructor() {
     this.command = new Command()
-      .action((...args) => this.action(...(args as TArgs)))
+      .action(async (...args) => {
+        try {
+          await this.action(...(args as TArgs));
+        } catch (error) {
+          if (error instanceof BuildChampError) {
+            this.error(error.message);
+          } else {
+            throw error;
+          }
+        }
+      })
       .option('-v, --verbose', 'Enable verbose output')
       .on('option:verbose', () => this.verboseEnabled = true);
   }
