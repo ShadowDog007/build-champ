@@ -21,4 +21,9 @@ export interface ProjectVersion {
    * Pretty string displaying how old this commit is
    */
   ago: string;
+
+  /**
+   * List of uncommited change (if there are any)
+   */
+  localChanges?: string[];
 }

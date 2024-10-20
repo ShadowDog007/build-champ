@@ -5,7 +5,7 @@ import 'reflect-metadata';
 import { parse } from 'yaml';
 import { Provider, ProviderTypes } from '../providers';
 import { createReadStream } from 'fs';
-import { createInterface } from 'readline/promises';
+import { StreamHelpers } from '../util/StreamHelpers';
 
 export interface FileService {
   readFileBuffer(repositoryPath: string): Promise<Buffer>;
@@ -32,11 +32,7 @@ export class FileServiceImpl implements FileService {
   async *readFileUtf8Lines(repositoryPath: string): AsyncGenerator<string> {
     const fileStream = createReadStream(join(await this.baseDir.get(), repositoryPath), 'utf8');
 
-    const rl = createInterface({
-      input: fileStream,
-    });
-
-    for await (const line of rl) {
+    for await (const line of StreamHelpers.readLines(fileStream)) {
       yield line;
     }
   }

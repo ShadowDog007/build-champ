@@ -14,7 +14,7 @@ import { loadPluginModule } from '../src/plugins';
 import { Provider } from '../src/providers';
 import { ProjectService } from '../src/services/ProjectService';
 import { RepositoryService } from '../src/services/RepositoryService';
-import { SpawnService } from '../src/services/SpawnService';
+import { SpawnServiceImpl } from '../src/services/SpawnService';
 import { TYPES } from '../src/TYPES';
 import { globIterate } from 'glob';
 import { PathScurryProvider } from '../src/providers/PathScurryProvider';
@@ -143,14 +143,14 @@ export class MockRepositoryService implements RepositoryService {
   getChanges(objectishFrom: string, objectishTo: string): Promise<string[]>;
   async getChanges(objectishFrom: unknown, objectishTo?: unknown): Promise<string[]> {
     const fromIndex = this.commits.findIndex(c => c.hash === objectishFrom);
-    const toIndex = objectishTo ? this.commits.findIndex(c => c.hash === objectishTo) : 0;
+    const toIndex = objectishTo ? this.commits.findIndex(c => c.hash === objectishTo) : fromIndex;
 
     return uniq(this.commits.flatMap((v, i) => toIndex <= i && i <= fromIndex ? v.files : []));
   }
 }
 
 @injectable()
-export class MockSpawnService implements SpawnService {
+export class MockSpawnService extends SpawnServiceImpl {
   spawn(command: string, args: readonly string[], options: SpawnOptionsWithoutStdio): ChildProcessWithoutNullStreams {
     return spawn(command, args, {
       ...options,
