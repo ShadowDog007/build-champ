@@ -60,29 +60,33 @@ export class GitIgnoreImpl implements GitIgnore {
   constructor(private readonly fileService: FileService) { }
 
   async addGitIgnore(gitIgnorePath: string) {
-    const relativePath = dirname(gitIgnorePath);
+    const gitIgnoreDir = dirname(gitIgnorePath);
+    const rootPath = gitIgnoreDir === '.' ? '' : gitIgnoreDir + '/';
 
     for await (let line of this.fileService.readFileUtf8Lines(gitIgnorePath)) {
       if (line[0] === '#') continue;
       line = line.trim();
       if (line === '') continue;
 
-      let pattern = line.replace(/^(!?)(.+)$/, `$1${relativePath === '.' ? '' : relativePath + '/'}**/$2`);
-      if (pattern.endsWith('/')) {
+      const not = line.startsWith('!');
+      const slashIndex = line.indexOf('/');
+      const relative = slashIndex >= 0 && slashIndex !== (line.length - 1);
+      const children = line.endsWith('/');
+
+      let pattern = not ? line.substring(1) : line;
+      pattern = relative
+        ? `${rootPath}${pattern}`
+        : `${rootPath}**/${pattern}`;
+      if (children) {
         pattern = `${pattern}**`;
       }
 
-      const not = pattern.startsWith('!');
-      const children = pattern.endsWith('/**');
+      const c = new Minimatch(pattern, { optimizationLevel: 2 });
 
-      const usePattern = not ? pattern.substring(1) : pattern;
+      if (not) this.notIgnoreChildren.push(c);
+      else this.ignoreChildren.push(c);
 
-      const c = new Minimatch(usePattern, { optimizationLevel: 2 });
-
-      if (children) {
-        if (not) this.notIgnoreChildren.push(c);
-        else this.ignoreChildren.push(c);
-      } else {
+      if (!children) {
         if (not) this.notIgnore.push(c);
         else this.ignore.push(c);
       }
