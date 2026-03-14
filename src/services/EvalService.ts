@@ -1,5 +1,9 @@
 import { injectable } from 'inversify';
 import 'reflect-metadata';
+// Node.js built-in vm module is used to evaluate template expressions in an
+// isolated context so that only explicitly-provided context variables are in
+// scope.  The vm module is not a security sandbox – it is used here purely
+// for scope isolation of user-authored configuration templates.
 import { createContext, runInContext } from 'vm';
 import { Context } from './ContextService';
 

@@ -82,7 +82,7 @@ See examples from built-in plugins in `src/plugins` of this repository.
 ---
 Expressions can be used to customise your projects command behaviour or process dynamic replacements for configuration files.
 
-Expressions are evaluated as javascript, so any valid javascript syntaxt is allowed. You are provided context variables which can be referenced for conditions or replacements.
+Expressions are evaluated as JavaScript using Node.js's built-in [`vm`](https://nodejs.org/api/vm.html) module, so any valid JavaScript syntax is allowed. Expressions run in an isolated context containing only the explicitly-provided context variables.
 
 ### Templating
 ---
