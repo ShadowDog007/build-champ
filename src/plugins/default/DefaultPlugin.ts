@@ -15,7 +15,7 @@ export class DefaultPlugin implements Plugin {
   }
 
   getContainerModule(): ContainerModule {
-    return new ContainerModule(bind => {
+    return new ContainerModule(({ bind }) => {
       bind(PluginTypes.ProjectLoader).to(DefaultProjectLoader);
 
       bind(PluginTypes.ProjectProcessor).to(ResolveDependenciesProjectProcessor);

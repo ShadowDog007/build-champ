@@ -20,7 +20,7 @@ export async function loadPluginModules(container: Container) {
 
 export async function loadPluginModule(container: Container, pluginName: string) {
   const plugin = await getPlugin(pluginName);
-  container.load(plugin.getContainerModule());
+  await container.load(plugin.getContainerModule());
   container.bind(PluginTypes.PluginIdentifierConfigMapping).toConstantValue([plugin.pluginIdentifier, pluginName]);
 }
 

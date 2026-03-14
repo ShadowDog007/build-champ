@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { injectable, interfaces } from 'inversify';
+import { injectable, ServiceIdentifier } from 'inversify';
 import 'reflect-metadata';
 import { PluginConfiguration } from '../config/PluginConfiguration';
 import { WorkspaceConfiguration } from '../config/WorkspaceConfiguration';
@@ -28,10 +28,10 @@ export abstract class Provider<T, K extends string | symbol | undefined = undefi
 }
 
 export const ProviderTypes = {
-  BaseDirProvider: Symbol.for('BaseDirProvider') as interfaces.ServiceIdentifier<Provider<string>>,
-  GitIgnoreProvider: Symbol.for('GitIgnoreProvider') as interfaces.ServiceIdentifier<Provider<GitIgnore>>,
-  PathScurryProvider: Symbol.for('PathScurryProvider') as interfaces.ServiceIdentifier<Provider<PathScurry>>,
-  PluginConfigurationProvider: Symbol.for('PluginConfigurationProvider') as interfaces.ServiceIdentifier<Provider<PluginConfiguration, symbol>>,
-  ProgramProvider: Symbol.for('ProgramProvider') as interfaces.ServiceIdentifier<Provider<Command>>,
-  WorkspaceConfigurationProvider: Symbol.for('WorkspaceConfigurationProvider') as interfaces.ServiceIdentifier<Provider<WorkspaceConfiguration>>,
+  BaseDirProvider: Symbol.for('BaseDirProvider') as ServiceIdentifier<Provider<string>>,
+  GitIgnoreProvider: Symbol.for('GitIgnoreProvider') as ServiceIdentifier<Provider<GitIgnore>>,
+  PathScurryProvider: Symbol.for('PathScurryProvider') as ServiceIdentifier<Provider<PathScurry>>,
+  PluginConfigurationProvider: Symbol.for('PluginConfigurationProvider') as ServiceIdentifier<Provider<PluginConfiguration, symbol>>,
+  ProgramProvider: Symbol.for('ProgramProvider') as ServiceIdentifier<Provider<Command>>,
+  WorkspaceConfigurationProvider: Symbol.for('WorkspaceConfigurationProvider') as ServiceIdentifier<Provider<WorkspaceConfiguration>>,
 } satisfies TypeRecord<Provider<unknown> | Provider<unknown, string> | Provider<unknown, symbol>>;

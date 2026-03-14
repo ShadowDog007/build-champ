@@ -6,7 +6,7 @@ import { Container } from 'inversify';
 import { join, sep } from 'path';
 import { InitCommand } from '../../src/cli/InitCommand';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockProvider, resetFs } from '../mocks';
+import { createContainer, MockProvider, resetFs, resolveFromContainer } from '../mocks';
 import { CommandTestHelper } from './CommandTestHelper';
 
 describe(InitCommand, () => {
@@ -21,7 +21,7 @@ describe(InitCommand, () => {
 
     container = await createContainer();
 
-    command = container.resolve(InitCommand);
+    command = resolveFromContainer(container, InitCommand);
     testHelper = new CommandTestHelper(command.command);
 
     baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);

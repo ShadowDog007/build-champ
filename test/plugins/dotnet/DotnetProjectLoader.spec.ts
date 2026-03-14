@@ -9,7 +9,7 @@ import { DotnetPlugin } from '../../../src/plugins/dotnet/DotnetPlugin';
 import { DotnetProjectLoader } from '../../../src/plugins/dotnet/DotnetProjectLoader';
 import { PluginTypes } from '../../../src/plugins/PluginTypes';
 import { ProviderTypes } from '../../../src/providers';
-import { createContainer, resetFs } from '../../mocks';
+import { createContainer, resetFs, resolveFromContainer } from '../../mocks';
 import { addCsproj } from './helper';
 import { ProjectLoaderService, ProjectLoaderServiceImpl } from '../../../src/services/ProjectLoaderService';
 import { writeFile } from 'fs/promises';
@@ -27,8 +27,8 @@ describe(DotnetProjectLoader, () => {
   beforeEach(async () => {
     await resetFs();
     container = await createContainer();
-    loader = container.resolve(DotnetProjectLoader);
-    projectLoaderService = container.resolve(ProjectLoaderServiceImpl);
+    loader = resolveFromContainer(container, DotnetProjectLoader);
+    projectLoaderService = resolveFromContainer(container, ProjectLoaderServiceImpl);
 
     baseDir = await container.get(ProviderTypes.BaseDirProvider).get();
 

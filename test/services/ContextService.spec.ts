@@ -18,7 +18,7 @@ describe(ContextServiceImpl, () => {
     await resetFs();
     container = await createContainer();
 
-    container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
+    container.rebindSync(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
 
     contextService = container.get(TYPES.ContextService);
     projectServce = container.get(TYPES.ProjectService);

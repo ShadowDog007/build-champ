@@ -5,7 +5,7 @@ import { writeFile } from 'fs/promises';
 import { cwd } from 'process';
 import { TemplateCommand } from '../../src/cli/TemplateCommand';
 import { TYPES } from '../../src/TYPES';
-import { createContainer, MockProjectService, MockProvider, resetFs } from '../mocks';
+import { createContainer, MockProjectService, MockProvider, resetFs, resolveFromContainer } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -21,12 +21,12 @@ describe(TemplateCommand, () => {
     const container = await createContainer();
 
     baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);
-    container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
+    container.rebindSync(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
 
     projectService = container.get(TYPES.ProjectService);
     projectService.addProjects(...Object.values(projectExamples));
 
-    command = container.resolve(TemplateCommand);
+    command = resolveFromContainer(container, TemplateCommand);
     testHelper = new CommandTestHelper(command.command);
   });
 

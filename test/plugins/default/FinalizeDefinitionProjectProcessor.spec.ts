@@ -5,7 +5,7 @@ import { Container } from 'inversify';
 import { Project } from '../../../src/models/Project';
 import { FinalizeDefinitionProjectProcessor } from '../../../src/plugins/default/FinalizeDefinitionProjectProcessor';
 import { TYPES } from '../../../src/TYPES';
-import { createContainer, createDefaultProject, resetFs } from '../../mocks';
+import { createContainer, createDefaultProject, resetFs, resolveFromContainer } from '../../mocks';
 
 describe(FinalizeDefinitionProjectProcessor, () => {
   let processor: FinalizeDefinitionProjectProcessor;
@@ -15,7 +15,7 @@ describe(FinalizeDefinitionProjectProcessor, () => {
     await resetFs();
 
     container = await createContainer();
-    processor = container.resolve(FinalizeDefinitionProjectProcessor);
+    processor = resolveFromContainer(container, FinalizeDefinitionProjectProcessor);
   });
 
   test('should be resolved last in container', () => {

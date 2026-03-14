@@ -1,6 +1,6 @@
-import { interfaces } from 'inversify';
+import { ServiceIdentifier } from 'inversify';
 
 export const DotnetTypes = {
   DotnetConfiguration: Symbol.for('DotnetConfiguration'),
   DotnetService: Symbol.for('DotnetService'),
-} satisfies Record<string, interfaces.ServiceIdentifier<unknown>>;
+} satisfies Record<string, ServiceIdentifier<unknown>>;

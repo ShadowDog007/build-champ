@@ -1,13 +1,14 @@
-import { PathLike } from 'fs';
+import { MakeDirectoryOptions, PathLike, WriteFileOptions } from 'fs';
 import { fs } from 'memfs';
-import { IMkdirOptions, IReadFileOptions, IWriteFileOptions } from 'memfs/lib/node/types/options';
 
-export const readFile = async (path: PathLike, options: unknown) => fs.readFileSync(path, options as string | IReadFileOptions | undefined);
-export const writeFile = async (path: PathLike, data: string | Buffer, options: unknown) => fs.writeFileSync(path, data, options as IWriteFileOptions);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const readFile = async (path: PathLike, options: unknown) => fs.readFileSync(path, options as any);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const writeFile = async (path: PathLike, data: string | Buffer, options: unknown) => fs.writeFileSync(path, data, options as any);
 
 export const stat = async (path: PathLike) => fs.statSync(path);
 
-export const mkdir = async (path: PathLike, options: IMkdirOptions) => fs.mkdirSync(path, options);
+export const mkdir = async (path: PathLike, options: MakeDirectoryOptions) => fs.mkdirSync(path, options as Parameters<typeof fs.mkdirSync>[1]);
 
 // Used by PathScurry
 export const lstat = async (path: string) => fs.lstatSync(path);

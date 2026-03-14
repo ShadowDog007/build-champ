@@ -1,7 +1,7 @@
 import { Container } from 'inversify';
 import 'reflect-metadata';
 import { MergeProjectProcessor } from '../../../src/plugins/default/MergeProjectProcessor';
-import { createContainer } from '../../mocks';
+import { createContainer, resolveFromContainer } from '../../mocks';
 import { projectExamples } from '../../project-examples';
 import { Project } from '../../../src/models/Project';
 
@@ -11,7 +11,7 @@ describe(MergeProjectProcessor, () => {
 
   beforeEach(async () => {
     container = await createContainer();
-    processor = container.resolve(MergeProjectProcessor);
+    processor = resolveFromContainer(container, MergeProjectProcessor);
   });
 
   describe(MergeProjectProcessor.prototype.processBatch, () => {

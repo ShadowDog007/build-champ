@@ -1,7 +1,7 @@
 import { Container } from 'inversify';
 import 'reflect-metadata';
 import { ResolveDependencies as ResolveDependenciesProjectProcessor } from '../../../src/plugins/default/ResolveDependenciesProjectProcessor';
-import { createContainer } from '../../mocks';
+import { createContainer, resolveFromContainer } from '../../mocks';
 import { projectExamples } from '../../project-examples';
 
 describe(ResolveDependenciesProjectProcessor, () => {
@@ -11,7 +11,7 @@ describe(ResolveDependenciesProjectProcessor, () => {
   beforeEach(async () => {
     container = await createContainer();
 
-    processor = container.resolve(ResolveDependenciesProjectProcessor);
+    processor = resolveFromContainer(container, ResolveDependenciesProjectProcessor);
   });
 
   test('should resolve dependencies relative to base dir', async () => {

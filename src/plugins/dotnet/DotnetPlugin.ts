@@ -14,7 +14,7 @@ export class DotnetPlugin implements Plugin {
   }
 
   getContainerModule(): ContainerModule {
-    return new ContainerModule(bind => {
+    return new ContainerModule(({ bind }) => {
       bind(PluginTypes.ProjectLoader).to(DotnetProjectLoader);
       bind(DotnetTypes.DotnetService).to(DotnetService);
     });
