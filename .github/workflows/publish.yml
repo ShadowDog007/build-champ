@@ -17,7 +17,12 @@ jobs:
         with:
           node-version: '24.x'
           registry-url: 'https://registry.npmjs.org'
+      - run: sed -i '/always-auth/d' "$NPM_CONFIG_USERCONFIG"
       - run: npm ci
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: |
+          PRE_TAG=$(node -p "require('./package.json').version.split('-')[1]?.split('.')[0] ?? ''")
+          if [ -n "$PRE_TAG" ]; then
+            npm publish --provenance --tag "$PRE_TAG"
+          else
+            npm publish --provenance
+          fi
