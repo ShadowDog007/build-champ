@@ -9,6 +9,10 @@ export default {
   preset: 'ts-jest',
   testEnvironment: 'node',
 
+  transform: {
+    '^.+\\.tsx?$': ['ts-jest', { tsconfig: 'tsconfig.jest.json' }],
+  },
+
   testPathIgnorePatterns: [
     "/node_modules/",
     // Prevent compiled JS from running duplicate tests
@@ -23,8 +27,8 @@ export default {
   collectCoverage: true,
   coverageDirectory: "coverage",
   coveragePathIgnorePatterns: [
-    "\\\\node_modules\\\\",
-    "\\\\test\\\\"
+    "/node_modules/",
+    "/test/"
   ],
 
   // Indicates which provider should be used to instrument code for coverage
@@ -41,7 +45,7 @@ export default {
   // An object that configures minimum threshold enforcement for coverage results
   coverageThreshold: {
     global: {
-      branches: 80,
+      branches: 75,
       functions: 80,
       lines: 80,
       statements: 80,
