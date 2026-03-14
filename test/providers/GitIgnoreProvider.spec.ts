@@ -12,14 +12,14 @@ import { dirname, join } from 'path';
 
 describe(GitIgnoreImpl, () => {
   let container: Container;
-  let provider: Provider<GitIgnore>;
+  let _provider: Provider<GitIgnore>;
   let globService: GlobService;
 
   beforeEach(async () => {
     await resetFs();
 
     container = await createContainer();
-    provider = container.get(TYPES.GitIgnoreProvider);
+    _provider = container.get(TYPES.GitIgnoreProvider);
     globService = container.get(TYPES.GlobService);
   });
 

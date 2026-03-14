@@ -9,7 +9,7 @@ import { ProviderTypes } from './providers';
 
 async function start() {
   const container = new Container();
-  container.load(containerModule);
+  await container.load(containerModule);
 
   await loadPluginModules(container);
 

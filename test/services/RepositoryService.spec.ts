@@ -47,7 +47,7 @@ describe(RepositoryServiceImpl, () => {
   beforeEach(async () => {
     container = new Container();
     container.load(containerModule);
-    container.rebind(TYPES.SpawnService).to(MockSpawnService).inSingletonScope();
+    container.rebindSync(TYPES.SpawnService).to(MockSpawnService).inSingletonScope();
     mockSpawnService = container.get(TYPES.SpawnService);
     repositoryService = container.get(TYPES.RepositoryService);
   });

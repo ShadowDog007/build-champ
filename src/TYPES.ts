@@ -1,11 +1,11 @@
-import { interfaces } from 'inversify';
+import { Newable, ServiceIdentifier } from 'inversify';
 import { PluginTypes } from './plugins/PluginTypes';
 import { ProviderTypes } from './providers';
 import { ServiceTypes } from './services';
 
-export type TypeRecord<T = unknown> = { readonly [type: string]: interfaces.ServiceIdentifier<T>; };
+export type TypeRecord<T = unknown> = { readonly [type: string]: ServiceIdentifier<T>; };
 
-export type TypeMappingRecord<T extends TypeRecord> = { readonly [Type in keyof T]: T[Type] extends interfaces.ServiceIdentifier<infer Impl> ? interfaces.Newable<Impl> : never };
+export type TypeMappingRecord<T extends TypeRecord> = { readonly [Type in keyof T]: T[Type] extends ServiceIdentifier<infer Impl> ? Newable<Impl> : never };
 
 export const singleInjectTypes = {
   ...ProviderTypes,

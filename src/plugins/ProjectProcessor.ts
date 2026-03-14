@@ -1,4 +1,4 @@
-import { injectable, interfaces } from 'inversify';
+import { injectable, Newable } from 'inversify';
 import { Project } from '../models/Project';
 
 @injectable()
@@ -13,12 +13,12 @@ export abstract class ProjectProcessor {
   /**
    * Collection of processors which this processor should run before
    */
-  readonly before?: interfaces.Newable<ProjectProcessor>[];
+  readonly before?: Newable<ProjectProcessor>[];
 
   /**
    * * Collection of processors which this processor should run after
    */
-  readonly after?: interfaces.Newable<ProjectProcessor>[];
+  readonly after?: Newable<ProjectProcessor>[];
 
   /**
    * Update all projects
@@ -62,6 +62,6 @@ export enum ProjectProcessorPhase {
 export interface ProjectProcessorOrder {
   phase?: ProjectProcessorPhase;
 
-  before?: interfaces.Newable<ProjectProcessor>;
-  after?: interfaces.Newable<ProjectProcessor>;
+  before?: Newable<ProjectProcessor>;
+  after?: Newable<ProjectProcessor>;
 }

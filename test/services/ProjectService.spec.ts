@@ -43,7 +43,7 @@ describe('ProjectService', () => {
       ],
     };
 
-    container.rebind(TYPES.RepositoryService).to(MockRepositoryService).inSingletonScope();
+    container.rebindSync(TYPES.RepositoryService).to(MockRepositoryService).inSingletonScope();
 
     projectService = container.get(TYPES.ProjectService);
     repositoryService = container.get(TYPES.RepositoryService);

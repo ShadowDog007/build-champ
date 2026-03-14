@@ -9,7 +9,7 @@ import { RunCommand } from '../../src/cli/RunCommand';
 import { ProjectService } from '../../src/services/ProjectService';
 import { SpawnService } from '../../src/services/SpawnService';
 import { TYPES } from '../../src/TYPES';
-import { baseDir, createContainer, MockProjectService, MockProvider, MockSpawnService, resetFs } from '../mocks';
+import { baseDir, createContainer, MockProjectService, MockProvider, MockSpawnService, resetFs, resolveFromContainer } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -24,10 +24,10 @@ describe('RunCommand', () => {
     await resetFs();
     const container = await createContainer();
 
-    container.rebind<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
-    container.rebind<SpawnService>(TYPES.SpawnService).to(MockSpawnService);
+    container.rebindSync<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
+    container.rebindSync<SpawnService>(TYPES.SpawnService).to(MockSpawnService);
 
-    command = container.resolve(RunCommand);
+    command = resolveFromContainer(container, RunCommand);
     testHelper = new CommandTestHelper(command.command);
     baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);
     projectService = container.get(TYPES.ProjectService);

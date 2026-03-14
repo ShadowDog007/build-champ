@@ -3,7 +3,7 @@ jest.mock('chalk');
 import { Container } from 'inversify';
 import 'reflect-metadata';
 import { FlattenDependenciesProjectProcessor } from '../../../src/plugins/default/FlattenDependenciesProjectProcessor';
-import { createContainer } from '../../mocks';
+import { createContainer, resolveFromContainer } from '../../mocks';
 import { projectExamples } from '../../project-examples';
 import { Project } from '../../../src/models/Project';
 import { BuildChampError } from '../../../src/util/BuildChampError';
@@ -14,7 +14,7 @@ describe(FlattenDependenciesProjectProcessor, () => {
 
   beforeEach(async () => {
     container = await createContainer();
-    processor = container.resolve(FlattenDependenciesProjectProcessor);
+    processor = resolveFromContainer(container, FlattenDependenciesProjectProcessor);
   });
 
   describe('.processProejcts', () => {

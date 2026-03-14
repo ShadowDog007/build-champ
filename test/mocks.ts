@@ -2,7 +2,7 @@ jest.mock('fs');
 jest.mock('fs/promises');
 
 import { ChildProcessWithoutNullStreams, spawn, SpawnOptionsWithoutStdio } from 'child_process';
-import { Container, injectable } from 'inversify';
+import { Container, inject, injectable, Newable } from 'inversify';
 import { cloneDeep, uniq } from 'lodash';
 import { fs } from 'memfs';
 import { resolve } from 'path';
@@ -23,15 +23,24 @@ export const baseDir = '/build-champ';
 
 export async function createContainer() {
   const container = new Container();
-  container.load(containerModule);
-  container.rebind(TYPES.BaseDirProvider).toConstantValue(new MockProvider(Promise.resolve(baseDir)));
-  container.rebind(TYPES.PathScurryProvider).to(MockPathScurryProvider);
+  await container.load(containerModule);
+  container.rebindSync(TYPES.BaseDirProvider).toConstantValue(new MockProvider(Promise.resolve(baseDir)));
+  container.rebindSync(TYPES.PathScurryProvider).to(MockPathScurryProvider);
 
   for (const pluginName of ['default', 'dotnet']) {
     await loadPluginModule(container, pluginName);
   }
   container.snapshot();
   return container;
+}
+
+/**
+ * Resolves an instance of a class from the container using its DI dependencies.
+ * Replacement for the removed `container.resolve()` in inversify v7.
+ */
+export function resolveFromContainer<T>(container: Container, cls: Newable<T>): T {
+  container.bind(cls).toSelf();
+  return container.get(cls);
 }
 
 export async function resetFs() {
@@ -66,6 +75,10 @@ export function createDefaultProject(dir: string): Project {
 
 @injectable()
 class MockPathScurryProvider extends PathScurryProvider {
+  constructor(@inject(TYPES.BaseDirProvider) baseDir: Provider<string>) {
+    super(baseDir);
+  }
+
   get() {
     return this.provider();
   }

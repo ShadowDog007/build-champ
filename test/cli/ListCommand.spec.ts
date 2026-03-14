@@ -6,7 +6,7 @@ import { ProjectWithVersion } from '../../src/models/Project';
 import { ProjectService } from '../../src/services/ProjectService';
 import { RepositoryService } from '../../src/services/RepositoryService';
 import { TYPES } from '../../src/TYPES';
-import { baseDir, createContainer, MockCommit, MockProjectService, MockProvider, MockRepositoryService, resetFs } from '../mocks';
+import { baseDir, createContainer, MockCommit, MockProjectService, MockProvider, MockRepositoryService, resetFs, resolveFromContainer } from '../mocks';
 import { projectExamples } from '../project-examples';
 import { CommandTestHelper } from './CommandTestHelper';
 
@@ -73,10 +73,10 @@ describe(ListCommand, () => {
     await resetFs();
     const container = await createContainer();
 
-    container.rebind<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
-    container.rebind<RepositoryService>(TYPES.RepositoryService).to(MockRepositoryService).inSingletonScope();
+    container.rebindSync<ProjectService>(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
+    container.rebindSync<RepositoryService>(TYPES.RepositoryService).to(MockRepositoryService).inSingletonScope();
 
-    command = container.resolve(ListCommand);
+    command = resolveFromContainer(container, ListCommand);
     testHelper = new CommandTestHelper(command.command);
     baseDirProvider = container.get(TYPES.BaseDirProvider as symbol);
     projectService = container.get(TYPES.ProjectService);

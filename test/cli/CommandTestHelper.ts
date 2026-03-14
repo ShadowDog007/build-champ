@@ -25,7 +25,6 @@ export class CommandTestHelper {
 
     // Verify
     const testOutput = stripColor
-      // eslint-disable-next-line no-control-regex
       ? this.output.map(o => o.replaceAll(/\x1b\[\d+m/g, '').replaceAll(/[\r\n]/g, ''))
       : this.output;
     expect(testOutput).toMatchObject(expectedOutput);

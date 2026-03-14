@@ -191,7 +191,7 @@ export class ContextServiceImpl implements ContextService {
       )
     });
 
-    const expandResult = expand({ parsed: envVars, processEnv: {} });
+    const expandResult = expand({ parsed: envVars, processEnv: { ...envVars } });
     if (expandResult.error) {
       throw expandResult.error;
     }

@@ -36,6 +36,6 @@ describe(SpawnServiceImpl, () => {
 
     // Verify
     expect(response).toBe(mockResponse);
-    expect(spawnMock).toBeCalledWith('test', args, options);
+    expect(spawnMock).toHaveBeenCalledWith('test', args, options);
   });
 });

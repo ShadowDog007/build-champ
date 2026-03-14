@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        nodeVersion: [18.x, 20.x, 22.x]
+        nodeVersion: [20.x, 22.x, 24.x]
     steps:
       - uses: actions/checkout@v4
       - name: Setup node

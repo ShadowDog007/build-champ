@@ -19,8 +19,8 @@ describe('EvalService', () => {
     await resetFs();
     container = await createContainer();
 
-    container.rebind(TYPES.EvalService).to(EvalServiceImpl).inSingletonScope();
-    container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
+    container.rebindSync(TYPES.EvalService).to(EvalServiceImpl).inSingletonScope();
+    container.rebindSync(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
 
     evalService = container.get(TYPES.EvalService);
     projectService = container.get(TYPES.ProjectService);
@@ -30,7 +30,7 @@ describe('EvalService', () => {
   test('should be resolvable and singleton', () => {
     // Given
     container.restore(); // Reset to clear above mock setup
-    container.rebind(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
+    container.rebindSync(TYPES.ProjectService).to(MockProjectService).inSingletonScope();
 
     // When
     const registeredInstance = container.get(TYPES.EvalService);
