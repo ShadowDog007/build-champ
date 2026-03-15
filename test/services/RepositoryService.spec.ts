@@ -154,6 +154,21 @@ describe(RepositoryServiceImpl, () => {
         hashShort: PathStatus.Untracked,
       });
     });
+
+    test('when uncommitted change is in a path with the same prefix but different directory, should use hash', async () => {
+      // Given
+      mockSpawnService.addRunOutput(`?? ProjectAExtensions/file.cs`);
+      mockSpawnService.addRunOutput(`{'hash':'long-hash','hashShort':'short-hash','timestamp':'2024-10-19T00:00:00Z'}`);
+
+      // When
+      const version = await repositoryService.getLatestPathVersion('/ProjectA');
+
+      // Verify
+      expect(version).toMatchObject({
+        hash: 'long-hash',
+        hashShort: 'short-hash',
+      });
+    });
   });
 
   describe(RepositoryServiceImpl.prototype.getChanges, () => {

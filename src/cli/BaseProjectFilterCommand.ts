@@ -77,7 +77,7 @@ export abstract class BaseProjectFilterCommand<TArgs extends [...unknown[], Proj
         // If there is no upper limit, include projects with local changes
         !changedIn && !changedTo && p.version.localChanges?.length
         // Filter any projects which have any directory changes
-        || [p.dir, ...p.dependencies].some(d => directoryChanges.some(c => c.startsWith(d))));
+        || [p.dir, ...p.dependencies].some(d => directoryChanges.some(c => c === d || c.startsWith(d + '/'))));
     }
     return projects;
   }

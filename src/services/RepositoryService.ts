@@ -76,7 +76,7 @@ export class RepositoryServiceImpl implements RepositoryService {
 
     const matchingUncommitedChanges = uncommitedChanges
       .filter(uc => !!paths.find(p =>
-        uc.path.startsWith(p) || p.startsWith(uc.path))
+        uc.path === p || uc.path.startsWith(p === '/' ? '/' : p + '/') || p.startsWith(uc.path))
       );
 
     if (matchingUncommitedChanges.length) {
