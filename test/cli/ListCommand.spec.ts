@@ -21,6 +21,7 @@ describe(ListCommand, () => {
   const project1Dir = 'project1';
   const project2Dir = 'project2';
   const dependency1Dir = 'dependency1';
+  const project1ExtensionsDir = 'project1extensions';
 
   const commits = {
     initial: {
@@ -50,6 +51,13 @@ describe(ListCommand, () => {
       timestamp: new Date('2023-01-01'),
       ago: '2 years ago',
       files: [dependency1Dir],
+    },
+    updateExtensions: {
+      hash: 'Updated project1extensions dir',
+      hashShort: 'updtextn',
+      timestamp: new Date('2023-01-02'),
+      ago: '2 years ago',
+      files: [`${project1ExtensionsDir}/file.cs`],
     }
   } satisfies Record<string, MockCommit>;
 
@@ -67,6 +75,13 @@ describe(ListCommand, () => {
     dir: project2Dir,
     dependencies: [],
     version: commits.newProject,
+  };
+  const project1Extensions: ProjectWithVersion = {
+    ...projectExamples.project3,
+    name: 'Project1Extensions',
+    dir: project1ExtensionsDir,
+    dependencies: [],
+    version: commits.updateExtensions,
   };
 
   beforeEach(async () => {
@@ -132,6 +147,12 @@ describe(ListCommand, () => {
 
     test('when changed in provided, and no project changes, should not list any proejcts',
       () => testHelper.testParse(['--template', '${{name}}', '--changed-in', commits.unrelated.hash], ['No matching projects']));
+
+    test('when changed in provided, should not match projects with a directory that is a prefix of the changed directory', async () => {
+      projectService.addProjects(project1Extensions);
+      repositoryService.addCommitChanges(commits.updateExtensions);
+      return testHelper.testParse(['--template', '${{name}}', '--changed-in', commits.updateExtensions.hash], ['Project1Extensions']);
+    });
 
     test('when changed from provided, should list all project changed since',
       () => testHelper.testParse(['--template', '${{name}}', '--changed-from', commits.unrelated.hash], ['Project1']));
